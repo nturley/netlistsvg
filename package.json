@@ -1,0 +1,26 @@
+{
+  "name": "netlistsvg",
+  "version": "0.0.1",
+  "description": "rendering a schematic from a netlist",
+  "main": "lib/index.js",
+  "author": "Neil Turley",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^1.0.0",
+    "lodash": "^4.17.2",
+    "object.entries": "^1.0.3",
+    "onml": "^0.3.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nturley/netlistsvg.git"
+  },
+  "keywords": [
+    "svg",
+    "netlist"
+  ],
+  "bugs": {
+    "url": "https://github.com/nturley/netlistsvg/issues"
+  },
+  "homepage": "https://github.com/nturley/netlistsvg#readme"
+}
