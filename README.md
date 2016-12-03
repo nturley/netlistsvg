@@ -5,7 +5,7 @@ draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSO
 
 It pulls the node icons and configuration options from a SVG skin file. Like this one:
 
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/lib/test.svg"/ width="600" height="200">
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/lib/test.svg"/ width="700" height="200">
 
 # Status
 Still early stages. Barely works and not very well.
