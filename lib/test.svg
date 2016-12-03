@@ -1,7 +1,7 @@
 <svg  xmlns="http://www.w3.org/2000/svg"
   xmlns:xlink="http://www.w3.org/1999/xlink"
   xmlns:s="https://github.com/nturley/netlistsvg"
-  style="stroke:#000; fill:rgba(0,0,0,0); font-size: 10px;"
+  style="stroke:#000; fill:none; font-size: 10px; font-weight: bold;"
 >
   <s:properties
     port_width="8"
@@ -10,43 +10,28 @@
     <s:low_priority_alias val="$dff" />
   </s:properties>
 
-  <g s:type="mux" transform="translate(50, 50)" s:width="20" s:height="45">
+  <g s:type="mux" transform="translate(50, 50)" s:width="20" s:height="40">
     <s:alias val="$pmux"/>
     <s:alias val="$mux"/>
 
     <path d="M0,0 L20,10 L20,30 L0,40 Z"/>
-    <line x1="10" x2="10" y1="35" y2="45" />
 
-    <g transform="translate(-8, 10)" s:x="-8" s:y="10" s:pid="A">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
-    <g transform="translate(-8, 30)" s:x="-8" s:y="30" s:pid="B">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
-    <g transform="translate(2, 45)" s:x="2" s:y="45" s:pid="S">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
-    <g transform="translate(20, 20)" s:x="20" s:y="20" s:pid="Y">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
+    <g s:x="0" s:y="10" s:pid="A"/>
+    <g s:x="0" s:y="30" s:pid="B"/>
+    <g s:x="10" s:y="35" s:pid="S"/>
+    <g s:x="20" s:y="20" s:pid="Y"/>
   </g>
-
+<!--
   <g s:type="and" transform="translate(150,50)" s:width="30" s:height="25">
     <s:alias val="$and"/>
 
     <path d="M0,0 L0,25 L15,25 A15 12.5 0 0 0 15,0 Z"/>
 
-    <g transform="translate(-8, 5)" s:x="-8" s:y="5" s:pid="A">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
-    <g transform="translate(-8, 20)" s:x="-8" s:y="20" s:pid="B">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
-    <g transform="translate(30, 12.5)" s:x="30" s:y="12.5" s:pid="Y">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
+    <g s:x="0" s:y="5" s:pid="A"/>
+    <g s:x="0" s:y="20" s:pid="B"/>
+    <g s:x="30" s:y="12.5" s:pid="Y"/>
   </g>
-
+!-->
   <g s:type="eq" transform="translate(250,50)" s:width="25" s:height="25">
     <s:alias val="$eq"/>
 
@@ -54,15 +39,9 @@
     <line x1="7.5" x2="17.5" y1="10" y2="10" />
     <line x1="7.5" x2="17.5" y1="15" y2="15" />
 
-    <g transform="translate(-5, 5)" s:x="-5" s:y="5" s:pid="A">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
-    <g transform="translate(-5, 20)" s:x="-5" s:y="20" s:pid="B">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
-    <g transform="translate(25, 12.5)" s:x="25" s:y="12.5" s:pid="Y">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
+    <g s:x="3" s:y="5" s:pid="A"/>
+    <g s:x="3" s:y="20" s:pid="B"/>
+    <g s:x="25" s:y="12.5" s:pid="Y"/>
   </g>
 
   <g s:type="reduce_xor" transform="translate(350, 50)" s:width="33" s:height="25">
@@ -71,12 +50,8 @@
     <path d="M3,0 A30 25 0 0 1 3,25 A30 25 0 0 0 33,12.5 A30 25 0 0 0 3,0" />
     <path d="M0,0 A30 25 0 0 1 0,25" />
 
-    <g  transform="translate(33,12.5)" s:x="33" s:y="12.5" s:pid="Y">
-      <line x1="0" x2="8" y1="0" y2="0" />
-    </g>
-    <g transform="translate(-5,12.5)" s:x="-5" s:y="12.5" s:pid="A">
-      <line x1="0" x2="8" y1="0" y2="0" />
-    </g>
+    <g s:x="33" s:y="12.5" s:pid="Y"/>
+    <g s:x="3" s:y="12.5" s:pid="A"/>
   </g>
 
   <g s:type="add" transform="translate(450, 50)" s:width="25" s:height="25">
@@ -86,15 +61,9 @@
     <line x1="7.5" x2="17.5" y1="12.5" y2="12.5" />
     <line x1="12.5" x2="12.5" y1="7.5" y2="17.5" />
 
-    <g transform="translate(-5, 5)" s:x="-5" s:y="5" s:pid="A">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
-    <g transform="translate(-5, 20)" s:x="-5" s:y="20" s:pid="B">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
-    <g transform="translate(25, 12.5)" s:x="25" s:y="12.5" s:pid="Y">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
+    <g s:x="3" s:y="5" s:pid="A"/>
+    <g s:x="3" s:y="20" s:pid="B"/>
+    <g s:x="25" s:y="12.5" s:pid="Y"/>
   </g>
 
   <g s:type="sub" transform="translate(550,50)" s:width="25" s:height="25">
@@ -103,15 +72,9 @@
     <circle r="12.5" cx="12.5" cy="12.5" />
     <line x1="7.5" x2="17.5" y1="12.5" y2="12.5" />
 
-    <g transform="translate(-5, 5)" s:x="-5" s:y="5" s:pid="A">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
-    <g transform="translate(-5, 20)" s:x="-5" s:y="20" s:pid="B">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
-    <g transform="translate(25, 12.5)" s:x="25" s:y="12.5" s:pid="Y">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
+    <g s:x="3" s:y="5" s:pid="A"/>
+    <g s:x="3" s:y="20" s:pid="B"/>
+    <g s:x="25" s:y="12.5" s:pid="Y"/>
   </g>
 
 
@@ -122,101 +85,76 @@
     <rect width="30" height="40" x="0" y="0"/>
     <path d="M0,35 L5,30 L0,25"/>
 
-    <g transform="translate(30,10)" s:x="30" s:y="10" s:pid="Q">
-      <line x1="0" x2="8" y1="0" y2="0" />
-    </g>
-    <g transform="translate(-8,30)" s:x="-8" s:y="30" s:pid="CLK">
-      <line x1="0" x2="8" y1="0" y2="0" />
-    </g>
-    <g transform="translate(-8,10)" s:x="-8" s:y="10" s:pid="D">
-      <line x1="0" x2="8" y1="0" y2="0" />
-    </g>
+    <g s:x="30" s:y="10" s:pid="Q"/>
+    <g s:x="0" s:y="30" s:pid="CLK"/>
+    <g s:x="0" s:y="10" s:pid="D"/>
   </g>
 
   <g s:type="inputExt" transform="translate(50,150)" s:width="30" s:height="20">
-
+    <text x="15" y="-4" style="fill:#000; text-anchor: middle;stroke:none">input</text>
+    <s:alias val="$_inputExt_"/>
     <path d="M0,0 L0,20 L15,20 L30,10 L15,0 Z" />
-    <text x="15" y="-4" style="fill:#000; text-anchor: middle;">input</text>
-
-    <g transform="translate(30,10)" s:x="30" s:y="10" >
-      <line x1="0" x2="8" y1="0" y2="0" />
-    </g>
+    <g s:x="28" s:y="10" s:pid="Y"/>
   </g>
 
   <g s:type="constant" transform="translate(150,150)" s:width="30" s:height="20">
+    <text x="15" y="-4" style="fill:#000; text-anchor: middle;stroke:none">constant</text>
 
+    <s:alias val="$_constant_"/>
     <rect width="30" height="20" />
-    <text x="15" y="-4" style="fill:#000; text-anchor: middle;">constant</text>
 
-    <g transform="translate(30,10)" s:x="30" s:y="10">
-      <line x1="0" x2="8" y1="0" y2="0" />
-    </g>
+    <g s:x="30" s:y="10" s:pid="Y"/>
   </g>
 
   <g s:type="outputExt" transform="translate(250,150)" s:width="30" s:height="20">
-
+    <text x="15" y="-4" style="fill:#000; text-anchor: middle;stroke:none">output</text>
+    <s:alias val="$_outputExt_"/>
     <path d="M30,0 L30,20 L15,20 L0,10 L15,0 Z" />
-    <text x="15" y="-4" style="fill:#000; text-anchor: middle;">output</text>
 
-    <g transform="translate(-8,10)" s:x="-8" s:y="10">
-      <line x1="0" x2="8" y1="0" y2="0" />
-    </g>
+    <g s:x="0" s:y="10" s:pid="A"/>
   </g>
 
-  <g s:type="split" transform="translate(350,150)" s:width="5" >
+  <g s:type="split" transform="translate(350,150)" s:width="5" s:height="40">
+    <rect width="5" height="40" style="fill:#000;stroke:none"/>
+    <s:alias val="$_split_"/>
 
-    <rect width="5" height="40" style="fill:#000;"/>
 
-    <g transform="translate(-8, 20)" s:x="-8" s:y="20" s:pid="A">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-    </g>
+    <g s:x="0" s:y="20" s:pid="in"/>
     <g transform="translate(5, 10)" s:x="5" s:y="10" s:pid="out0">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-      <text x="5" y="-4" style="fill:#000;">hi:lo</text>
+      <text x="5" y="-4" style="fill:#000;stroke:none">hi:lo</text>
     </g>
     <g transform="translate(5, 30)" s:x="5" s:y="30" s:pid="out1">
-      <line x1="0" x2="8" y1="0" y2="0" />
-      <text x="5" y="-4" style="fill:#000;">hi:lo</text>
+      <text x="5" y="-4" style="fill:#000;stroke:none">hi:lo</text>
     </g>
   </g>
 
-  <g s:type="join" transform="translate(450,150)" s:width="4" >
-
+  <g s:type="join" transform="translate(450,150)" s:width="4" s:height="40">
     <rect width="5" height="40" style="fill:#000;"/>
-
-    <g transform="translate(5, 20)" s:x="5" s:y="20"  s:pid="Y">
-      <line x1="0" x2="8" y1="0" y2="0"/>
+    <s:alias val="$_join_"/>
+    <g s:x="5" s:y="20"  s:pid="out"/>
+    <g transform="translate(0, 10)" s:x="0" s:y="10" s:pid="in0">
+      <text x="-3" y="-4" style="fill:#000; text-anchor: end;stroke:none">hi:lo</text>
     </g>
-    <g transform="translate(-8, 10)" s:x="-8" s:y="10" s:pid="in0">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-      <text x="5" y="-4" style="fill:#000; text-anchor: end;">hi:lo</text>
-    </g>
-    <g transform="translate(-8, 30)" s:x="-8" s:y="30" s:pid="in1">
-      <line x1="0" x2="8" y1="0" y2="0" />
-      <text x="5" y="-4" style="fill:#000; text-anchor: end;">hi:lo</text>
+    <g transform="translate(0, 30)" s:x="0" s:y="30" s:pid="in1">
+      <text x="-3" y="-4" style="fill:#000; text-anchor: end;stroke:none">hi:lo</text>
     </g>
   </g>
 
-  <g s:type="generic" transform="translate(550,150)" s:width="30" >
-
+  <g s:type="generic" transform="translate(550,150)" s:width="30" s:height="40">
+    <text x="15" y="-4" style="fill:#000; text-anchor: middle; stroke:none">generic</text>
     <rect width="30" height="40" />
-    <text x="15" y="-4" style="fill:#000; text-anchor: middle;">generic</text>
 
     <g transform="translate(30, 10)" s:x="30" s:y="10" s:pid="out0">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-      <text x="5" y="-4" style="fill:#000;">out0</text>
+      <text x="5" y="-4" style="fill:#000; stroke:none">out0</text>
     </g>
     <g transform="translate(30, 30)" s:x="30" s:y="30" s:pid="out1">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-      <text x="5" y="-4" style="fill:#000;">out1</text>
+      <text x="5" y="-4" style="fill:#000;stroke:none">out1</text>
     </g>
-    <g transform="translate(-8, 10)" s:x="-8" s:y="10" s:pid="in0">
-      <line x1="0" x2="8" y1="0" y2="0"/>
-      <text x="5" y="-4" style="fill:#000; text-anchor: end;">in0</text>
+    <g transform="translate(0, 10)" s:x="0" s:y="10" s:pid="in0">
+      <text x="-3" y="-4" style="fill:#000; text-anchor: end; stroke:none">in0</text>
     </g>
-    <g transform="translate(-8, 30)" s:x="-8" s:y="30" s:pid="in1">
-      <line x1="0" x2="8" y1="0" y2="0" />
-      <text x="5" y="-4" style="fill:#000; text-anchor: end;">in1</text>
+    <g transform="translate(0, 30)" s:x="0" s:y="30" s:pid="in1">
+      <text x="-3" y="-4" style="fill:#000; text-anchor: end; stroke:none">in1</text>
     </g>
   </g>
 

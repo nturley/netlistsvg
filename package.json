@@ -6,9 +6,10 @@
   "author": "Neil Turley",
   "license": "MIT",
   "dependencies": {
+    "clone": "^2.1.0",
     "fs-extra": "^1.0.0",
+    "klayjs": "^0.4.1",
     "lodash": "^4.17.2",
-    "object.entries": "^1.0.3",
     "onml": "^0.3.1"
   },
   "repository": {
