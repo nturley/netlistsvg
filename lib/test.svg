@@ -21,7 +21,6 @@
     <g s:x="10" s:y="35" s:pid="S"/>
     <g s:x="20" s:y="20" s:pid="Y"/>
   </g>
-<!--
   <g s:type="and" transform="translate(150,50)" s:width="30" s:height="25">
     <s:alias val="$and"/>
 
@@ -31,7 +30,6 @@
     <g s:x="0" s:y="20" s:pid="B"/>
     <g s:x="30" s:y="12.5" s:pid="Y"/>
   </g>
-!-->
   <g s:type="eq" transform="translate(250,50)" s:width="25" s:height="25">
     <s:alias val="$eq"/>
 
