@@ -10,12 +10,17 @@
     "fs-extra": "^1.0.0",
     "klayjs": "^0.4.1",
     "lodash": "^4.17.2",
-    "onml": "^0.3.1"
+    "onml": "^0.3.1",
+    "yargs": "^6.5.0"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nturley/netlistsvg.git"
   },
+  "bin":{
+    "netlistsvg":"./bin/netlistsvg.js"
+  },
+
   "keywords": [
     "svg",
     "netlist"
