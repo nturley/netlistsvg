@@ -1,6 +1,221 @@
 # netlistsvg
 draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSON netlist. It uses [klayjs](https://github.com/OpenKieler/klayjs) for layout.
-
+<details>
+  <summary>JSON Source</summary>
+```json
+{
+  "modules": {
+    "up3down5": {
+      "ports": {
+        "clock": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "data_in": {
+          "direction": "input",
+          "bits": [ 3, 4, 5, 6, 7, 8, 9, 10, 11 ]
+        },
+        "up": {
+          "direction": "input",
+          "bits": [ 12 ]
+        },
+        "down": {
+          "direction": "input",
+          "bits": [ 13 ]
+        },
+        "carry_out": {
+          "direction": "output",
+          "bits": [ 14 ]
+        },
+        "borrow_out": {
+          "direction": "output",
+          "bits": [ 15 ]
+        },
+        "count_out": {
+          "direction": "output",
+          "bits": [ 16, 17, 18, 19, 20, 21, 22, 23, 24 ]
+        },
+        "parity_out": {
+          "direction": "output",
+          "bits": [ 25 ]
+        }
+      },
+      "cells": {
+        "$add$input.v:17$3": {
+          "type": "$add",
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 16, 17, 18, 19, 20, 21, 22, 23, 24 ],
+            "B": [ "1", "1" ],
+            "Y": [ 26, 27, 28, 29, 30, 31, 32, 33, 34, 35 ]
+          }
+        },
+        "$and$input.v:28$5": {
+          "type": "$and",
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 12 ],
+            "B": [ 35 ],
+            "Y": [ 36 ]
+          }
+        },
+        "$and$input.v:29$6": {
+          "type": "$and",
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 13 ],
+            "B": [ 37 ],
+            "Y": [ 38 ]
+          }
+        },
+        "$procdff$40": {
+          "type": "$dff",
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 2 ],
+            "D": [ 39, 40, 41, 42, 43, 44, 45, 46, 47 ],
+            "Q": [ 16, 17, 18, 19, 20, 21, 22, 23, 24 ]
+          }
+        },
+        "$procdff$41": {
+          "type": "$dff",
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 2 ],
+            "D": [ 36 ],
+            "Q": [ 14 ]
+          }
+        },
+        "$procdff$42": {
+          "type": "$dff",
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 2 ],
+            "D": [ 38 ],
+            "Q": [ 15 ]
+          }
+        },
+        "$procdff$43": {
+          "type": "$dff",
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 2 ],
+            "D": [ 48 ],
+            "Q": [ 25 ]
+          }
+        },
+        "$procmux$36": {
+          "type": "$pmux",
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 16, 17, 18, 19, 20, 21, 22, 23, 24 ],
+            "B": [ 26, 27, 28, 29, 30, 31, 32, 33, 34, 49, 50, 51, 52, 53, 54, 55, 56, 57, 3, 4, 5, 6, 7, 8, 9, 10, 11 ],
+            "S": [ 58, 59, 60 ],
+            "Y": [ 39, 40, 41, 42, 43, 44, 45, 46, 47 ]
+          }
+        },
+        "$procmux$37_CMP0": {
+          "type": "$eq",
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 13, 12 ],
+            "B": [ "0", "1" ],
+            "Y": [ 58 ]
+          }
+        },
+        "$procmux$38_CMP0": {
+          "type": "$eq",
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 13, 12 ],
+            "B": [ "1", "0" ],
+            "Y": [ 59 ]
+          }
+        },
+        "$procmux$39_CMP0": {
+          "type": "$eq",
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 13, 12 ],
+            "B": [ "0", "0" ],
+            "Y": [ 60 ]
+          }
+        },
+        "$reduce_xor$input.v:27$4": {
+          "type": "$reduce_xor",
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 39, 40, 41, 42, 43, 44, 45, 46, 47 ],
+            "Y": [ 48 ]
+          }
+        },
+        "$sub$input.v:16$2": {
+          "type": "$sub",
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 16, 17, 18, 19, 20, 21, 22, 23, 24 ],
+            "B": [ "1", "0", "1" ],
+            "Y": [ 49, 50, 51, 52, 53, 54, 55, 56, 57, 37 ]
+          }
+        }
+      }
+    }
+  }
+}
+```
+</details>
 <img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/out.svg" width="600" height="600"/>
 
 ## Skin File
@@ -10,7 +225,7 @@ It pulls the node icons and configuration options from a SVG skin file. Like thi
 
 A skin file can define global CSS styling options onto the style attribute of the svg tag. That will be copied onto the output file. A skin file also defines a library of components to use. Each component has an alias list. It will use that component as a template for any cell with that type that it encounters. Each component defines the position and id of each of its ports so we know where to attach the wires to.
 
-In addition to the library of components that are matched to cells, a skin file defines some special nodes. Input/Output ports, Splits/Joins, and the generic node. Splits/Joins and the generic node are particularly tricky because the height and number of ports need to be adjusted depending on the cell.
+In addition to the library of components that are matched to cells, a skin file defines some special nodes. Input/Output ports, constants, Splits/Joins, and the generic node. Splits/Joins and the generic node are particularly tricky because the height and number of ports need to be adjusted depending on the cell.
 
 I'm also planning on pulling the global layout properties from here, but right now they are hard coded.
 
@@ -103,10 +318,20 @@ Klay is using a layered approach (Sugiyama, Ganser), similar to dot in the Graph
  * commandline arguments, usage statement
  * make the default skin actually default
  * browserify
-* Move hard-coded values into skin file
- * spacing
- * rank assignment
- *
+ * lib should work with strings instead of files
+* better skinning
+ * better use of CSS styling
+ * switch port tag to my namespace
+ * consistent templating abstractions
+ * add layout properties
+* Better usage of klayjs
+ * label handling
+ * port swapping
+* code refactor
+ * split/join code
+ * remove unnecessary module reformatting (leftover from d3)
+ * general cleanup
+ 
  
  
 # Status
@@ -119,4 +344,4 @@ At the moment, the invocation looks something like this.
 ```
 node bin/netlistsvg --input=test/simple.json --skin=lib/default.svg
 ```
-but you can expect that to change.
+but you can expect that to change. It should write a file named out.svg.
