@@ -1,0 +1,89 @@
+{
+  "modules": {
+    "generics": {
+      "ports": {
+        "clk100": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "clk40": {
+          "direction": "output",
+          "bits": [ 3 ]
+        },
+        "clk125": {
+          "direction": "output",
+          "bits": [ 5 ]
+        }
+      },
+      "cells" : {
+        "PLL": {
+          "type": "PLL",
+          "port_directions": {
+            "clkin": "input",
+            "clk40": "output",
+            "clk200": "output",
+            "clk125": "output",
+            "locked": "output"
+          },
+          "connections": {
+            "clkin": [ 2 ],
+            "clk40": [3],
+            "clk200": [6],
+            "clk125": [5],
+            "locked": [8]
+          }
+        },
+        "MIG": {
+          "type": "MIG",
+          "port_directions": {
+            "clk_ref": "input",
+            "clk_sys": "input",
+            "reset": "input"
+          },
+          "connections": {
+            "clk_ref": [6],
+            "clk_sys": [2],
+            "reset": [4]
+          }
+        },
+        "counter": {
+          "type": "counter",
+          "port_directions": {
+            "clk": "input",
+            "start": "input",
+            "elapsed": "output"
+          },
+          "connections": {
+            "clk": [2],
+            "start": [8],
+            "elapsed": [4]
+          }
+        },
+        "sync": {
+          "type": "sync",
+          "port_directions": {
+            "clk": "input",
+            "in": "input",
+            "out": "output"
+          },
+          "connections": {
+            "clk": [3],
+            "in": [4],
+            "out": [7]
+          }
+        },
+        "businterface": {
+          "type": "businterface",
+          "port_directions": {
+            "clk": "input",
+            "reset": "input"
+          },
+          "connections": {
+            "clk": [3],
+            "reset": [7]
+          }
+        }
+      }
+    }
+  }
+}

@@ -216,7 +216,105 @@ draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSO
 }
 ```
 </details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/out.svg" width="600" height="600"/>
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/up3down5.svg" width="600" height="600"/>
+
+The JSON doesn't need to be produced by Yosys, of course. We can process arbitrary block diagrams.
+
+<details>
+  <summary>JSON Source</summary>
+```json
+{
+  "modules": {
+    "generics": {
+      "ports": {
+        "clk100": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "clk40": {
+          "direction": "output",
+          "bits": [ 3 ]
+        },
+        "clk125": {
+          "direction": "output",
+          "bits": [ 5 ]
+        }
+      },
+      "cells" : {
+        "PLL": {
+          "type": "PLL",
+          "port_directions": {
+            "clkin": "input",
+            "clk40": "output",
+            "clk200": "output",
+            "clk125": "output",
+            "locked": "output"
+          },
+          "connections": {
+            "clkin": [ 2 ],
+            "clk40": [3],
+            "clk200": [6],
+            "clk125": [5],
+            "locked": [8]
+          }
+        },
+        "MIG": {
+          "type": "MIG",
+          "port_directions": {
+            "clk_ref": "input",
+            "clk_sys": "input",
+            "reset": "input"
+          },
+          "connections": {
+            "clk_ref": [6],
+            "clk_sys": [2],
+            "reset": [4]
+          }
+        },
+        "counter": {
+          "type": "counter",
+          "port_directions": {
+            "clk": "input",
+            "start": "input",
+            "elapsed": "output"
+          },
+          "connections": {
+            "clk": [2],
+            "start": [8],
+            "elapsed": [4]
+          }
+        },
+        "sync": {
+          "type": "sync",
+          "port_directions": {
+            "clk": "input",
+            "in": "input",
+            "out": "output"
+          },
+          "connections": {
+            "clk": [3],
+            "in": [4],
+            "out": [7]
+          }
+        },
+        "businterface": {
+          "type": "businterface",
+          "port_directions": {
+            "clk": "input",
+            "reset": "input"
+          },
+          "connections": {
+            "clk": [3],
+            "reset": [7]
+          }
+        }
+      }
+    }
+  }
+}
+```
+</details>
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/generics.svg" width="300" height="250">
 
 ## Skin File
 It pulls the node icons and configuration options from a SVG skin file. Like this one:
@@ -266,7 +364,7 @@ It does it's best to be smart about how to split and join buses. I spent a lot o
 }
 ```
 </details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/splitjoin.svg" width="300" height="250">
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/ports_splitjoin.svg" width="300" height="250">
 
 I'll read through my code some time and add more detailed notes of the algorithm, but as I recall, the basic principles are as follows:
 
@@ -317,6 +415,8 @@ Klay is using a layered approach (Sugiyama, Ganser), similar to dot in the Graph
 * Improve packaging and usability
  * browserify
  * lib should work with strings instead of files
+ * allow simplified json syntax
+ * print more helpful error messages for invalid json
 * better skinning
  * better use of CSS styling
  * switch port tag to my namespace
@@ -325,6 +425,8 @@ Klay is using a layered approach (Sugiyama, Ganser), similar to dot in the Graph
 * Better usage of klayjs
  * label handling
  * port swapping
+* Better drawing
+ * hex constants, (not just binary)
 * code refactor
  * split/join code
  * remove unnecessary module reformatting (leftover from d3)

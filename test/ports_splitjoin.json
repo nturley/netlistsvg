@@ -1,6 +1,6 @@
 {
   "modules": {
-    "simple": {
+    "ports_splitjoin": {
       "ports": {
         "inthing": {
           "direction": "input",
