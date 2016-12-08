@@ -7,6 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "clone": "^2.1.0",
+    "eslint": "^3.11.1",
     "fs-extra": "^1.0.0",
     "klayjs": "^0.4.1",
     "lodash": "^4.17.2",
@@ -17,8 +18,8 @@
     "type": "git",
     "url": "git+https://github.com/nturley/netlistsvg.git"
   },
-  "bin":{
-    "netlistsvg":"./bin/netlistsvg.js"
+  "bin": {
+    "netlistsvg": "./bin/netlistsvg.js"
   },
   "scripts": {
     "test": "eslint **/*.js && node test/test-all.js"
