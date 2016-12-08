@@ -20,7 +20,9 @@
   "bin":{
     "netlistsvg":"./bin/netlistsvg.js"
   },
-
+  "scripts": {
+    "test": "eslint **/*.js && node test/test-all.js"
+  },
   "keywords": [
     "svg",
     "netlist"
