@@ -337,10 +337,22 @@ For example, here is a mux definition. It has two aliases: "$pmux" and "$mux". I
   <g s:x="10" s:y="35" s:pid="S"/>
   <g s:x="20" s:y="20" s:pid="Y"/>
 </g>
+```
 
-In addition to the library of components that are matched to cells, a skin file defines some special nodes. Input/Output ports, constants, Splits/Joins, and the generic node. Splits/Joins and the generic node are particularly tricky because the height and number of ports need to be adjusted depending on the cell.
+In addition to the library of components that are matched to cells, a skin file defines some special nodes. Input/Output ports, constants, Splits/Joins, and the generic node. Splits/Joins and the generic node are particularly tricky because the height and number of ports need to be adjusted depending on the cell. Adjustments to the splits/joins and generic node templates might end up breaking something.
 
+The klayjs layout properties are also defined in the skin file.
 
+```XML
+<s:properties
+    spacing="25"
+    borderSpacing="50"
+    nodeLayering="LONGEST_PATH"
+/>
+```
+Any properties specified here will get passed along to the layout engine. Node and edge properties aren't configurable (yet). Right now I'm setting the priority of $dff.Q to be lower than everything else so that feedback edges on flip flops will go from right to left.
+
+I'm also setting the ports to be fixed position right now, until I figure out a plan for swappable ports.
 
 ## Split/Join Wires
 It does it's best to be smart about how to split and join buses. I spent a lot of time thinking about it and hacked something together using javascript strings (because I was too lazy to write my own library for processing sequences). At some point I will rewrite it with a sane implementation that doesn't use strings. I think I'm happy with the core algorithm, just the implementation is wonky.
@@ -433,10 +445,7 @@ Klay is using a layered approach (Sugiyama, Ganser), similar to dot in the Graph
  * allow simplified json syntax
  * print more helpful error messages for invalid json
 * better skinning
- * better use of CSS styling
- * switch port tag to my namespace
  * consistent templating abstractions
- * add layout properties
 * Better usage of klayjs
  * label handling
  * port swapping
