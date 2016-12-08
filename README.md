@@ -321,11 +321,26 @@ It pulls the node icons and configuration options from a SVG skin file. Like thi
 
 <img src="https://cdn.rawgit.com/nturley/netlistsvg/master/lib/test.svg" width="700" height="200">
 
-A skin file can define global CSS styling options onto the style attribute of the svg tag. That will be copied onto the output file. A skin file also defines a library of components to use. Each component has an alias list. It will use that component as a template for any cell with that type that it encounters. Each component defines the position and id of each of its ports so we know where to attach the wires to.
+A skin file can use style tags or inline CSS to style the elements. That will be copied onto the output file. A skin file also defines a library of components to use. Each component has an alias list. It will use that component as a template for any cell with that type that it encounters. Each component defines the position and id of each of its ports so we know where to attach the wires to.
+
+For example, here is a mux definition. It has two aliases: "$pmux" and "$mux". It defines a type name, and a width and height, as well as the position and id of each of it's ports. In general you can rearrange them however you like, and add whatever SVG elements you like inside the template.
+
+```XML
+<g s:type="mux" transform="translate(50, 50)" s:width="20" s:height="40">
+  <s:alias val="$pmux"/>
+  <s:alias val="$mux"/>
+
+  <path d="M0,0 L20,10 L20,30 L0,40 Z"/>
+
+  <g s:x="0" s:y="10" s:pid="A"/>
+  <g s:x="0" s:y="30" s:pid="B"/>
+  <g s:x="10" s:y="35" s:pid="S"/>
+  <g s:x="20" s:y="20" s:pid="Y"/>
+</g>
 
 In addition to the library of components that are matched to cells, a skin file defines some special nodes. Input/Output ports, constants, Splits/Joins, and the generic node. Splits/Joins and the generic node are particularly tricky because the height and number of ports need to be adjusted depending on the cell.
 
-I'm also planning on pulling the global layout properties from here, but right now they are hard coded.
+
 
 ## Split/Join Wires
 It does it's best to be smart about how to split and join buses. I spent a lot of time thinking about it and hacked something together using javascript strings (because I was too lazy to write my own library for processing sequences). At some point I will rewrite it with a sane implementation that doesn't use strings. I think I'm happy with the core algorithm, just the implementation is wonky.
@@ -431,6 +446,9 @@ Klay is using a layered approach (Sugiyama, Ganser), similar to dot in the Graph
  * split/join code
  * remove unnecessary module reformatting (leftover from d3)
  * general cleanup
+* CI
+ * travis
+ * appveyour
 
 # Status
 Still early stages. But it's usable.

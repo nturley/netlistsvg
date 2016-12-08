@@ -1,15 +1,34 @@
 <svg  xmlns="http://www.w3.org/2000/svg"
   xmlns:xlink="http://www.w3.org/1999/xlink"
-  xmlns:s="https://github.com/nturley/netlistsvg"
-  style="stroke:#000; fill:none; font-size: 10px; font-weight: bold;"
->
+  xmlns:s="https://github.com/nturley/netlistsvg">
   <s:properties
-    port_width="8"
-    port_height="1"
+    spacing="25"
+    borderSpacing="50"
+    nodeLayering="LONGEST_PATH"
   >
     <s:low_priority_alias val="$dff" />
   </s:properties>
-
+<style>
+svg {
+  stroke:#000;
+  fill:none;
+}
+text {
+  fill:#000;
+  stroke:none;
+  font-size:10px;
+  font-weight: bold;
+}
+.nodelabel {
+  text-anchor: middle;
+}
+.inputPortLabel {
+  text-anchor: end;
+}
+.splitjoinBody {
+  fill:#000;
+}
+</style>
   <g s:type="mux" transform="translate(50, 50)" s:width="20" s:height="40">
     <s:alias val="$pmux"/>
     <s:alias val="$mux"/>
@@ -89,14 +108,14 @@
   </g>
 
   <g s:type="inputExt" transform="translate(50,150)" s:width="30" s:height="20">
-    <text x="15" y="-4" style="fill:#000; text-anchor: middle;stroke:none">input</text>
+    <text x="15" y="-4" class="nodelabel">input</text>
     <s:alias val="$_inputExt_"/>
     <path d="M0,0 L0,20 L15,20 L30,10 L15,0 Z" />
     <g s:x="28" s:y="10" s:pid="Y"/>
   </g>
 
   <g s:type="constant" transform="translate(150,150)" s:width="30" s:height="20">
-    <text x="15" y="-4" style="fill:#000; text-anchor: middle;stroke:none">constant</text>
+    <text x="15" y="-4" class="nodelabel">constant</text>
 
     <s:alias val="$_constant_"/>
     <rect width="30" height="20" />
@@ -105,7 +124,7 @@
   </g>
 
   <g s:type="outputExt" transform="translate(250,150)" s:width="30" s:height="20">
-    <text x="15" y="-4" style="fill:#000; text-anchor: middle;stroke:none">output</text>
+    <text x="15" y="-4" class="nodelabel">output</text>
     <s:alias val="$_outputExt_"/>
     <path d="M30,0 L30,20 L15,20 L0,10 L15,0 Z" />
 
@@ -113,33 +132,32 @@
   </g>
 
   <g s:type="split" transform="translate(350,150)" s:width="5" s:height="40">
-    <rect width="5" height="40" style="fill:#000;stroke:none"/>
+    <rect width="5" height="40" class="splitjoinBody"/>
     <s:alias val="$_split_"/>
-
 
     <g s:x="0" s:y="20" s:pid="in"/>
     <g transform="translate(5, 10)" s:x="4" s:y="10" s:pid="out0">
-      <text x="5" y="-4" style="fill:#000;stroke:none">hi:lo</text>
+      <text x="5" y="-4" >hi:lo</text>
     </g>
     <g transform="translate(5, 30)" s:x="4" s:y="30" s:pid="out1">
-      <text x="5" y="-4" style="fill:#000;stroke:none">hi:lo</text>
+      <text x="5" y="-4" >hi:lo</text>
     </g>
   </g>
 
   <g s:type="join" transform="translate(450,150)" s:width="4" s:height="40">
-    <rect width="5" height="40" style="fill:#000;"/>
+    <rect width="5" height="40" class="splitjoinBody"/>
     <s:alias val="$_join_"/>
     <g s:x="5" s:y="20"  s:pid="out"/>
     <g transform="translate(0, 10)" s:x="0" s:y="10" s:pid="in0">
-      <text x="-3" y="-4" style="fill:#000; text-anchor: end;stroke:none">hi:lo</text>
+      <text x="-3" y="-4" class="inputPortLabel">hi:lo</text>
     </g>
     <g transform="translate(0, 30)" s:x="0" s:y="30" s:pid="in1">
-      <text x="-3" y="-4" style="fill:#000; text-anchor: end;stroke:none">hi:lo</text>
+      <text x="-3" y="-4" class="inputPortLabel">hi:lo</text>
     </g>
   </g>
 
   <g s:type="generic" transform="translate(550,150)" s:width="30" s:height="40">
-    <text x="15" y="-4" style="fill:#000; text-anchor: middle; stroke:none">generic</text>
+    <text x="15" y="-4" class="nodelabel">generic</text>
     <rect width="30" height="40" />
 
     <g transform="translate(30, 10)" s:x="30" s:y="10" s:pid="out0">
@@ -149,13 +167,11 @@
       <text x="5" y="-4" style="fill:#000;stroke:none">out1</text>
     </g>
     <g transform="translate(0, 10)" s:x="0" s:y="10" s:pid="in0">
-      <text x="-3" y="-4" style="fill:#000; text-anchor: end; stroke:none">in0</text>
+      <text x="-3" y="-4" class="inputPortLabel">in0</text>
     </g>
     <g transform="translate(0, 30)" s:x="0" s:y="30" s:pid="in1">
-      <text x="-3" y="-4" style="fill:#000; text-anchor: end; stroke:none">in1</text>
+      <text x="-3" y="-4" class="inputPortLabel">in1</text>
     </g>
   </g>
-
-
 
 </svg>
