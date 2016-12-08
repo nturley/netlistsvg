@@ -216,7 +216,7 @@ draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSO
 }
 ```
 </details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/up3down5.svg" width="600" height="600"/>
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/up3down5.svg" width="600" height="620"/>
 
 The JSON doesn't need to be produced by Yosys, of course. We can process arbitrary block diagrams.
 
@@ -314,7 +314,7 @@ The JSON doesn't need to be produced by Yosys, of course. We can process arbitra
 }
 ```
 </details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/generics.svg" width="300" height="250">
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/generics.svg" width="420" height="300">
 
 ## Skin File
 It pulls the node icons and configuration options from a SVG skin file. Like this one:
