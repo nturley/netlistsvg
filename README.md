@@ -315,8 +315,6 @@ Klay is using a layered approach (Sugiyama, Ganser), similar to dot in the Graph
 
 # TODO
 * Improve packaging and usability
- * commandline arguments, usage statement
- * make the default skin actually default
  * browserify
  * lib should work with strings instead of files
 * better skinning
@@ -331,17 +329,17 @@ Klay is using a layered approach (Sugiyama, Ganser), similar to dot in the Graph
  * split/join code
  * remove unnecessary module reformatting (leftover from d3)
  * general cleanup
- 
- 
- 
+
 # Status
-Still early stages. Barely works and not very well.
+Still early stages. But it's usable.
 
 # Installation/Usage Instructions
-It's not really ready yet, but if you like using half-built tools, I believe you can install node, clone this repo, and npm install the dependencies.
+* (install nodejs)
+* (git clone this repo)
+* npm install
 
 At the moment, the invocation looks something like this.
 ```
-node bin/netlistsvg --input=test/simple.json --skin=lib/default.svg
+node bin/netlistsvg input_json_file [-o output_svg_file] [--skin skin_file]
 ```
-but you can expect that to change. It should write a file named out.svg.
+The default value for the output file is out.svg.

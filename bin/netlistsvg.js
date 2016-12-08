@@ -4,13 +4,8 @@
 var lib = require('../lib'),
     yargs = require('yargs');
 
-var argv = yargs.argv;
-var fileName;
-
-if (argv.input){
-    var fileName = argv.input;
-    var skinPath = argv.skin;
-    lib.render(skinPath, fileName);
-} else {
-    console.log(argv);
-}
+var argv = yargs
+            .demand(1)
+            .usage('usage: $0 input_json_file [-o output_svg_file] [--skin skin_file]')
+            .argv;
+lib.render(argv._[0], argv.o, argv.skin);
