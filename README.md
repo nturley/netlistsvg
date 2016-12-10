@@ -457,7 +457,7 @@ Klay is using a layered approach (Sugiyama, Ganser), similar to dot in the Graph
  * remove unnecessary module reformatting (leftover from d3)
  * general cleanup
 * CI
- * travis
+ * better test suite
  * appveyour
 
 # Status
