@@ -459,6 +459,7 @@ Klay is using a layered approach (Sugiyama, Ganser), similar to dot in the Graph
 * CI
  * better test suite
  * appveyour
+* hierarchy (draw all modules)
 
 # Status
 Still early stages. But it's usable.
