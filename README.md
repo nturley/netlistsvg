@@ -464,10 +464,12 @@ Klay is using a layered approach (Sugiyama, Ganser), similar to dot in the Graph
 Still early stages. But it's usable.
 
 # Installation/Usage Instructions
-* (install nodejs)
-* (git clone this repo)
-* npm install
-
+```
+(install nodejs)
+git clone https://github.com/nturley/netlistsvg
+cd netlistsvg
+npm install
+```
 At the moment, the invocation looks something like this.
 ```
 node bin/netlistsvg input_json_file [-o output_svg_file] [--skin skin_file]
