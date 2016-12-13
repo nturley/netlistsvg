@@ -440,12 +440,14 @@ This tool is really powerful and not very well documented so I'm still learning 
 Klay is using a layered approach (Sugiyama, Ganser), similar to dot in the Graphviz package. I was doing a lot of experiments with it and I became convinced that longest path rank assignment produced better schematics than Network Simplex. This is obviously subjective, but I think that Network Simplex attempts to make the graph uniformly distributed on the page in an effort to make it less wide (or tall in our case). In schematics, I would rather a taller graph that grouped together related logic than a compact one with node that are more uniformly distributed. Also when the flow goes from left to right, with vertically scrolling webpages, using up additional vertical space isn't as big of a cost.
 
 # Updates
-Dec 12, 2016
+## Dec 12, 2016
 So I've been researching making the klay layouter label aware. To do this, it will need to know the dimensions of the labels. There are two ways to accomplish this. One is to use a headless browser like phantomjs to render all of the text and determine the dimensions. The other is to add two more skin parameters: label_height, and label_width_per_char. The second technique will only be accurate if the skin uses a fixed width font. The first technique brings a pretty heavy-weight dependency, but if we open the door to browser-based rendering, that would allow us to export in other image formats besides svg. Which is compelling.
 
 I've also taken a look at refactoring the code. Some obvious refactoring can be done by making the code use a more consistent style and removing information that is no longer needed. But the main source of complication is our multiple models. We need a single source of truth to store and look up information about our graph in. So I'm considering consolidating all of the information into a single model. This means that before we start constructing our kgraph structure, we will pull all information from the skin into the actual model nodes themselves. Node templates can be held by the node as jsonml. That way, constructing the kgraph structure will only require consulting the model without looking at the template. Similarly, once the graph is layed out, we can immediately pull the layout information from the output kgraph and import it back into the model again. Then we can render the SVG solely from the model. I think this will make the overall structure easier to maintain and understand. This model ideally will look more like the structure klayjs expects and won't have a circular structure like our current one.
 
 The third thing I've been thinking about is handling hierarchy. Yosysjs and klayjs are both capable of handling sub circuits and subgraphs. It might be interesting to see what kind of images I can produce from a hierarchal design.
+
+Oh, I think there's a bug for defining port id's for joins. Somehow I managed to get two ports with the same name.
 
 # TODO
 * Improve packaging and usability
