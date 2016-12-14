@@ -8,7 +8,7 @@
         },
         "outthing": {
           "direction": "output",
-          "bits": [ 2, 3 ]
+          "bits": [ 2, 3, 2, 3 ]
         },
         "outthing2": {
           "direction": "output",

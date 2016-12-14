@@ -2,7 +2,7 @@
   xmlns:xlink="http://www.w3.org/1999/xlink"
   xmlns:s="https://github.com/nturley/netlistsvg">
   <s:properties
-    spacing="25"
+    spacing="20"
     borderSpacing="50"
     nodeLayering="LONGEST_PATH"
   >
@@ -18,6 +18,7 @@ text {
   stroke:none;
   font-size:10px;
   font-weight: bold;
+  font-family: "Courier New", monospace;
 }
 .nodelabel {
   text-anchor: middle;
