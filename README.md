@@ -217,7 +217,7 @@ draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSO
 }
 ```
 </details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/up3down5.svg" width="600" height="620"/>
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/up3down5.svg" />
 
 The JSON doesn't need to be produced by Yosys, of course. We can process arbitrary block diagrams.
 
@@ -315,12 +315,12 @@ The JSON doesn't need to be produced by Yosys, of course. We can process arbitra
 }
 ```
 </details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/generics.svg" width="420" height="300">
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/generics.svg" >
 
 ## Skin File
 It pulls the node icons and configuration options from a SVG skin file. Like this one:
 
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/lib/default.svg" width="700" height="200">
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/lib/default.svg" >
 
 A skin file can use style tags or inline CSS to style the elements. That will be copied onto the output file. A skin file also defines a library of components to use. Each component has an alias list. It will use that component as a template for any cell with that type that it encounters. Each component defines the position and id of each of its ports so we know where to attach the wires to.
 
@@ -392,7 +392,7 @@ It does it's best to be smart about how to split and join buses. I spent a lot o
 }
 ```
 </details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/ports_splitjoin.svg" width="300" height="250">
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/ports_splitjoin.svg" >
 
 I'll read through my code some time and add more detailed notes of the algorithm, but as I recall, the basic principles are as follows:
 
