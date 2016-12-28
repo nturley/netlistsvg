@@ -6,8 +6,9 @@
     borderSpacing="50"
     nodeLayering="LONGEST_PATH"
   >
-    <s:low_priority_alias val="$dff" />
+    
   </s:properties>
+  <s:label_size height="11" width_per_char="6"/>
 <style>
 svg {
   stroke:#000;
