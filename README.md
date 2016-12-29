@@ -217,7 +217,7 @@ draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSO
 }
 ```
 </details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/up3down5.svg" />
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/d01285946e05ee5ce99dc5d0f8025be58b5936a3/doc/up3down5.svg" />
 
 The JSON doesn't need to be produced by Yosys, of course. We can process arbitrary block diagrams.
 
@@ -315,7 +315,7 @@ The JSON doesn't need to be produced by Yosys, of course. We can process arbitra
 }
 ```
 </details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/generics.svg" >
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/d01285946e05ee5ce99dc5d0f8025be58b5936a3/doc/generics.svg" >
 
 ## Skin File
 It pulls the node icons and configuration options from a SVG skin file. Like this one:
@@ -392,7 +392,7 @@ It does it's best to be smart about how to split and join buses. I spent a lot o
 }
 ```
 </details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/master/doc/ports_splitjoin.svg" >
+<img src="https://cdn.rawgit.com/nturley/netlistsvg/d01285946e05ee5ce99dc5d0f8025be58b5936a3/doc/ports_splitjoin.svg" >
 
 I'll read through my code some time and add more detailed notes of the algorithm, but as I recall, the basic principles are as follows:
 
