@@ -4,7 +4,7 @@ draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSO
 <details>
   <summary>JSON Source</summary>
 
-```
+```json
 {
   "modules": {
     "up3down5": {
