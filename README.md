@@ -3,7 +3,8 @@
 draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSON netlist. It uses [klayjs](https://github.com/OpenKieler/klayjs) for layout.
 <details>
   <summary>JSON Source</summary>
-```json
+
+```
 {
   "modules": {
     "up3down5": {
@@ -223,6 +224,7 @@ The JSON doesn't need to be produced by Yosys, of course. We can process arbitra
 
 <details>
   <summary>JSON Source</summary>
+
 ```json
 {
   "modules": {
@@ -360,6 +362,7 @@ It does it's best to be smart about how to split and join buses. I spent a lot o
 
 <details>
   <summary>JSON Source</summary>
+
 ```json
 {
   "modules": {
