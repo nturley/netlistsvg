@@ -1,5 +1,5 @@
-`include "xorcy.v"
 `include "muxcy.v"
+`include "xorcy.v"
 
 module CARRY4(output [3:0] CO, O, input CI, CYINIT, input [3:0] DI, S);
    wire CIN = CI | CYINIT;
@@ -13,5 +13,4 @@ module CARRY4(output [3:0] CO, O, input CI, CYINIT, input [3:0] DI, S);
    XORCY xorcy1 (.O(O[1]), .CI(CO[0]), .LI(S[1]));
    XORCY xorcy2 (.O(O[2]), .CI(CO[1]), .LI(S[2]));
    XORCY xorcy3 (.O(O[3]), .CI(CO[2]), .LI(S[3]));
-
 endmodule

@@ -496,10 +496,10 @@ The default value for the output file is out.svg.
 
 ## Generating `input_json_file` with Yosys
 
-[Yosys from Clifford Wolf](https://github.com/cliffordwolf/yosys) can be used to generate the `input_json_file` using [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html).
+[Yosys from Clifford Wolf](https://github.com/cliffordwolf/yosys) can be used to generate the `input_json_file` using [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html). To get useful output from things with processes you will also have to [add the `proc` command](http://www.clifford.at/yosys/cmd_proc.html). [The `flatten` command](http://www.clifford.at/yosys/cmd_flatten.html) can be useful if you want to "see inside" sub-modules.
 
 ```
-yosys -p "write_json output.v" input.v
+yosys -p "proc; write_json output.v" input.v
 ```
 
 ## Examples
