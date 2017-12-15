@@ -492,3 +492,12 @@ At the moment, the invocation looks something like this.
 node bin/netlistsvg input_json_file [-o output_svg_file] [--skin skin_file]
 ```
 The default value for the output file is out.svg.
+
+
+## Generating `input_json_file` with Yosys
+
+[Yosys from Clifford Wolf](https://github.com/cliffordwolf/yosys) can be used to generate the `input_json_file` using [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html).
+
+```
+yosys -p "write_json output.v" input.v
+```
