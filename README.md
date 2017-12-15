@@ -501,3 +501,7 @@ The default value for the output file is out.svg.
 ```
 yosys -p "write_json output.v" input.v
 ```
+
+## Examples
+
+The [example directory](./examples) has some simple examples of generating diagrams from Verilog using a Makefile.

@@ -1,3 +1,6 @@
 node_modules
 out.svg
 test/*.svg
+examples/*.json
+examples/*.svg
+examples/*.png
