@@ -492,3 +492,16 @@ At the moment, the invocation looks something like this.
 node bin/netlistsvg input_json_file [-o output_svg_file] [--skin skin_file]
 ```
 The default value for the output file is out.svg.
+
+
+## Generating `input_json_file` with Yosys
+
+[Yosys from Clifford Wolf](https://github.com/cliffordwolf/yosys) can be used to generate the `input_json_file` using [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html). To get useful output from things with processes you will also have to [add the `proc` command](http://www.clifford.at/yosys/cmd_proc.html). [The `flatten` command](http://www.clifford.at/yosys/cmd_flatten.html) can be useful if you want to "see inside" sub-modules.
+
+```
+yosys -p "proc; write_json output.v" input.v
+```
+
+## Examples
+
+The [example directory](./examples) has some simple examples of generating diagrams from Verilog using a Makefile.
