@@ -463,16 +463,33 @@ The default value for the output file is out.svg.
 
 ## Generating `input_json_file` with Yosys
 
-[Yosys from Clifford Wolf](https://github.com/cliffordwolf/yosys) can be used to generate the `input_json_file` using [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html). To get useful output from things with processes you will also have to [add the `proc` command](http://www.clifford.at/yosys/cmd_proc.html). [The `flatten` command](http://www.clifford.at/yosys/cmd_flatten.html) can be useful if you want to "see inside" sub-modules.
+[Yosys from Clifford Wolf](https://github.com/cliffordwolf/yosys) can be used to generate the `input_json_file` using [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html).
+
+Unless you are doing something special you will want to use [the `prep` command](http://www.clifford.at/yosys/cmd_prep.html). Some examples are provided below and you can find some runnable examples which go from Verilog to diagrams in the [examples directory](./examples) (with example Makefile).
+
+#### Generate top level diagram
+
+This command will generate a diagram of the top module with all the inner modules shown as boxes.
 
 ```
-yosys -p "proc; write_json output.v" input.v
+yosys -p "prep -top my_top_module; write_json output.json" input.v
 ```
 
-## Examples
+#### Generate logic diagram
 
-The [example directory](./examples) has some simple examples of generating diagrams from Verilog using a Makefile.
+You can give it the `-flatten` argument to  [the `prep` command](http://www.clifford.at/yosys/cmd_prep.html) if you want Yosys to convert everything into low level logic. Only basic logic cells and black boxes will exist after flattening.
 
+```
+yosys -p "prep -top my_top_module -flatten; write_json output.json" input.v
+```
+
+### Generate AND (or not) and inverter (NOT) diagram
+
+It is also frequently common that you want to create a diagram only using AND and NOT (or NAND and NOT) cells. ([This is called an AIG](https://en.wikipedia.org/wiki/And-inverter_graph).) This can be done with Yosys' [`aigmap` command](http://www.clifford.at/yosys/cmd_proc.html).
+
+```
+yosys -p "prep -top my_top_module; aigmap; write_json output.json" input.v
+```
 
 # TODO
 * Improve packaging and usability
