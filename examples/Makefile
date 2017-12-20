@@ -2,6 +2,9 @@ YOSYS    ?= yosys
 INKSCAPE ?= inkscape
 VIEWER   ?= eog
 
+YOSYS_FLAGS ?= -q
+# YOSYS_FLAGS ?= -Q -T
+
 # Node JS is sometimes installed as node and sometimes as nodejs
 ifneq ($(shell which node),)
 NODE	 ?= node
@@ -30,27 +33,27 @@ GET_TOP ?= export TOP=$$(echo $(basename $<) | tr a-z A-Z);
 
 # Top level diagram
 %.json: %.v Makefile
-	$(GET_TOP) $(YOSYS) -p "prep -top $$TOP; write_json $@" $<
+	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP; write_json $@" $<
 
 # Split wires, can make it easier for the diagram if nets are split up
 %.split.json: %.v Makefile
-	$(GET_TOP) $(YOSYS) -p "prep -top $$TOP; splitnets; write_json $@" $<
+	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP; splitnets; write_json $@" $<
 
 # Flatten the diagram into logic + black boxes
 %.flat.json: %.v Makefile
-	$(GET_TOP) $(YOSYS) -p "prep -top $$TOP -flatten; write_json $@" $<
+	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP -flatten; write_json $@" $<
 
 # Convert logic into AND and NOT logic
 %.aig.json: %.v Makefile
-	$(GET_TOP) $(YOSYS) -p "prep -top $$TOP -flatten; cd $$TOP; aigmap; write_json $@" $<
+	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP -flatten; cd $$TOP; aigmap; write_json $@" $<
 
 # Convert logic into NAND, AND and NOT logic
 %.naig.json: %.v Makefile
-	$(GET_TOP) $(YOSYS) -p "prep -top $$TOP -flatten; cd $$TOP; aigmap -nand; write_json $@" $<
+	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP -flatten; cd $$TOP; aigmap -nand; write_json $@" $<
 
 # Convert logic into "simple logic" - NOT, AND, XOR, etc
 %.simplemap.json: %.v Makefile
-	$(GET_TOP) $(YOSYS) -p "prep -top $$TOP -flatten; cd $$TOP; simplemap; write_json $@" $<
+	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP -flatten; cd $$TOP; simplemap; write_json $@" $<
 
 # Use netlistsvg to generate SVG files
 %.svg: %.json $(NETLISTSVG_SKIN)
@@ -58,7 +61,7 @@ GET_TOP ?= export TOP=$$(echo $(basename $<) | tr a-z A-Z);
 
 # Use inkscape to render the SVG files into PNG files.
 %.png: %.svg
-	$(INKSCAPE) --export-png $@ --export-dpi $(NETLISTSVG_DPI) $<
+	$(INKSCAPE) --export-png $@ --export-dpi $(NETLISTSVG_DPI) $< 2>&1 | grep -v "WARNING: unknown type: s:alias"
 
 # Open the rendered PNG in a file viewer
 %.view: %.png
