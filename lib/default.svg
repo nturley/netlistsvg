@@ -134,7 +134,7 @@ text {
     <g s:x="25" s:y="10" s:pid="Y"/>
   </g>
 
-  <g s:type="add" transform="translate(550, 50)" s:width="25" s:height="25">
+  <g s:type="add" transform="translate(50, 150)" s:width="25" s:height="25">
     <s:alias val="$add"/>
 
     <circle r="12.5" cx="12.5" cy="12.5" />
@@ -146,7 +146,7 @@ text {
     <g s:x="25" s:y="12.5" s:pid="Y"/>
   </g>
 
-  <g s:type="sub" transform="translate(650,50)" s:width="25" s:height="25">
+  <g s:type="sub" transform="translate(150,150)" s:width="25" s:height="25">
     <s:alias val="$sub"/>
 
     <circle r="12.5" cx="12.5" cy="12.5" />
@@ -156,7 +156,7 @@ text {
     <g s:x="3" s:y="20" s:pid="B"/>
     <g s:x="25" s:y="12.5" s:pid="Y"/>
   </g>
-  <g s:type="eq" transform="translate(750,50)" s:width="25" s:height="25">
+  <g s:type="eq" transform="translate(250,150)" s:width="25" s:height="25">
     <s:alias val="$eq"/>
 
     <circle r="12.5" cx="12.5" cy="12.5" />
@@ -168,7 +168,7 @@ text {
     <g s:x="25" s:y="12.5" s:pid="Y"/>
   </g>
 
-  <g s:type="dff" transform="translate(850,50)" s:width="30" s:height="40">
+  <g s:type="dff" transform="translate(350,150)" s:width="30" s:height="40">
     <s:alias val="$dff"/>
     <s:alias val="$_DFF_"/>
 
@@ -180,14 +180,14 @@ text {
     <g s:x="0" s:y="10" s:pid="D"/>
   </g>
 
-  <g s:type="inputExt" transform="translate(50,150)" s:width="30" s:height="20">
+  <g s:type="inputExt" transform="translate(50,200)" s:width="30" s:height="20">
     <text x="15" y="-4" class="nodelabel">input</text>
     <s:alias val="$_inputExt_"/>
     <path d="M0,0 L0,20 L15,20 L30,10 L15,0 Z" />
     <g s:x="28" s:y="10" s:pid="Y"/>
   </g>
 
-  <g s:type="constant" transform="translate(150,150)" s:width="30" s:height="20">
+  <g s:type="constant" transform="translate(150,200)" s:width="30" s:height="20">
     <text x="15" y="-4" class="nodelabel">constant</text>
 
     <s:alias val="$_constant_"/>
@@ -196,7 +196,7 @@ text {
     <g s:x="30" s:y="10" s:pid="Y"/>
   </g>
 
-  <g s:type="outputExt" transform="translate(250,150)" s:width="30" s:height="20">
+  <g s:type="outputExt" transform="translate(250,200)" s:width="30" s:height="20">
     <text x="15" y="-4" class="nodelabel">output</text>
     <s:alias val="$_outputExt_"/>
     <path d="M30,0 L30,20 L15,20 L0,10 L15,0 Z" />
@@ -204,7 +204,7 @@ text {
     <g s:x="0" s:y="10" s:pid="A"/>
   </g>
 
-  <g s:type="split" transform="translate(350,150)" s:width="5" s:height="40">
+  <g s:type="split" transform="translate(350,200)" s:width="5" s:height="40">
     <rect width="5" height="40" class="splitjoinBody"/>
     <s:alias val="$_split_"/>
 
@@ -217,7 +217,7 @@ text {
     </g>
   </g>
 
-  <g s:type="join" transform="translate(450,150)" s:width="4" s:height="40">
+  <g s:type="join" transform="translate(450,200)" s:width="4" s:height="40">
     <rect width="5" height="40" class="splitjoinBody"/>
     <s:alias val="$_join_"/>
     <g s:x="5" s:y="20"  s:pid="out"/>
@@ -229,7 +229,7 @@ text {
     </g>
   </g>
 
-  <g s:type="generic" transform="translate(550,150)" s:width="30" s:height="40">
+  <g s:type="generic" transform="translate(550,200)" s:width="30" s:height="40">
     <text x="15" y="-4" class="nodelabel">generic</text>
     <rect width="30" height="40" />
 
