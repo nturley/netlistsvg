@@ -3,3 +3,28 @@ node_js:
   - "6"
   - "5"
   - "4"
+
+# Install yosys and inkscape
+sudo: true
+dist: trusty
+before_install:
+  - sudo add-apt-repository -y ppa:saltmakrell/ppa
+  - sudo apt-get update
+  - sudo apt-get install -y yosys
+  - sudo apt-get install -y inkscape
+
+# Once https://github.com/travis-ci/apt-source-whitelist/pull/376 is merged,
+# the above lines can be replaced with the following;
+#
+# addons:
+#  apt:
+#    sources:
+#      - yosys
+#    packages:
+#      - yosys
+#      - inkscape
+
+
+script:
+  - npm test
+  - cd examples; make build.all

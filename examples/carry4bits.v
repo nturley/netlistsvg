@@ -1,7 +1,7 @@
 `include "muxcy.v"
 `include "xorcy.v"
 
-module CARRY4(output [3:0] CO, O, input CI, CYINIT, input [3:0] DI, S);
+module CARRY4BITS(output [3:0] CO, O, input CI, CYINIT, input [3:0] DI, S);
    wire CIN = CI | CYINIT;
 
    MUXCY muxcy0 (.O(CO[0]), .CI(CIN),   .DI(DI[0]), .S(S[0]));
