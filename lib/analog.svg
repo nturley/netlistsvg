@@ -4,6 +4,7 @@
   <s:properties
     spacing="20"
     borderSpacing="50"
+    direction="DOWN"
   >
     <s:low_priority_alias val="$dff" />
   </s:properties>
@@ -52,6 +53,20 @@ text {
     <path d="M0,10 L15,10 L18,0 L24,20 L30,0 L36,20 L42,0 L48,20 L52,10 L61,10"/>
     <g s:x="0" s:y="10" s:pid="A"/>
     <g s:x="61" s:y="10" s:pid="B"/>
+  </g>
+
+  <g s:type="resistor_v" transform="translate(350,50)" s:width="24" s:height="61">
+    <s:alias val="res_v"/>
+    <path d="M10,0 L10,15 L0,18 L20,24 L0,30 L20,36 L0,42 L20,48 L10,52 L10,61"/>
+    <g s:x="10" s:y="0" s:pid="A"/>
+    <g s:x="10" s:y="61" s:pid="B"/>
+  </g>
+
+  <g s:type="capacitor_v" transform="translate(450,50)" s:width="30" s:height="50">
+    <s:alias val="cap_v"/>
+    <path d="M15,0 L15,20 M0,20 L30,20 M0,30 L30,30 M15,30 L15,50"/>
+    <g s:x="15" s:y="0" s:pid="A"/>
+    <g s:x="15" s:y="50" s:pid="B"/>
   </g>
 
   <g s:type="inputExt" transform="translate(50,200)" s:width="30" s:height="20">
