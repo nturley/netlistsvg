@@ -2,40 +2,50 @@
   "modules": {
     "resistor_divider": {
       "ports": {
-        "vcc": {
-          "direction": "input",
-          "bits": [ "vcc" ]
-        },
         "vout": {
           "direction": "output",
-          "bits": [ "vout" ]
-        },
-        "gnd": {
-          "direction": "output",
-          "bits": [ "gnd" ]
+          "bits": [ 3 ]
         }
       },
       "cells": {
         "r1": {
-          "type": "r1",
+          "type": "res_h",
           "port_directions": {
-            "1": "input",
-            "2": "output"
+            "A": "input",
+            "B": "output"
           },
           "connections": {
-            "1" : [ "vcc" ],
-            "2" : [ "vout" ]
+            "A": [ 2 ],
+            "B": [ 3 ]
           }
         },
         "r2": {
-          "type": "r2",
+          "type": "res_h",
           "port_directions": {
-            "1": "input",
-            "2": "output"
+            "A": "input",
+            "B": "output"
           },
           "connections": {
-            "1" : [ "vout" ],
-            "2" : [ "gnd" ]
+            "A": [ 3 ],
+            "B": [ 4 ]
+          }
+        },
+        "vcc": {
+          "type": "vcc",
+          "port_directions": {
+            "A": "output"
+          },
+          "connections": {
+            "A": [ 2 ]
+          }
+        },
+        "gnd": {
+          "type": "gnd",
+          "port_directions": {
+            "A": "input"
+          },
+          "connections": {
+            "A": [ 4 ]
           }
         }
       }

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:s="https://github.com/nturley/netlistsvg" width="331.99999952316284" height="194.49999976158142">
+  <style>svg {
+    stroke:#000;
+    fill:none;
+  }
+  text {
+    fill:#000;
+    stroke:none;
+    font-size:10px;
+    font-weight: bold;
+    font-family: "Courier New", monospace;
+  }
+  .nodelabel {
+    text-anchor: middle;
+  }
+  .inputPortLabel {
+    text-anchor: end;
+  }
+  .splitjoinBody {
+    fill:#000;
+  }</style>
+  <g s:type="outputExt" transform="translate(179.99999952316284,50)" s:width="30" s:height="20">
+    <text x="15" y="-4" class="nodelabel">vout</text>
+    <s:alias val="$_outputExt_"/>
+    <path d="M30,0 L30,20 L15,20 L0,10 L15,0 Z"/>
+    <g s:x="0" s:y="10" s:pid="A"/>
+  </g>
+  <g s:type="resistor_h" transform="translate(90,90)" s:width="61" s:height="24">
+    <s:alias val="res_h"/>
+    <path d="M0,10 L15,10 L18,0 L24,20 L30,0 L36,20 L42,0 L48,20 L52,10 L61,10"/>
+    <g s:x="0" s:y="10" s:pid="A"/>
+    <g s:x="61" s:y="10" s:pid="B"/>
+  </g>
+  <g s:type="resistor_h" transform="translate(179.99999952316284,90)" s:width="61" s:height="24">
+    <s:alias val="res_h"/>
+    <path d="M0,10 L15,10 L18,0 L24,20 L30,0 L36,20 L42,0 L48,20 L52,10 L61,10"/>
+    <g s:x="0" s:y="10" s:pid="A"/>
+    <g s:x="61" s:y="10" s:pid="B"/>
+  </g>
+  <g s:type="vcc" transform="translate(50,55.50000023841858)" s:width="20" s:height="30">
+    <s:alias val="vcc"/>
+    <text x="10" y="-4" class="nodelabel">VCC</text>
+    <path d="M0,0 L20,0 L10,15 Z"/>
+    <line x2="10" y2="15" x1="10" y1="30"/>
+    <g s:x="10" s:y="30" s:pid="A"/>
+  </g>
+  <g s:type="gnd" transform="translate(261.99999952316284,114.49999976158142)" s:width="20" s:height="30">
+    <s:alias val="gnd"/>
+    <line x2="10" y2="0" x1="10" y1="20"/>
+    <line x2="0" y2="20" x1="20" y1="20"/>
+    <line x2="3" y2="25" x1="17" y1="25"/>
+    <line x2="7" y2="30" x1="13" y1="30"/>
+    <g s:x="10" s:y="0" s:pid="A"/>
+  </g>
+  <line x1="152" y1="100.5" x2="165.99999976158142" y2="100.5"/>
+  <line x1="165.99999976158142" y1="100.5" x2="165.99999976158142" y2="60.5"/>
+  <circle cx="165.99999976158142" cy="100.5" r="2" style="fill:#000"/>
+  <line x1="165.99999976158142" y1="60.5" x2="179.99999952316284" y2="60.5"/>
+  <line x1="152" y1="100.5" x2="179.99999952316284" y2="100.5"/>
+  <line x1="241.99999952316284" y1="100.5" x2="272.49999952316284" y2="100.5"/>
+  <line x1="272.49999952316284" y1="100.5" x2="272.49999952316284" y2="114.49999976158142"/>
+  <line x1="60.5" y1="86.50000023841858" x2="60.5" y2="100.5"/>
+  <line x1="60.5" y1="100.5" x2="90" y2="100.5"/>
+</svg>
