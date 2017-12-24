@@ -490,28 +490,3 @@ It is also frequently common that you want to create a diagram only using AND an
 ```
 yosys -p "prep -top my_top_module; aigmap; write_json output.json" input.v
 ```
-
-# TODO
-* Improve packaging and usability
- * browserify
- * lib should work with strings instead of files
- * allow relaxed json syntax
- * print more helpful error messages for invalid json
- * other image output formats
-* better skinning
- * consistent templating abstractions
- * less hard-coded special nodes
-* Better usage of klayjs
- * label handling
- * port swapping
-* Better drawing
- * hex constants, (not just binary)
- * don't redraw redundant wire segments
-* code refactor
- * split/join code
- * remove unnecessary module reformatting (leftover from d3)
- * Single source of truth model
-* CI
- * better test suite
- * appveyour
-* hierarchy (draw all modules)
