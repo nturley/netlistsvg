@@ -6,6 +6,9 @@
         <title>netlistsvg demo</title>
     </head>
     <body>
+        <p>
+            This is a demo of <a href=https://github.com/nturley/netlistsvg>netlistsvg</a>.
+        </p>
         <div style=display:flex>
             <div>
                 <div style=display:flex;justify-content:space-between>
@@ -16,9 +19,11 @@
                         <button id=renderButton>Render</button>
                     </div>
                 </div>
-                <textarea style=width:500px;height:500px placeholder="{}"></textarea>
+                <textarea style=width:500px;height:500px></textarea>
             </div>
-            <img id=svgArea></img>
+            <div>
+                <img id=svgArea></img>
+            </div>
         </div>
         <script type="text/javascript" src="bundle.js"></script>
     </body>
