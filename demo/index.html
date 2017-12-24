@@ -8,10 +8,13 @@
     <body>
         <div style=display:flex>
             <div>
-                <div>
-                    <label for=skinSelect>Select skin:</label>
-                    <select id=skinSelect></select>
-                    <button id=renderButton>Render</button>
+                <div style=display:flex;justify-content:space-between>
+                    <button id=formatButton>Format JSON</button>
+                    <div>
+                        <label for=skinSelect>Select skin:</label>
+                        <select id=skinSelect></select>
+                        <button id=renderButton>Render</button>
+                    </div>
                 </div>
                 <textarea style=width:500px;height:500px placeholder="{}"></textarea>
             </div>
