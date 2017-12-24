@@ -4,6 +4,7 @@
 var lib = require('../lib'),
     fs = require('fs'),
     path = require('path'),
+    json5 = require('json5'),
     yargs = require('yargs');
 
 if (require.main === module) {
@@ -22,7 +23,7 @@ function main(netlistpath, outputPath, skinPath) {
         if (err) throw err;
         fs.readFile(netlistpath, function(err, netlist_data) {
             if (err) throw err;
-            var netlist = JSON.parse(netlist_data);
+            var netlist = json5.parse(netlist_data);
             lib.render(skin_data, netlist, function(err, svg_data) {
                 fs.writeFile(outputPath, svg_data, 'utf-8', function(e) {
                     if (e) throw e;

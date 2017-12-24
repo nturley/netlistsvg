@@ -1,5 +1,6 @@
 'use strict';
 var superagent = require('superagent');
+var json5 = require('json5');
 var netlistSvg = require('../lib');
 var up3down5 = require('../test/up3down5.json');
 
@@ -10,7 +11,7 @@ var skinSelect = document.querySelector('#skinSelect');
 var renderButton = document.querySelector('#renderButton');
 var svgArea = document.querySelector('#svgArea');
 
-textarea.value = JSON.stringify(up3down5, null, 2);
+textarea.value = json5.stringify(up3down5, null, 4);
 
 skins.forEach(function(skinPath, i) {
     superagent.get(skinPath).end(function(err, r) {
@@ -23,7 +24,7 @@ skins.forEach(function(skinPath, i) {
 });
 
 function render() {
-    var netlist = JSON.parse(textarea.value);
+    var netlist = json5.parse(textarea.value);
     netlistSvg.render(skinSelect.value, netlist, function(e, svg) {
         svgArea.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
     });
