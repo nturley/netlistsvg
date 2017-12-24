@@ -31,5 +31,8 @@
   "bugs": {
     "url": "https://github.com/nturley/netlistsvg/issues"
   },
-  "homepage": "https://github.com/nturley/netlistsvg#readme"
+  "homepage": "https://github.com/nturley/netlistsvg#readme",
+  "devDependencies": {
+    "browserify": "^14.5.0"
+  }
 }
