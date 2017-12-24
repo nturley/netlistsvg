@@ -1,0 +1,32 @@
+'use strict';
+var superagent = require('superagent');
+var netlistSvg = require('../lib');
+var up3down5 = require('../test/up3down5.json');
+
+var skins = ['lib/default.svg', 'lib/analog.svg'];
+
+var textarea = document.querySelector('textarea');
+var skinSelect = document.querySelector('#skinSelect');
+var renderButton = document.querySelector('#renderButton');
+var svgArea = document.querySelector('#svgArea');
+
+textarea.value = JSON.stringify(up3down5, null, 2);
+
+skins.forEach(function(skinPath, i) {
+    superagent.get(skinPath).end(function(err, r) {
+        var option = document.createElement('option');
+        option.selected = i === 0;
+        option.value = r.text;
+        option.text = skinPath;
+        skinSelect.append(option);
+    });
+});
+
+function render() {
+    var netlist = JSON.parse(textarea.value);
+    netlistSvg.render(skinSelect.value, netlist, function(e, svg) {
+        svgArea.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
+    });
+}
+
+renderButton.onclick = render;

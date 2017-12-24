@@ -22,7 +22,8 @@
     "netlistsvg": "./bin/netlistsvg.js"
   },
   "scripts": {
-    "test": "eslint **/*.js && node test/test-all.js"
+    "test": "eslint lib/**/*.js bin/**/*.js && eslint --global=document demo/**/*.js && node test/test-all.js",
+    "build-demo": "cp demo/index.html . && browserify demo/demo.js > bundle.js"
   },
   "keywords": [
     "svg",
@@ -33,6 +34,7 @@
   },
   "homepage": "https://github.com/nturley/netlistsvg#readme",
   "devDependencies": {
-    "browserify": "^14.5.0"
+    "browserify": "^14.5.0",
+    "superagent": "^3.8.2"
   }
 }
