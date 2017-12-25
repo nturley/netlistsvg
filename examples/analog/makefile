@@ -1,10 +1,11 @@
 JSON=$(wildcard *.json)
 SVGS=$(JSON:.json=.svg)
+SKIN=../../lib/analog.svg
 
 all: $(SVGS)
 
-%.svg: %.json
-	node ../../bin/netlistsvg.js --skin ../../lib/analog.svg $< -o $@
+%.svg: %.json $(SKIN)
+	node ../../bin/netlistsvg.js --skin $(SKIN) $< -o $@
 
 clean:
 	rm -f *.svg
