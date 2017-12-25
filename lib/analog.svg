@@ -5,6 +5,8 @@
     spacing="20"
     borderSpacing="50"
     org.eclipse.elk.direction="DOWN"
+    constants="false"
+    splitsAndJoins="false"
   >
     <s:low_priority_alias val="$dff" />
   </s:properties>

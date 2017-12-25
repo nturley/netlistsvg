@@ -24,13 +24,12 @@ function main(netlistpath, outputPath, skinPath) {
         fs.readFile(netlistpath, function(err, netlist_data) {
             if (err) throw err;
             var netlist = json5.parse(netlist_data);
-            var analog = /analog/.test(skinPath);
             lib.render(skin_data, netlist, function(err, svg_data) {
                 if (err) throw err;
                 fs.writeFile(outputPath, svg_data, 'utf-8', function(err) {
                     if (err) throw err;
                 });
-            }, analog);
+            });
         });
     });
 }

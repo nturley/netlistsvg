@@ -26,10 +26,9 @@ skins.forEach(function(skinPath, i) {
 
 function render() {
     var netlist = json5.parse(textarea.value);
-    var analog = /analog/.test(skinSelect.value);
     netlistSvg.render(skinSelect.value, netlist, function(e, svg) {
         svgArea.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
-    }, analog);
+    });
 }
 
 function format() {
