@@ -1,0 +1,27 @@
+{
+  "modules": {
+    "test": {
+      "ports": {},
+      "cells": {
+        "vcc": {
+          "type": "vcc",
+          "port_directions": {
+            "A": "output"
+          },
+          "connections": {
+            "A": [1]
+          }
+        },
+        "gnd": {
+          "type": "gnd",
+          "port_directions": {
+            "A": "input"
+          },
+          "connections": {
+            "A": [1]
+          }
+        }
+      }
+    }
+  }
+}
