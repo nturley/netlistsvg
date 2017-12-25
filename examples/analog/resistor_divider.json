@@ -9,7 +9,7 @@
       },
       "cells": {
         "r1": {
-          "type": "res_h",
+          "type": "res_v",
           "port_directions": {
             "A": "input",
             "B": "output"
@@ -20,7 +20,7 @@
           }
         },
         "r2": {
-          "type": "res_h",
+          "type": "res_v",
           "port_directions": {
             "A": "input",
             "B": "output"

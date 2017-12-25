@@ -5,11 +5,15 @@
         "vin": {
           "direction": "input",
           "bits": [1]
+        },
+        "vout": {
+          "direction": "output",
+          "bits": [5]
         }
       },
       "cells": {
         "r1": {
-          "type": "res_h",
+          "type": "res_v",
           "port_directions": {
             "A": "input",
             "B": "output"
