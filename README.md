@@ -2,6 +2,9 @@
 [![Gitter chat](https://badges.gitter.im/nturley/netlistsvg.png)](https://gitter.im/netlistsvg)
 # netlistsvg
 draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSON netlist. It uses [klayjs](https://github.com/OpenKieler/klayjs) for layout.
+
+You can see an online demo [here](https://nturley.github.io/netlistsvg)
+
 <details>
   <summary>JSON Source</summary>
 
