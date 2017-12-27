@@ -24,7 +24,7 @@
   },
   "scripts": {
     "test": "eslint lib/**/*.js bin/**/*.js && eslint --global=document demo/**/*.js && node test/test-all.js",
-    "build-demo": "cp demo/index.html . && node_modules/elkjs/lib/elk.bundled.js && browserify demo/demo.js > bundle.js"
+    "build-demo": "cp demo/index.html . && cp node_modules/elkjs/lib/elk.bundled.js . && browserify demo/demo.js > bundle.js"
   },
   "keywords": [
     "svg",
