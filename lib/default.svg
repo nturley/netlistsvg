@@ -4,7 +4,7 @@
   <s:properties
     spacing="20"
     borderSpacing="50"
-    nodeLayering="LONGEST_PATH"
+    layering.strategy="LONGEST_PATH"
   >
     <s:low_priority_alias val="$dff" />
   </s:properties>
