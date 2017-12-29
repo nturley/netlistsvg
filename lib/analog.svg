@@ -4,7 +4,7 @@
   <s:properties
     spacing="20"
     borderSpacing="50"
-    direction="DOWN"
+    org.eclipse.elk.direction="DOWN"
   >
     <s:low_priority_alias val="$dff" />
   </s:properties>
