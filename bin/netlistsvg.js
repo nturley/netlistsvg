@@ -25,8 +25,9 @@ function main(netlistpath, outputPath, skinPath) {
             if (err) throw err;
             var netlist = json5.parse(netlist_data);
             lib.render(skin_data, netlist, function(err, svg_data) {
-                fs.writeFile(outputPath, svg_data, 'utf-8', function(e) {
-                    if (e) throw e;
+                if (err) throw err;
+                fs.writeFile(outputPath, svg_data, 'utf-8', function(err) {
+                    if (err) throw err;
                 });
             });
         });
