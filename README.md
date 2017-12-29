@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/nturley/netlistsvg.svg?branch=master)](https://travis-ci.org/nturley/netlistsvg)
 [![Gitter chat](https://badges.gitter.im/nturley/netlistsvg.png)](https://gitter.im/netlistsvg)
 # netlistsvg
-draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSON netlist. It uses [klayjs](https://github.com/OpenKieler/klayjs) for layout.
+draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSON netlist. It uses [elkjs](https://github.com/OpenKieler/elkjs) for layout.
 
 You can see an online demo [here](https://nturley.github.io/netlistsvg)
 
@@ -408,7 +408,7 @@ I'll read through my code some time and add more detailed notes of the algorithm
 
 As I recall, I iterate over each input port and determine whether I need additional splits or joins to satisfy the port. Then I add the new signals as available signals for the rest of the ports to use.
 
-KlayJS handles all of the wire junctions. Sometimes it does some odd things. I'm still figuring it out.
+ElkJS handles all of the wire junctions. Sometimes it does some odd things. I'm still figuring it out.
 ## Input JSON
 This is designed to handle Yosys netlist format but we ignore most of it. This is what we are looking at. Currently, we only draw the first module in the modules object.
 ```json
@@ -439,14 +439,12 @@ This is designed to handle Yosys netlist format but we ignore most of it. This i
   }
 }
 ```
-## KlayJS
-I'm super impressed with this. Layout is a non-trivial problem and this tool is amazing. Naturally, I could've used the original Klay library written in Java instead of the JS transpiled version and I fiddled with that for a while but crossing language boundaries is irritating. Which means I'd be writing this in Java or Scala and I wasn't in the mood to do that. Also, I'd already written some of this code in Javascript, so it was easier to start from here.
+## ElkJS
+I'm super impressed with this. Layout is a non-trivial problem and this tool is amazing. ELK is written in Java and transpiled to javascript.
 
-This tool is really powerful and not very well documented so I'm still learning the ins and outs of how to use it. For instance, Klay should be in charge of positioning labels, (which I think might prevent the wires from being routed through text). Klay is also capable of port positioning. This means that potentially I could flag certain ports as being able to be swapped or repositioned and Klay could reorder them to reduce crossings. That's obviously a win for labeled ports on the generic, and split/join, but also a win for cells whose operation is commutative.
+This tool is really powerful and not very well documented so I'm still learning the ins and outs of how to use it. For instance, ELK should be in charge of positioning labels, (which I think might prevent the wires from being routed through text). ELK is also capable of port positioning. This means that potentially I could flag certain ports as being able to be swapped or repositioned and ELK could reorder them to reduce crossings. That's obviously a win for labeled ports on the generic, and split/join, but also a win for cells whose operation is commutative.
 
-Klay is using a layered approach (Sugiyama, Ganser), similar to dot in the Graphviz package. I was doing a lot of experiments with it and I became convinced that longest path rank assignment produced better schematics than Network Simplex. This is obviously subjective, but I think that Network Simplex attempts to make the graph uniformly distributed on the page in an effort to make it less wide (or tall in our case). In schematics, I would rather a taller graph that grouped together related logic than a compact one with node that are more uniformly distributed. Also when the flow goes from left to right, with vertically scrolling webpages, using up additional vertical space isn't as big of a cost.
-
-Elkjs is the newer version of klayjs, so at some point, I'll migrate over to that.
+ELK is using a layered approach (Sugiyama, Ganser), similar to dot in the Graphviz package. I was doing a lot of experiments with it and I became convinced that longest path rank assignment produced better schematics than Network Simplex. This is obviously subjective, but I think that Network Simplex attempts to make the graph uniformly distributed on the page in an effort to make it less wide (or tall in our case). In schematics, I would rather a taller graph that grouped together related logic than a compact one with node that are more uniformly distributed. Also when the flow goes from left to right, with vertically scrolling webpages, using up additional vertical space isn't as big of a cost.
 
 # Status
 Still early stages. But it's usable.
