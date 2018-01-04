@@ -8,6 +8,7 @@
       org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="35"
       elk.spacing.nodeNode= "35"
       org.eclipse.elk.direction="DOWN"
+      layering.strategy="LONGEST_PATH"
     />
     <s:low_priority_alias val="$dff" />
   </s:properties>
