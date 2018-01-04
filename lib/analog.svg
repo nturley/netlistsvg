@@ -3,6 +3,7 @@
   xmlns:s="https://github.com/nturley/netlistsvg">
   <s:properties
     constants="false"
+    splitsAndJoins="false"
   >
     <s:layoutEngine
       org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="35"
