@@ -2,10 +2,15 @@
   xmlns:xlink="http://www.w3.org/1999/xlink"
   xmlns:s="https://github.com/nturley/netlistsvg">
   <s:properties
-    spacing="20"
-    borderSpacing="50"
-    org.eclipse.elk.direction="DOWN"
+    constants="false"
+    splitsAndJoins="false"
   >
+    <s:layoutEngine
+      org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="35"
+      elk.spacing.nodeNode= "35"
+      org.eclipse.elk.direction="DOWN"
+      layering.strategy="LONGEST_PATH"
+    />
     <s:low_priority_alias val="$dff" />
   </s:properties>
 <style>
@@ -134,6 +139,40 @@ text {
     <g transform="translate(0, 30)" s:x="0" s:y="30" s:pid="in1">
       <text x="-3" y="-4" class="inputPortLabel">in1</text>
     </g>
-  </g>
+ </g>
+  <g
+     s:type="transistor_npn_0"
+     transform="translate(538.8323,54.941114)"
+     s:width="30"
+     s:height="40" >
+    <s:alias
+       val="npn_0" />
+    <path
+       d="M 14.86513,24.763576 25.654861,32.927763 25.654861,43.813347" />
+    <path
+       d="M 39.142025,19.320785 A 16.184597,16.328377 0 0 1 6.772831,19.320785 16.184597,16.328377 0 1 1 39.142025,19.320785 Z" />
+    <path
+       d="M 0,19.320785 14.86513,19.320785" />
+    <path
+       d="M 14.86513,9.795901 14.86513,28.845669" />
+    <path
+       d="M 14.86513,13.877995 25.654861,5.713808 25.654861,-5.17178" />
+    <path
+       d="M 23.046388,30.967876 17.051948,30.242394 20.677618,25.365218 23.046388,30.967876 Z"
+       style="fill:#000000" />
+    <g
+       s:x="25.694675"
+       s:y="-4.9411139"
+       s:pid="C" />
+    <g
+       s:x="0"
+       s:y="19.320785"
+       s:pid="B" />
+    <g
+       s:x="25.654861"
+       s:y="43.813347"
+       s:pid="E" />
+</g>
+
 
 </svg>
