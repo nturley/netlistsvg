@@ -2,8 +2,8 @@
   xmlns:xlink="http://www.w3.org/1999/xlink"
   xmlns:s="https://github.com/nturley/netlistsvg">
   <s:properties
-    spacing="20"
-    borderSpacing="50"
+    org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="35"
+    elk.spacing.nodeNode= "35"
     layering.strategy="LONGEST_PATH"
   >
     <s:low_priority_alias val="$dff" />
