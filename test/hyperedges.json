@@ -1,0 +1,45 @@
+{
+  "modules": {
+    "hyperedges": {
+      "ports": {
+        "i0": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "i1": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "i2": {
+          "direction": "input",
+          "bits": [ 3 ]
+        },
+        "i3": {
+          "direction": "input",
+          "bits": [ 3 ]
+        },
+        "i4": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "o0": {
+          "direction": "output",
+          "bits": [ 3 ]
+        },
+        "o1": {
+          "direction": "output",
+          "bits": [ 4 ]
+        },
+        "o2": {
+          "direction": "output",
+          "bits": [ 4 ]
+        },
+        "o3": {
+          "direction": "output",
+          "bits": [ 4 ]
+        }
+      },
+      "cells": {}
+    }
+  }
+}
