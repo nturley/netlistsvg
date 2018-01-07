@@ -328,6 +328,8 @@ It pulls the node icons and configuration options from a SVG skin file. Like thi
 
 <img src="https://cdn.rawgit.com/nturley/netlistsvg/369a0baa31e568995d4cc7ce825bbe50646616c8/lib/default.svg" width="700" height="250">
 
+There is a digital skin that is used by default and we also have an analog skin that can be used.
+
 A skin file can use style tags or inline CSS to style the elements. That will be copied onto the output file. A skin file also defines a library of components to use. Each component has an alias list. It will use that component as a template for any cell with that type that it encounters. Each component defines the position and id of each of its ports so we know where to attach the wires to.
 
 For example, here is a mux definition. It has two aliases: "$pmux" and "$mux". It defines a type name, and a width and height, as well as the position and id of each of it's ports. In general you can rearrange them however you like, and add whatever SVG elements you like inside the template.
@@ -348,14 +350,14 @@ For example, here is a mux definition. It has two aliases: "$pmux" and "$mux". I
 
 In addition to the library of components that are matched to cells, a skin file defines some special nodes. Input/Output ports, constants, Splits/Joins, and the generic node. Splits/Joins and the generic node are particularly tricky because the height and number of ports need to be adjusted depending on the cell. Adjustments to the splits/joins and generic node templates might end up breaking something.
 
-The klayjs layout properties are also defined in the skin file.
+The elkjs layout properties are also defined in the skin file.
 
 ```XML
-<s:properties
-    spacing="25"
-    borderSpacing="50"
-    nodeLayering="LONGEST_PATH"
-/>
+<s:layoutEngine
+      org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="5"
+      org.eclipse.elk.spacing.nodeNode= "35"
+      org.eclipse.elk.direction="DOWN"
+    />
 ```
 Any properties specified here will get passed along to the layout engine. Node and edge properties aren't configurable (yet). Right now I'm setting the priority of $dff.Q to be lower than everything else so that feedback edges on flip flops will go from right to left.
 
@@ -401,14 +403,10 @@ It does it's best to be smart about how to split and join buses. I spent a lot o
 </details>
 <img src="https://cdn.rawgit.com/nturley/netlistsvg/d01285946e05ee5ce99dc5d0f8025be58b5936a3/doc/ports_splitjoin.svg" >
 
-I'll read through my code some time and add more detailed notes of the algorithm, but as I recall, the basic principles are as follows:
-
 * There should only exist one wire for each unique sequence of signals
 * Always prefer using an existing signal over adding a new split or join
 
-As I recall, I iterate over each input port and determine whether I need additional splits or joins to satisfy the port. Then I add the new signals as available signals for the rest of the ports to use.
-
-ElkJS handles all of the wire junctions. Sometimes it does some odd things. I'm still figuring it out.
+ElkJS handles all of the wire junctions. Sometimes it does some odd things.
 ## Input JSON
 This is designed to handle Yosys netlist format but we ignore most of it. This is what we are looking at. Currently, we only draw the first module in the modules object.
 ```json
@@ -442,12 +440,12 @@ This is designed to handle Yosys netlist format but we ignore most of it. This i
 ## ElkJS
 I'm super impressed with this. Layout is a non-trivial problem and this tool is amazing. ELK is written in Java and transpiled to javascript.
 
-This tool is really powerful and not very well documented so I'm still learning the ins and outs of how to use it. For instance, ELK should be in charge of positioning labels, (which I think might prevent the wires from being routed through text). ELK is also capable of port positioning. This means that potentially I could flag certain ports as being able to be swapped or repositioned and ELK could reorder them to reduce crossings. That's obviously a win for labeled ports on the generic, and split/join, but also a win for cells whose operation is commutative.
+This tool is really powerful and I'm still learning the ins and outs of how to use it. ELK is capable of port positioning for instance. This means that potentially I could flag certain ports as being able to be swapped or repositioned and ELK could reorder them to reduce crossings. That's obviously a win for labeled ports on the generic, and split/join, but also a win for cells whose operation is commutative.
 
-ELK is using a layered approach (Sugiyama, Ganser), similar to dot in the Graphviz package. I was doing a lot of experiments with it and I became convinced that longest path rank assignment produced better schematics than Network Simplex. This is obviously subjective, but I think that Network Simplex attempts to make the graph uniformly distributed on the page in an effort to make it less wide (or tall in our case). In schematics, I would rather a taller graph that grouped together related logic than a compact one with node that are more uniformly distributed. Also when the flow goes from left to right, with vertically scrolling webpages, using up additional vertical space isn't as big of a cost.
+ELK is using a layered approach (Sugiyama, Ganser), similar to dot in the Graphviz package. You can read about their algorithm here: https://rtsys.informatik.uni-kiel.de/%7Ebiblio/downloads/papers/jvlc13.pdf
 
 # Status
-Still early stages. But it's usable.
+Still early stages. But it's usable. Skin definition format is still changing.
 
 # Installation/Usage Instructions
 ```
