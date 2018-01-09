@@ -4,7 +4,7 @@
       "ports": {
         "vin": {
           "direction": "input",
-          "bits": [1]
+          "bits": [6]
         },
         "vout": {
           "direction": "output",
@@ -19,7 +19,7 @@
             "B": "output"
           },
           "connections": {
-            "A": [1],
+            "A": [6],
             "B": [2]
           }
         },
