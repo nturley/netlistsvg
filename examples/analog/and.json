@@ -1,0 +1,139 @@
+{
+  "modules": {
+    "resistor_divider": {
+      "ports": {
+        "A": {
+          "direction": "input",
+          "bits": [2]
+        },
+        "B": {
+          "direction": "input",
+          "bits": [3]
+        },
+        "A AND B": {
+          "direction": "output",
+          "bits": [4]
+        }
+      },
+      "cells": {
+        "r1": {
+          "type": "res_v",
+          "port_directions": {
+            "A": "input",
+            "B": "output"
+          },
+          "connections": {
+            "A": [2],
+            "B": [5]
+          }
+        },
+        "r2": {
+          "type": "res_v",
+          "port_directions": {
+            "A": "input",
+            "B": "output"
+          },
+          "connections": {
+            "A": [3],
+            "B": [5]
+          }
+        },
+        "q1": {
+          "type": "pnp_0",
+          "port_directions": {
+            "C": "input",
+            "B": "input",
+            "E": "output"
+          },
+          "connections": {
+            "C": [6],
+            "B": [5],
+            "E": [7]
+          }
+        },
+        "r3": {
+          "type": "res_v",
+          "port_directions": {
+            "A": "input",
+            "B": "output"
+          },
+          "connections": {
+            "A": [7],
+            "B": [8]
+          }
+        },
+        "r4": {
+          "type": "res_v",
+          "port_directions": {
+            "A": "input",
+            "B": "output"
+          },
+          "connections": {
+            "A": [7],
+            "B": [9]
+          }
+        },
+        "r5": {
+          "type": "res_v",
+          "port_directions": {
+            "A": "input",
+            "B": "output"
+          },
+          "connections": {
+            "A": [4],
+            "B": [12]
+          }
+        },
+        "q2": {
+          "type": "pnp_0",
+          "port_directions": {
+            "C": "input",
+            "B": "input",
+            "E": "output"
+          },
+          "connections": {
+            "C": [10],
+            "B": [9],
+            "E": [4]
+          }
+        },
+        "vcc": {
+          "type": "vcc",
+          "port_directions": {
+            "A": "output"
+          },
+          "connections": {
+            "A": [6]
+          }
+        },
+        "vcc2": {
+          "type": "vcc",
+          "port_directions": {
+            "A": "output"
+          },
+          "connections": {
+            "A": [10]
+          }
+        },
+        "gnd": {
+          "type": "gnd",
+          "port_directions": {
+            "A": "input"
+          },
+          "connections": {
+            "A": [8]
+          }
+        },
+        "gnd2": {
+          "type": "gnd",
+          "port_directions": {
+            "A": "input"
+          },
+          "connections": {
+            "A": [12]
+          }
+        }
+      }
+    }
+  }
+}

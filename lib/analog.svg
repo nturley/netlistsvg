@@ -113,17 +113,51 @@ text {
      s:height="32" >
     <s:alias
        val="npn_0" />
-    <path
-       d="M 12,21 23,29" />
+    
     <circle r="16" cx="16" cy="16"/>
     <path
        d="M 0,16 12,16" />
     <path
        d="M 12,6 12,26" />
     <path
-       d="M 12,10 22,2" />
+       d="M 12,10 23,2" />
     <path
-       d="M 23,29 17,28 21,23 23,29 Z"
+       d="M 12,22 23,30" />
+    <path
+       d="M 21,29 15,28 19,23 Z"
+       style="fill:#000000" />
+    <g
+       s:x="22"
+       s:y="2"
+       s:pid="C" />
+    <g
+       s:x="0"
+       s:y="16"
+       s:pid="B"
+       s:dir="lateral" />
+    <g
+       s:x="23"
+       s:y="29"
+       s:pid="E" />
+</g>
+<g
+     s:type="transistor_pnp_0"
+     transform="translate(650,50)"
+     s:width="32"
+     s:height="32" >
+    <s:alias
+       val="pnp_0" />
+    <circle r="16" cx="16" cy="16"/>
+    <path
+       d="M 0,16 12,16" />
+    <path
+       d="M 12,6 12,26" />
+    <path
+       d="M 12,10 23,2" />
+    <path
+       d="M 12,22 23,30" />
+    <path
+       d="M 15,8 17,2 21,7 Z"
        style="fill:#000000" />
     <g
        s:x="22"
@@ -142,14 +176,34 @@ text {
 <g
     s:type="dc"
     transform="translate(150,200)"
-    s:width="50"
-    s:height="50">
+    s:width="32"
+    s:height="32">
   <s:alias val="dc"/>
   <circle r="16" cx="16" cy="16"/>
   <path
     d="M 16,4 16,12 M12,8 20,8"/>
   <path
     d="M 12,24, 20,24"/>
+  <g
+    s:x="16"
+    s:y="0"
+    s:pid="P"
+    />
+  <g
+    s:x="16"
+    s:y="32"
+    s:pid="N"
+    />
+</g>
+<g
+    s:type="ac"
+    transform="translate(350,200)"
+    s:width="32"
+    s:height="32">
+  <s:alias val="ac"/>
+  <circle r="16" cx="16" cy="16"/>
+  <path
+    d="M 6,16 C 6,10 16,10, 16,16 C 16,22, 26,22 26,16"/>
   <g
     s:x="16"
     s:y="0"
