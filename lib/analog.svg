@@ -4,12 +4,12 @@
   <s:properties
     constants="false"
     splitsAndJoins="false"
+    genericsLaterals="true"
   >
     <s:layoutEngine
-      org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="35"
+      org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="5"
       elk.spacing.nodeNode= "35"
       org.eclipse.elk.direction="DOWN"
-      layering.strategy="LONGEST_PATH"
     />
     <s:low_priority_alias val="$dff" />
   </s:properties>
@@ -56,8 +56,8 @@ text {
   <g s:type="resistor_h" transform="translate(250,50)" s:width="61" s:height="24">
     <s:alias val="res_h"/>
     <path d="M0,10 L15,10 L18,0 L24,20 L30,0 L36,20 L42,0 L48,20 L52,10 L61,10"/>
-    <g s:x="0" s:y="10" s:pid="A"/>
-    <g s:x="61" s:y="10" s:pid="B"/>
+    <g s:x="0" s:y="10" s:pid="A" s:dir="lateral"/>
+    <g s:x="61" s:y="10" s:pid="B" s:dir="lateral"/>
   </g>
 
   <g s:type="resistor_v" transform="translate(350,50)" s:width="24" s:height="61">
@@ -78,7 +78,7 @@ text {
     <text x="15" y="-4" class="nodelabel">input</text>
     <s:alias val="$_inputExt_"/>
     <path d="M0,0 L0,20 L15,20 L30,10 L15,0 Z" />
-    <g s:x="28" s:y="10" s:pid="Y"/>
+    <g s:x="28" s:y="10" s:pid="Y" s:dir="lateral"/>
   </g>
 
   <g s:type="constant" transform="translate(150,200)" s:width="30" s:height="20">
@@ -95,7 +95,7 @@ text {
     <s:alias val="$_outputExt_"/>
     <path d="M30,0 L30,20 L15,20 L0,10 L15,0 Z" />
 
-    <g s:x="0" s:y="10" s:pid="A"/>
+    <g s:x="0" s:y="10" s:pid="A" s:dir="lateral"/>
   </g>
 
   <g s:type="split" transform="translate(350,200)" s:width="5" s:height="40">
@@ -166,7 +166,8 @@ text {
     <g
        s:x="0"
        s:y="16"
-       s:pid="B" />
+       s:pid="B"
+       s:dir="lateral" />
     <g
        s:x="23"
        s:y="29"
