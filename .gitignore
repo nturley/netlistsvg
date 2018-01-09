@@ -1,8 +1,9 @@
 node_modules
 out.svg
+test/*.json
 test/*.svg
-examples/*.json
-examples/*.svg
-examples/*.png
+examples/**/*.json
+examples/**/*.svg
+examples/**/*.png
 .yosys_extra
 package-lock.json
