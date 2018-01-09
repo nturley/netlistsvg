@@ -81,46 +81,12 @@ text {
     <g s:x="28" s:y="10" s:pid="Y" s:dir="lateral"/>
   </g>
 
-  <g s:type="constant" transform="translate(150,200)" s:width="30" s:height="20">
-    <text x="15" y="-4" class="nodelabel">constant</text>
-
-    <s:alias val="$_constant_"/>
-    <rect width="30" height="20" />
-
-    <g s:x="30" s:y="10" s:pid="Y"/>
-  </g>
-
   <g s:type="outputExt" transform="translate(250,200)" s:width="30" s:height="20">
     <text x="15" y="-4" class="nodelabel">output</text>
     <s:alias val="$_outputExt_"/>
     <path d="M30,0 L30,20 L15,20 L0,10 L15,0 Z" />
 
     <g s:x="0" s:y="10" s:pid="A" s:dir="lateral"/>
-  </g>
-
-  <g s:type="split" transform="translate(350,200)" s:width="5" s:height="40">
-    <rect width="5" height="40" class="splitjoinBody"/>
-    <s:alias val="$_split_"/>
-
-    <g s:x="0" s:y="20" s:pid="in"/>
-    <g transform="translate(5, 10)" s:x="4" s:y="10" s:pid="out0">
-      <text x="5" y="-4" >hi:lo</text>
-    </g>
-    <g transform="translate(5, 30)" s:x="4" s:y="30" s:pid="out1">
-      <text x="5" y="-4" >hi:lo</text>
-    </g>
-  </g>
-
-  <g s:type="join" transform="translate(450,200)" s:width="4" s:height="40">
-    <rect width="5" height="40" class="splitjoinBody"/>
-    <s:alias val="$_join_"/>
-    <g s:x="5" s:y="20"  s:pid="out"/>
-    <g transform="translate(0, 10)" s:x="0" s:y="10" s:pid="in0">
-      <text x="-3" y="-4" class="inputPortLabel">hi:lo</text>
-    </g>
-    <g transform="translate(0, 30)" s:x="0" s:y="30" s:pid="in1">
-      <text x="-3" y="-4" class="inputPortLabel">hi:lo</text>
-    </g>
   </g>
 
   <g s:type="generic" transform="translate(550,200)" s:width="30" s:height="40">
@@ -172,6 +138,28 @@ text {
        s:x="23"
        s:y="29"
        s:pid="E" />
+</g>
+<g
+    s:type="dc"
+    transform="translate(150,200)"
+    s:width="50"
+    s:height="50">
+  <s:alias val="dc"/>
+  <circle r="16" cx="16" cy="16"/>
+  <path
+    d="M 16,4 16,12 M12,8 20,8"/>
+  <path
+    d="M 12,24, 20,24"/>
+  <g
+    s:x="16"
+    s:y="0"
+    s:pid="P"
+    />
+  <g
+    s:x="16"
+    s:y="32"
+    s:pid="N"
+    />
 </g>
 
 
