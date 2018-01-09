@@ -9,7 +9,7 @@
             "A": "output"
           },
           "connections": {
-            "A": [1]
+            "A": [ 2 ]
           }
         },
         "gnd": {
@@ -18,7 +18,7 @@
             "A": "input"
           },
           "connections": {
-            "A": [1]
+            "A": [ 2 ]
           }
         }
       }
