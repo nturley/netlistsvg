@@ -13,7 +13,7 @@
       },
       "cells": {
         "r1": {
-          "type": "res_v",
+          "type": "r_v",
           "port_directions": {
             "A": "input",
             "B": "output"
@@ -24,7 +24,7 @@
           }
         },
         "r2": {
-          "type": "res_v",
+          "type": "r_v",
           "port_directions": {
             "A": "input",
             "B": "output"
@@ -35,7 +35,7 @@
           }
         },
         "q1": {
-          "type": "npn_0",
+          "type": "q_npn",
           "port_directions": {
             "C": "input",
             "B": "input",
