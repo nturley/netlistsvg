@@ -4,7 +4,7 @@
       "ports": {},
       "cells": {
         "r1": {
-          "type": "res_h",
+          "type": "r_h",
           "port_directions": {
             "A": "output",
             "B": "input"
@@ -15,7 +15,7 @@
           }
         },
         "c1": {
-          "type": "cap_v",
+          "type": "c_v",
           "port_directions": {
             "A": "input",
             "B": "output"
@@ -26,7 +26,7 @@
           }
         },
         "r3": {
-          "type": "res_h",
+          "type": "r_h",
           "port_directions": {
             "A": "input",
             "B": "output"
