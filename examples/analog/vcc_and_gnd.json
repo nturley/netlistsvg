@@ -10,7 +10,10 @@
           },
           "connections": {
             "A": [ 2 ]
-          }
+          },
+          "attributes": {
+            "value": "+12V",
+          },
         },
         "gnd": {
           "type": "gnd",

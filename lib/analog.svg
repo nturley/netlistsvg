@@ -47,14 +47,14 @@ text {
 <!-- power -->
 <g s:type="vcc" s:width="20" s:height="30" transform="translate(5,20)">
   <s:alias val="vcc" />
-  <text x="10" y="-4" class="nodelabel">VCC</text>
+  <text x="10" y="-4" class="nodelabel" s:attribute="name">VCC</text>
   <path d="M0,0 H20 L10,15 Z M10,15 V30"/>
   <g s:x="10" s:y="30" s:pid="A"/>
 </g>
 
 <g s:type="vee" s:width="20" s:height="30" transform="translate(40,35)">
   <s:alias val="vee" />
-  <text x="10" y="10" class="nodelabel">VEE</text>
+  <text x="10" y="10" class="nodelabel" s:attribute="name">VEE</text>
   <path d="M0,0 H20 L10,-15 Z M10,-15 V-30"/>
   <g s:x="10" s:y="-30" s:pid="A"/>
 </g>
@@ -68,14 +68,14 @@ text {
 
 <!-- signal -->
 <g s:type="inputExt" s:width="30" s:height="20" transform="translate(5,70)">
-  <text x="15" y="-4" class="nodelabel">input</text>
+  <text x="15" y="-4" class="nodelabel" s:attribute="ref">input</text>
   <s:alias val="$_inputExt_"/>
   <path d="M0,0 V20 H15 L30,10 15,0 Z"/>
   <g s:x="30" s:y="10" s:pid="Y" s:dir="lateral"/>
 </g>
 
 <g s:type="outputExt" s:width="30" s:height="20" transform="translate(60,70)">
-  <text x="15" y="-4" class="nodelabel">output</text>
+  <text x="15" y="-4" class="nodelabel" s:attribute="ref">output</text>
   <s:alias val="$_outputExt_"/>
   <path d="M30,0 V20 H15 L0,10 15,0 Z"/>
   <g s:x="0" s:y="10" s:pid="A" s:dir="lateral"/>
@@ -247,7 +247,7 @@ text {
 <!-- builtin -->
 <g s:type="split" s:width="5" s:height="40" transform="translate(5,400)">
   <rect width="5" height="40" class="splitjoinBody"
-        x="0" y="0" style="fill:#000000"/>
+        x="0" y="0" style="fill:#000000" s:generic="body"/>
   <s:alias val="$_split_"/>
   <g s:x="0" s:y="20" s:pid="in"  s:dir="lateral"/>
   <g transform="translate(5,10)"
@@ -264,7 +264,7 @@ text {
 
 <g s:type="join" s:width="4" s:height="40" transform="translate(100,400)">
   <rect width="5" height="40" class="splitjoinBody"
-        x="0" y="0" style="fill:#000000"/>
+        x="0" y="0" style="fill:#000000" s:generic="body"/>
   <s:alias val="$_join_"/>
   <g s:x="5" s:y="20" s:pid="out" s:dir="lateral"/>
   <g transform="translate(0,10)"
@@ -278,8 +278,8 @@ text {
 </g>
 
 <g s:type="generic" s:width="30" s:height="40" transform="translate(150, 400)">
-  <text x="15" y="-4" class="nodelabel">generic</text>
-  <rect width="30" height="40" x="0" y="0"/>
+  <text x="15" y="-4" class="nodelabel" s:attribute="ref">generic</text>
+  <rect width="30" height="40" x="0" y="0" s:generic="body"/>
   <g transform="translate(30,10)"
      s:x="30" s:y="10" s:pid="out0" s:dir="lateral">
     <text x="5" y="-4">out0</text>
