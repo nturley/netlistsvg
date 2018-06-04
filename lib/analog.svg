@@ -10,6 +10,7 @@
         elk.spacing.nodeNode= "35"
         org.eclipse.elk.direction="DOWN"
         layered.compaction.postCompaction.strategy="4"
+        layered.nodePlacement.favorStraightEdges="true"
     />
     <s:low_priority_alias val="$dff" />
   </s:properties>
