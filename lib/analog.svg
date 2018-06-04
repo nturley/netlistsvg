@@ -8,7 +8,9 @@
     <s:layoutEngine
         org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="5"
         elk.spacing.nodeNode= "35"
-        org.eclipse.elk.direction="DOWN"/>
+        org.eclipse.elk.direction="DOWN"
+        org.eclipse.elk.layered.nodePlacement.favorStraightEdges="true"
+/>
     <s:low_priority_alias val="$dff" />
   </s:properties>
 <style>
