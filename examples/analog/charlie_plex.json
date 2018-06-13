@@ -1,0 +1,163 @@
+{
+  "modules": {
+    "undefined": {
+      "ports": {
+        "x1": {
+          "direction": "input",
+          "bits": [
+            2
+          ]
+        },
+        "x3": {
+          "direction": "input",
+          "bits": [
+            6
+          ]
+        },
+        "x2": {
+          "direction": "input",
+          "bits": [
+            7
+          ]
+        }
+      },
+      "cells": {
+        "r1": {
+          "type": "r",
+          "port_directions": {
+            "A": "input",
+            "B": "input"
+          },
+          "connections": {
+            "A": [
+              2
+            ],
+            "B": [
+              3
+            ]
+          }
+        },
+        "led1": {
+          "type": "d_led",
+          "port_directions": {
+            "+": "input",
+            "-": "output"
+          },
+          "connections": {
+            "+": [
+              3
+            ],
+            "-": [
+              4
+            ]
+          }
+        },
+        "r2": {
+          "type": "r",
+          "port_directions": {
+            "A": "input",
+            "B": "output"
+          },
+          "connections": {
+            "A": [
+              7
+            ],
+            "B": [
+              4
+            ]
+          }
+        },
+        "led3": {
+          "type": "d_led",
+          "port_directions": {
+            "+": "input",
+            "-": "output"
+          },
+          "connections": {
+            "+": [
+              4
+            ],
+            "-": [
+              5
+            ]
+          }
+        },
+        "r3": {
+          "type": "r",
+          "port_directions": {
+            "A": "output",
+            "B": "output"
+          },
+          "connections": {
+            "A": [
+              5
+            ],
+            "B": [
+              6
+            ]
+          }
+        },
+        "led4": {
+          "type": "d_led",
+          "port_directions": {
+            "+": "input",
+            "-": "output"
+          },
+          "connections": {
+            "+": [
+              5
+            ],
+            "-": [
+              4
+            ]
+          }
+        },
+        "led2": {
+          "type": "d_led",
+          "port_directions": {
+            "+": "input",
+            "-": "output"
+          },
+          "connections": {
+            "+": [
+              4
+            ],
+            "-": [
+              3
+            ]
+          }
+        },
+        "led5": {
+          "type": "d_led",
+          "port_directions": {
+            "+": "input",
+            "-": "output"
+          },
+          "connections": {
+            "+": [
+              3
+            ],
+            "-": [
+              5
+            ]
+          }
+        },
+        "led6": {
+          "type": "d_led",
+          "port_directions": {
+            "+": "input",
+            "-": "output"
+          },
+          "connections": {
+            "+": [
+              5
+            ],
+            "-": [
+              3
+            ]
+          }
+        }
+      }
+    }
+  }
+}
