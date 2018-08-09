@@ -6,11 +6,13 @@
   "author": "Neil Turley",
   "license": "MIT",
   "dependencies": {
+    "@types/clone": "^0.1.30",
+    "@types/lodash": "^4.14.116",
     "clone": "^2.1.0",
+    "elkjs": "^0.3.0",
     "eslint": "^3.11.1",
     "fs-extra": "^1.0.0",
     "json5": "^0.5.1",
-    "elkjs": "^0.3.0",
     "lodash": "^4.17.2",
     "onml": "^0.3.1",
     "yargs": "^6.5.0"
@@ -43,6 +45,8 @@
     "elkjs": "global:ELK"
   },
   "browserify": {
-    "transform": [ "browserify-shim" ]
+    "transform": [
+      "browserify-shim"
+    ]
   }
 }
