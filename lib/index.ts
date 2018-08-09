@@ -1,10 +1,9 @@
 'use strict';
 
-var onml = require('onml'),
-    _ = require('lodash'),
-    ELK = require('elkjs'),
-//    fs = require('fs-extra'),
-    clone = require('clone');
+import onml = require('onml');
+import _ = require('lodash');
+import ELK = require('elkjs');
+import clone = require('clone');
 
 var elk = new ELK();
 
