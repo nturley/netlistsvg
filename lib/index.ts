@@ -7,16 +7,92 @@ import clone = require('clone');
 
 var elk = new ELK();
 
+type ICallback = ( error: Error, result?: number ) => void;
 
-function render(skin_data, yosys_netlist, done) {
-    var skin = onml.p(skin_data);
-    var layoutProps = getProperties(skin);
+type Signals = Array<number|string>;
+
+interface ModuleMap {
+    [module_name:string]: YosysModule
+}
+
+interface YosysNetlist {
+    modules: ModuleMap
+}
+
+interface YosysAttributes {
+    top?: number
+}
+
+enum Direction {
+    Input = "input",
+    Output = "output"
+}
+
+interface YosysPort {
+    direction: Direction,
+    bits: Signals
+}
+
+interface YosysPortMap {
+    [port_name:string]: YosysPort
+}
+
+interface YosysPortDirMap {
+    [port_name:string]: Direction
+}
+
+interface YosysPortConnectionMap {
+    [port_name:string]: Signals
+}
+
+interface YosysCell {
+    type: string,
+    port_directions: YosysPortDirMap,
+    connections: YosysPortConnectionMap
+}
+
+interface YosysCellMap {
+    [cell_name:string]: YosysCell
+}
+
+interface YosysModule {
+    ports: YosysPortMap,
+    cells: YosysCellMap,
+    attributes?: YosysAttributes
+}
+
+interface FlatPort {
+    key: string
+    value: Signals
+}
+
+interface Cell {
+    key: string,
+    type: string,
+    inputPorts: FlatPort[],
+    outputPorts: FlatPort[]
+}
+
+interface Wire {
+    drivers: any[],
+    riders: any[],
+    laterals: any[]
+}
+
+interface FlatModule {
+    nodes: Cell[],
+    wires?: Wire[]
+}
+
+export function render(skin_data: string, yosys_netlist: YosysNetlist, done?: ICallback) {
+    let skin = onml.p(skin_data);
+    let layoutProps = getProperties(skin);
 
     // Find top module
-    var module_name = null;
-    _.forEach(yosys_netlist.modules,function(p, i) {
-        if (p.attributes && p.attributes.top == 1) {
-            module_name = i;
+    let module_name: string = null;
+    _.forEach(yosys_netlist.modules, (mod: YosysModule, name: string) => {
+        if (mod.attributes && mod.attributes.top == 1) {
+            module_name = name;
         }
     });
     // Otherwise default the first one in the file...
@@ -24,7 +100,7 @@ function render(skin_data, yosys_netlist, done) {
         module_name = Object.keys(yosys_netlist.modules)[0];
     }
 
-    var module = getReformattedModule(yosys_netlist.modules[module_name], skin);
+    let module: FlatModule = getReformattedModule(yosys_netlist.modules[module_name], skin);
     // this can be skipped if there are no 0's or 1's
     if (layoutProps.constants !== false) {
         addConstants(module);
@@ -34,7 +110,7 @@ function render(skin_data, yosys_netlist, done) {
         addSplitsJoins(module);
     }
     createWires(module, skin);
-    var kgraph = buildKGraph(module, module_name, skin);
+    let kgraph = buildKGraph(module, module_name, skin);
 
     const promise = elk.layout(kgraph, {layoutOptions: layoutProps.layoutEngine})
         .then(g => klayed_out(g, module, skin));
@@ -647,7 +723,7 @@ function findSkinType(skin_data, type)
     return ret.full;
 }
 
-function toArray(assoc)
+function toArray(assoc: YosysCellMap|YosysPortMap)
 {
     return _.flatMap(assoc, function(val, key) {
         val.key = key;
@@ -668,11 +744,13 @@ function getCellPortList(cell, direction)
     return ports;
 }
 
+
+
 // returns a reformatted module
 // a flat module has a list of nodes that include all input and output ports
-function getReformattedModule(module, skin)
+function getReformattedModule(module: YosysModule, skin)
 {
-    var ports= toArray(module.ports);
+    var ports: YosysPort[] = toArray(module.ports);
     var inputPorts = _.filter(ports, function(p) {
         return p.direction=='input';
     });
@@ -712,6 +790,7 @@ function getReformattedModule(module, skin)
             inputPorts
                 .concat(outputPorts)
                 .concat(cells)
+        wires: []
     };
     return flatModule;
 }
@@ -793,10 +872,10 @@ function addConstants(module)
 }
 
 // solves for minimal bus splits and joins and adds them to module
-function addSplitsJoins(module)
+function addSplitsJoins(module: FlatModule)
 {
-    var allInputs = [];
-    var allOutputs = [];
+    let allInputs = [];
+    let allOutputs = [];
     module.nodes.forEach(function(n)
     {
         n.inputPorts.forEach(function(i)
@@ -809,9 +888,9 @@ function addSplitsJoins(module)
         });
     });
 
-    var allInputsCopy = allInputs.slice();
-    var splits = {};
-    var joins = {};
+    let allInputsCopy = allInputs.slice();
+    let splits: SplitJoin = {};
+    let joins: SplitJoin = {};
     allInputs.forEach(function(input) {
         gather(
             allOutputs,
@@ -823,11 +902,11 @@ function addSplitsJoins(module)
             joins);
     });
 
-    for (var join in joins) {
+    for (let join in joins) {
         // turn string into array of signal names
-        var signals = join.slice(1, -1).split(',');
+        let signals: Signals = join.slice(1, -1).split(',');
         // convert the signals into actual numbers
-        for (var i in signals) {
+        for (let i in signals) {
             signals[i] = Number(signals[i]);
         }
 
@@ -838,15 +917,14 @@ function addSplitsJoins(module)
             inPorts.push({'key': name, 'value': value});
         });
         module.nodes.push({'key': '$join$' + join,
-            'hide_name': 1,
             'type': '$_join_',
             'inputPorts': inPorts,
             'outputPorts': outPorts});
     }
 
-    for (var split in splits) {
-        signals = split.slice(1, -1).split(',');
-        for (var i in signals) {
+    for (let split in splits) {
+        let signals: Signals = split.slice(1, -1).split(',');
+        for (let i in signals) {
             signals[i] = Number(signals[i]);
         }
         var inPorts = [{'key': 'A', 'value': signals}];
@@ -856,7 +934,6 @@ function addSplitsJoins(module)
             outPorts.push({'key': name, 'value': value});
         });
         module.nodes.push({'key': '$split$' + split,
-            'hide_name': 1,
             'type': '$_split_',
             'inputPorts': inPorts,
             'outputPorts': outPorts});
@@ -865,40 +942,39 @@ function addSplitsJoins(module)
 
 // returns a string that represents the values of the array of integers
 // [1, 2, 3] -> ',1,2,3,'
-function arrayToBitstring(bitArray) {
-    var ret = '';
-    bitArray.forEach(function (bit) {
+function arrayToBitstring(bitArray: number[]):string {
+    let ret: string = '';
+    bitArray.forEach(function (bit: number) {
+        let sbit = String(bit)
         if (ret == '') {
-            ret = bit;
+            ret = sbit;
         } else {
-            ret += ',' + bit;
+            ret += ',' + sbit;
         }
     });
     return ',' + ret + ',';
 }
 
-// returns whether needle is a substring of arrhaystack
-function arrayContains(needle, haystack)
+// returns whether needle is a substring of haystack
+function arrayContains(needle: string, haystack: string | string[]): boolean
 {
     return (haystack.indexOf(needle) > -1);
 }
 
 // returns the index of the string that contains a substring
 // given arrhaystack, an array of strings
-function indexOfContains(needle, arrhaystack)
+function indexOfContains(needle: string, arrhaystack:string[]): number
 {
-    for (var i in arrhaystack) {
-        if (arrayContains(needle, arrhaystack[i])) {
-            return i;
-        }
-    }
-    return -1;
+    return _.findIndex(arrhaystack, (haystack:string) => {
+        return arrayContains(needle, haystack)
+    });
 }
 
-function getBits(signals, indicesString) {
+function getBits(signals: Signals, indicesString: string) {
     var index = indicesString.indexOf(':');
+    // is it the whole thing?
     if (index == -1) {
-        return [signals[indicesString]];
+        return [signals[Number(indicesString)]];
     } else {
         var start = indicesString.slice(0, index);
         var end = indicesString.slice(index + 1);
@@ -907,7 +983,11 @@ function getBits(signals, indicesString) {
     }
 }
 
-function addToDefaultDict(dict, key, value) {
+interface SplitJoin {
+    [port_name:string]: string[]
+}
+
+function addToDefaultDict(dict: SplitJoin, key: string, value: string) {
     if (dict[key] == undefined) {
         dict[key] = [value];
     } else {
@@ -917,31 +997,31 @@ function addToDefaultDict(dict, key, value) {
 
 // string (for labels), that represents an index
 // or range of indices.
-function getIndicesString(bitstring, query, start) {
-    var splitStart = _.max([bitstring.indexOf(query),start]);
-    var startIndex = bitstring.substring(0,splitStart).split(',').length - 1;
-    var endIndex = startIndex + query.split(',').length - 3;
+function getIndicesString(bitstring: string, query: string, start: number): string {
+    let splitStart: number = _.max([bitstring.indexOf(query),start]);
+    var startIndex: number = bitstring.substring(0,splitStart).split(',').length - 1;
+    var endIndex: number = startIndex + query.split(',').length - 3;
 
     if (startIndex == endIndex) {
-        return startIndex + '';
+        return String(startIndex);
     } else {
-        return startIndex + ':' + endIndex;
+        return String(startIndex) + ':' + String(endIndex);
     }
 }
 
 // gather splits and joins
-function gather(inputs,  // all inputs
-    outputs, // all outputs
-    toSolve, // an input array we are trying to solve
-    start,   // index of toSolve to start from
-    end,     // index of toSolve to end at
-    splits,  // container collecting the splits
-    joins)   // container collecting the joins
+function gather(inputs: string[],  // all inputs
+    outputs: string[], // all outputs
+    toSolve: string, // an input array we are trying to solve
+    start: number,   // index of toSolve to start from
+    end: number,     // index of toSolve to end at
+    splits: SplitJoin,  // container collecting the splits
+    joins: SplitJoin)   // container collecting the joins
 {
-    // remove myself from outputs list
-    var index = outputs.indexOf(toSolve);
-    if (arrayContains(toSolve, outputs)) {
-        outputs.splice(index, 1);
+    // remove myself from outputs list if present
+    let outputIndex: number = outputs.indexOf(toSolve);
+    if (outputIndex != -1) {
+        outputs.splice(outputIndex, 1);
     }
 
     // This toSolve is complete
@@ -949,7 +1029,7 @@ function gather(inputs,  // all inputs
         return;
     }
 
-    var query = toSolve.slice(start, end);
+    let query: string = toSolve.slice(start, end);
 
     // are there are perfect matches?
     if (arrayContains(query, inputs)) {
@@ -959,7 +1039,7 @@ function gather(inputs,  // all inputs
         gather(inputs, outputs, toSolve, end-1, toSolve.length, splits, joins);
         return;
     }
-    var index = indexOfContains(query, inputs);
+    let index: number = indexOfContains(query, inputs);
     // are there any partial matches?
     if (index != -1) {
         if (query != toSolve) {
@@ -987,7 +1067,7 @@ function gather(inputs,  // all inputs
 }
 
 // search through all the ports to find all of the wires
-function createWires(module, skin)
+function createWires(module: FlatModule, skin)
 {
     var layoutProps = getProperties(skin);
     var ridersByNet = {};
@@ -1029,5 +1109,3 @@ function createWires(module, skin)
     });
     module.wires = wires;
 }
-
-exports.render = render;
