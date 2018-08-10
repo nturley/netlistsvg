@@ -19,22 +19,31 @@ interface YosysNetlist {
     modules: ModuleMap
 }
 
-interface YosysAttributes {
-    top?: number
+interface YosysModuleAttributes {
+    top?: number;
+    [attr_name:string]: any;
 }
 
+interface CellAttributes {
+    value?: string; 
+    [attr_name:string]: any;
+}
 enum Direction {
     Input = "input",
     Output = "output"
 }
 
-interface YosysPort {
+enum WireDirection {
+    Up, Down, Left, Right
+}
+
+interface YosysExtPort {
     direction: Direction,
     bits: Signals
 }
 
-interface YosysPortMap {
-    [port_name:string]: YosysPort
+interface YosysExtPortMap {
+    [port_name:string]: YosysExtPort
 }
 
 interface YosysPortDirMap {
@@ -48,7 +57,8 @@ interface YosysPortConnectionMap {
 interface YosysCell {
     type: string,
     port_directions: YosysPortDirMap,
-    connections: YosysPortConnectionMap
+    connections: YosysPortConnectionMap,
+    attributes?: CellAttributes
 }
 
 interface YosysCellMap {
@@ -56,32 +66,35 @@ interface YosysCellMap {
 }
 
 interface YosysModule {
-    ports: YosysPortMap,
+    ports: YosysExtPortMap,
     cells: YosysCellMap,
-    attributes?: YosysAttributes
+    attributes?: YosysModuleAttributes
 }
 
 interface FlatPort {
-    key: string
-    value: Signals
+    key: string;
+    value?: number[] | Signals;
+    parentNode?: Cell;
+    wire?: Wire;
 }
 
 interface Cell {
     key: string,
     type: string,
     inputPorts: FlatPort[],
-    outputPorts: FlatPort[]
+    outputPorts: FlatPort[],
+    attributes?: CellAttributes
 }
 
 interface Wire {
-    drivers: any[],
-    riders: any[],
-    laterals: any[]
+    drivers: FlatPort[],
+    riders: FlatPort[],
+    laterals: FlatPort[]
 }
 
 interface FlatModule {
     nodes: Cell[],
-    wires?: Wire[]
+    wires: Wire[]
 }
 
 export function render(skin_data: string, yosys_netlist: YosysNetlist, done?: ICallback) {
@@ -150,14 +163,16 @@ function getProperties(skin)
     return vals;
 }
 
+
+
 function which_dir(start, end) {
     if (end.x == start.x && end.y == start.y) throw 'start and end are the same';
     if (end.x != start.x && end.y != start.y) throw 'start and end arent orthogonal';
 
-    if (end.x > start.x) return 'RIGHT';
-    if (end.x < start.x) return 'LEFT';
-    if (end.y > start.y) return 'DOWN';
-    if (end.y < start.y) return 'UP';
+    if (end.x > start.x) return WireDirection.Right;
+    if (end.x < start.x) return WireDirection.Left;
+    if (end.y > start.y) return WireDirection.Down;
+    if (end.y < start.y) return WireDirection.Up;
     throw 'unexpected direction';
 }
 
@@ -197,7 +212,7 @@ function removeDummyEdges(g) {
         });
         var junct = junctEdge.junctionPoints[0];
 
-        var dirs = _.map(edgeGroup,function(e) {
+        let dirs:WireDirection[] = edgeGroup.map((e) => {
             var s = e.sections[0];
             if (e.source == dummyId) {
                 s.startPoint = junct;
@@ -224,8 +239,8 @@ function removeDummyEdges(g) {
                 return which_dir(junct, s.startPoint);
             }
         });
-        var setDirs = new Set(dirs);
-        if (setDirs.size == 2) {
+        let dirSet = removeDups(dirs.map((wd) => WireDirection[wd]));
+        if (dirSet.length == 2) {
             junctEdge.junctionPoints = junctEdge.junctionPoints.slice(1);
         }
         dummyNum += 1;
@@ -252,8 +267,8 @@ function setGenericSize(tempclone, height) {
     });
 }
 
-function klayed_out(g, module, skin_data) {
-    var nodes = _.map(module.nodes, function(n){
+function klayed_out(g, module: FlatModule, skin_data) {
+    let nodes = module.nodes.map((n) => {
         var kchild = _.find(g.children,function(c) {
             return c.id == n.key;
         });
@@ -276,9 +291,9 @@ function klayed_out(g, module, skin_data) {
             var startY = Number(outPorts[0][1]['s:y']);
             tempclone.pop();
             tempclone.pop();
-            _.forEach(n.outputPorts,function(p, i)
+            n.outputPorts.forEach((p, i) =>
             {
-                var portClone = clone(outPorts[0]);
+                let portClone = clone(outPorts[0]);
                 portClone[portClone.length-1][2] = p.key;
                 portClone[1].transform = 'translate('+outPorts[1][1]['s:x'] + ','
                                                     + (startY + i*gap) + ')';
@@ -340,7 +355,7 @@ function klayed_out(g, module, skin_data) {
         return _.flatMap(e.sections, function (s) {
             var startPoint = s.startPoint;
             s.bendPoints = s.bendPoints || [];
-            var bends = _.map(s.bendPoints, function (b)
+            var bends = s.bendPoints.map((b) =>
             {
                 var l = ['line', {
                     'x1':startPoint.x,
@@ -351,7 +366,7 @@ function klayed_out(g, module, skin_data) {
                 return l;
             });
 
-            bends = bends.concat(_.map(e.junctionPoints, function (j)
+            bends = bends.concat(e.junctionPoints.map((j) =>
             {
                 return ['circle', {'cx':j.x, 'cy':j.y, 'r':2, 'style':'fill:#000'}];
             }));
@@ -374,14 +389,69 @@ function klayed_out(g, module, skin_data) {
     return onml.s(ret);
 }
 
-function addDummy(children, dummy_num) {
-    var dummyId = '$d_' + dummy_num;
-    var child = {
+interface ElkGraph {
+    id: string;
+    children: ElkCell[];
+    edges: ElkEdge[];
+}
+
+interface ElkPort {
+    id: string;
+    width: number;
+    height: number;
+    x?: number;
+    y?: number;
+    labels?: ElkLabel[];
+    //layoutOptions?: ElkLayoutOptions;
+}
+
+interface ElkEdge {
+    id: string;
+    source: string;
+    sourcePort: string;
+    target: string;
+    targetPort: string;
+    layoutOptions?: ElkLayoutOptions;
+}
+
+interface ElkLayoutOptions {
+    [option:string]:any
+}
+
+interface ElkCell {
+    id: string;
+    width: number;
+    height: number;
+    ports: ElkPort[];
+    layoutOptions?: ElkLayoutOptions;
+    labels?: ElkLabel[];
+}
+
+interface ElkLabel {
+    text: string;
+    x: number;
+    y: number;
+    height: number;
+    width: number;
+}
+
+/*
+ret.labels = [{
+    text : n.type,
+    x : Number(template[2][1].x),
+    y : Number(template[2][1].y),
+    height : 11,
+    width : (6*n.type.length)
+}];
+*/
+function addDummy(children: ElkCell[], dummy_num:number) {
+    let dummyId: string = '$d_' + String(dummy_num);
+    let child: ElkCell = {
         id : dummyId,
         width:0,
         height:0,
         ports: [{
-            id: dummyId+'.p',
+            id: dummyId + '.p',
             width: 0,
             height: 0
         }],
@@ -391,14 +461,14 @@ function addDummy(children, dummy_num) {
     return dummyId;
 }
 
-function route(sourcePorts, targetPorts, i) {
+function route(sourcePorts, targetPorts, i: number): ElkEdge[] {
     return _.flatMap(sourcePorts, function(sourcePort) {
-        var sourceParentKey = sourcePort.parentNode.key;
-        var sourceKey = sourceParentKey + '.' + sourcePort.key;
-        return _.map(targetPorts, function (targetPort) {
-            var targetParentKey = targetPort.parentNode.key;
-            var targetKey = targetParentKey + '.' + targetPort.key;
-            var edge = {
+        let sourceParentKey: string = sourcePort.parentNode.key;
+        let sourceKey: string = sourceParentKey + '.' + sourcePort.key;
+        return targetPorts.map((targetPort) => {
+            let targetParentKey: string = targetPort.parentNode.key;
+            let targetKey: string = targetParentKey + '.' + targetPort.key;
+            let edge: ElkEdge = {
                 id: 'e' + i,
                 source: sourceParentKey,
                 sourcePort: sourceKey,
@@ -414,53 +484,52 @@ function route(sourcePorts, targetPorts, i) {
     });
 }
 
-function buildKGraph(module, module_name, skin_data)
+function buildKGraph(module: FlatModule, module_name: string, skin_data): ElkGraph
 {
-    var children = _.map(module.nodes,function(n)
+    let children: ElkCell[] = module.nodes.map((n) =>
     {
         return buildKGraphChild(skin_data, n);
     });
-    var i =0;
-    var dummies = 0;
-    var edges = _.flatMap(module.wires,function(w) {
+    let i: number = 0;
+    let dummies: number = 0;
+    let edges: ElkEdge[] = _.flatMap(module.wires,function(w) {
         // at least one driver and at least one rider and no laterals
         if (w.drivers.length > 0 && w.riders.length > 0 && w.laterals.length == 0) {
-            var ret = route(w.drivers, w.riders);
-            i += ret.length;
+            let ret: ElkEdge[] = route(w.drivers, w.riders, i);
             return ret;
         // at least one driver or rider and at least one lateral
         } else if (w.drivers.concat(w.riders).length > 0 && w.laterals.length > 0) {
-            var ret = route(w.drivers, w.laterals).concat(route(w.laterals, w.riders));
-            i += ret.length;
+            let ret: ElkEdge[] = route(w.drivers, w.laterals, i).concat(route(w.laterals, w.riders, i));
             return ret;
         // at least two drivers and no riders
         } else if (w.riders.length == 0 && w.drivers.length > 1) {
             // create a dummy node and add it to children
-            var dummyId = addDummy(children, dummies);
+            let dummyId: string = addDummy(children, dummies);
             dummies += 1;
-            var dummyEdges = _.map(w.drivers, function(driver) {
-                var sourceParentKey = driver.parentNode.key;
-                var id = 'e' + i;
+            let dummyEdges: ElkEdge[] = w.drivers.map((driver) => {
+                let sourceParentKey: string = driver.parentNode.key;
+                let id: string = 'e' + String(i);
                 i += 1;
-                return {
+                let d: ElkEdge = {
                     id: id,
                     source: sourceParentKey,
                     sourcePort: sourceParentKey + '.' + driver.key,
                     target: dummyId,
                     targetPort: dummyId + '.p'
                 };
+                return d;
             });
             return dummyEdges;
         // at least one rider and no drivers
         } else if (w.riders.length > 1 && w.drivers.length == 0) {
             // create a dummy node and add it to children
-            var dummyId = addDummy(children, dummies);
+            let dummyId: string = addDummy(children, dummies);
             dummies += 1;
-            var dummyEdges = _.map(w.riders, function(rider) {
-                var sourceParentKey = rider.parentNode.key;
-                var id = 'e' + i;
+            let dummyEdges: ElkEdge[] = w.riders.map((rider) => {
+                let sourceParentKey: string = rider.parentNode.key;
+                let id: string = 'e' + String(i);
                 i += 1;
-                var edge = {
+                let edge: ElkEdge = {
                     id: id,
                     source: dummyId,
                     sourcePort: dummyId + '.p',
@@ -471,13 +540,13 @@ function buildKGraph(module, module_name, skin_data)
             });
             return dummyEdges;
         } else if (w.laterals.length > 1) {
-            var source = w.laterals[0];
-            var sourceParentKey = source.parentNode.key;
-            var e = _.map(w.laterals.slice(1), function(lateral) {
-                var lateralParentKey = lateral.parentNode.key;
-                var id = 'e' + i;
+            let source = w.laterals[0];
+            let sourceParentKey: string = source.parentNode.key;
+            let edges: ElkEdge[] = w.laterals.slice(1).map((lateral) => {
+                let lateralParentKey: string = lateral.parentNode.key;
+                let id: string = 'e' + String(i);
                 i += 1;
-                var edge = {
+                let edge: ElkEdge = {
                     id: id,
                     source: sourceParentKey,
                     sourcePort: sourceParentKey + '.' + source.key,
@@ -486,7 +555,7 @@ function buildKGraph(module, module_name, skin_data)
                 };
                 return edge;
             });
-            return e;
+            return edges;
         }
         // for only one driver or only one rider, don't create any edges
         return [];
@@ -513,9 +582,9 @@ function getGenericHeight(template, node)
     return Number(template[1]['s:height']);
 }
 
-function getPortsWithPrefix(template, prefix)
+function getPortsWithPrefix(template: any[], prefix: string)
 {
-    var ports = _.filter(template, function (e) {
+    let ports = _.filter(template, (e) => {
         if (e instanceof Array && e[0] == 'g') {
             return e[1]['s:pid'].startsWith(prefix);
         }
@@ -532,7 +601,7 @@ function filterPortPids(template, filter) {
         }
         return false;
     });
-    return _.map(ports, function(port) {
+    return ports.map((port) => {
         return port[1]['s:pid'];
     });
 }
@@ -570,13 +639,13 @@ function getOutputPortPids(template) {
     });
 }
 
-function getGenericPortsFrom(nports, templatePorts, nkey, type, dir)
+function getGenericPortsFrom(nports:FlatPort[], templatePorts, nkey: string, type: string, dir: string): ElkPort[]
 {
-    return _.map(nports, function (p, i)
+    return nports.map((p:FlatPort, i:number) =>
     {
 
         if (i == 0) {
-            var ret = {
+            let ret: ElkPort = {
                 id : nkey + '.' + p.key,
                 width : 1,
                 height : 1,
@@ -603,11 +672,10 @@ function getGenericPortsFrom(nports, templatePorts, nkey, type, dir)
                     height: 11
                 }];
             }
-
             return ret;
         } else {
-            var gap = Number(templatePorts[1][1]['s:y']) - Number(templatePorts[0][1]['s:y']);
-            var ret = {
+            let gap: number = Number(templatePorts[1][1]['s:y']) - Number(templatePorts[0][1]['s:y']);
+            let ret: ElkPort = {
                 id : nkey + '.' + p.key,
                 width : 1,
                 height : 1,
@@ -619,7 +687,7 @@ function getGenericPortsFrom(nports, templatePorts, nkey, type, dir)
                     text: p.key,
                     x: Number(templatePorts[0][2][1].x),
                     y: Number(templatePorts[0][2][1].y),
-                    width: (6*p.key.length),
+                    width: (6 * p.key.length),
                     height: 11
                 }];
             }
@@ -629,18 +697,18 @@ function getGenericPortsFrom(nports, templatePorts, nkey, type, dir)
 }
 
 //given a module type, build kgraphchild
-function buildKGraphChild(skin_data, n)
+function buildKGraphChild(skin_data, n: Cell): ElkCell
 {
     //   labels: [ { text: "n2" } ],
-    var template = findSkinType(skin_data, n.type);
-    var type = template[1]['s:type'];
+    let template = findSkinType(skin_data, n.type);
+    let type: string = template[1]['s:type'];
     if (type == 'join' ||
         type == 'split' ||
         type == 'generic')
     {
-        var inPorts = getPortsWithPrefix(template, 'in');
-        var outPorts = getPortsWithPrefix(template, 'out');
-        var ports = getGenericPortsFrom(n.inputPorts,
+        let inPorts: string[] = getPortsWithPrefix(template, 'in');
+        let outPorts: string[] = getPortsWithPrefix(template, 'out');
+        let ports: ElkPort[] = getGenericPortsFrom(n.inputPorts,
             inPorts,
             n.key,
             type,
@@ -650,7 +718,7 @@ function buildKGraphChild(skin_data, n)
                 n.key,
                 type,
                 'out'));
-        var ret = {
+        let ret: ElkCell = {
             id: n.key,
             width: Number(template[1]['s:width']),
             height: Number(getGenericHeight(template, n)),
@@ -668,7 +736,7 @@ function buildKGraphChild(skin_data, n)
         }
         return ret;
     }
-    var ports = _.map(getPortsWithPrefix(template, ''), function(p)
+    let ports: ElkPort[] = getPortsWithPrefix(template, '').map((p) =>
     {
         return {
             id : n.key + '.' + p[1]['s:pid'],
@@ -678,8 +746,8 @@ function buildKGraphChild(skin_data, n)
             y : Number(p[1]['s:y'])
         };
     });
-    var nodeWidth = Number(template[1]['s:width']);
-    var ret = {
+    let nodeWidth: number = Number(template[1]['s:width']);
+    let ret: ElkCell = {
         id: n.key,
         width: nodeWidth,
         height: Number(template[1]['s:height']),
@@ -699,9 +767,9 @@ function buildKGraphChild(skin_data, n)
     return ret;
 }
 
-function findSkinType(skin_data, type)
+function findSkinType(skin_data, type: string)
 {
-    var ret = null;
+    let ret = null;
     onml.traverse(skin_data, {
         enter: function (node, parent) {
             if (node.name == 's:alias' && node.attr.val == type)
@@ -723,18 +791,24 @@ function findSkinType(skin_data, type)
     return ret.full;
 }
 
-function toArray(assoc: YosysCellMap|YosysPortMap)
+function toCellArray(assoc: YosysCellMap|YosysExtPortMap): Cell[]
 {
-    return _.flatMap(assoc, function(val, key) {
-        val.key = key;
-        return val;
+    return _.flatMap(assoc, function(val: YosysCell, key: string) {
+        let c: Cell = {
+            key:key,
+            type:val.type,
+            inputPorts:[],
+            outputPorts:[]
+        }
+        if (val.attributes) c.attributes = val.attributes;
+        return c;
     });
 }
 
 // returns an array of ports that are going a specific direction
 // the elements in this array are obects whose members are key and value
 // where key is the port name and value is the connection array
-function getCellPortList(cell, direction)
+function getCellPortList(cell: YosysCell, direction: Direction)
 {
     var ports = _.filter(_.flatMap(cell.connections, function(val, key) {
         return {key:key, value:val};
@@ -748,124 +822,133 @@ function getCellPortList(cell, direction)
 
 // returns a reformatted module
 // a flat module has a list of nodes that include all input and output ports
-function getReformattedModule(module: YosysModule, skin)
+function getReformattedModule(module: YosysModule, skin): FlatModule
 {
-    var ports: YosysPort[] = toArray(module.ports);
-    var inputPorts = _.filter(ports, function(p) {
-        return p.direction=='input';
+    let ports: Cell[] = toCellArray(module.ports);
+    // convert external inputs to cells
+    let inputPorts: Cell[] = _.filter(ports, (p: Cell, i: number) => {
+        let yp: YosysExtPort = module.ports[i];
+        let isInput: boolean = yp.direction == Direction.Input;
+        if (isInput) {
+            p.inputPorts = [];
+            p.outputPorts = [{'key':'Y','value':yp.bits}];
+        }
+        return isInput;
     });
-    var outputPorts = _.filter(ports, function(p){
-        return p.direction=='output';
+    // convert external outputs to cells
+    let outputPorts: Cell[] = _.filter(ports, (p, i) => {
+        let yp: YosysExtPort = module.ports[i];
+        let isOutput = yp.direction == Direction.Output;
+        if (isOutput) {
+            p.inputPorts = [{'key':'A','value':yp.bits}];
+            p.outputPorts = [];
+        }
+        return isOutput;
     });
-    var cells = toArray(module.cells);
-    inputPorts.forEach(function(p){p.type= '$_inputExt_';});
-    outputPorts.forEach(function(p){p.type='$_outputExt_';});
-    cells.forEach(function(c)
-    {
-        var template = findSkinType(skin, c.type);
-        if (!c.port_directions) {
-            c.port_directions = {};
+    let mcells: Cell[] = toCellArray(module.cells);
+    inputPorts.forEach((p) => {p.type= '$_inputExt_';});
+    outputPorts.forEach((p) => {p.type='$_outputExt_';});
+    mcells.forEach((c: Cell, i: number) => {
+        let yc: YosysCell = module.cells[i];
+        let template = findSkinType(skin, c.type);
+        if (!yc.port_directions) {
+            yc.port_directions = {};
         }
         getInputPortPids(template).forEach((pid) => {
-            c.port_directions[pid] = 'input';
+            yc.port_directions[pid] = Direction.Input;
         });
         getOutputPortPids(template).forEach((pid) => {
-            c.port_directions[pid] = 'output';
+            yc.port_directions[pid] = Direction.Output;
         });
-        c.inputPorts = getCellPortList(c,'input');
-        c.outputPorts = getCellPortList(c,'output');
+        c.inputPorts = getCellPortList(yc, Direction.Input);
+        c.outputPorts = getCellPortList(yc, Direction.Output);
     });
-    inputPorts.forEach(function(p)
-    {
-        p.inputPorts = [];
-        p.outputPorts = [{'key':'Y','value':p.bits}];
-    });
-    outputPorts.forEach(function(p)
-    {
-        p.inputPorts = [{'key':'A','value':p.bits}];
-        p.outputPorts = [];
-    });
-    var flatModule = {
+    let flatModule: FlatModule = {
         nodes :
-            inputPorts
-                .concat(outputPorts)
-                .concat(cells)
+            inputPorts.concat(outputPorts).concat(mcells),
         wires: []
     };
     return flatModule;
 }
 
+interface SigsByConstName {
+    [constant_name:string]:number[]
+}
+
+function assignConstant(nameCollector: string,
+                        constants: number[],
+                        currIndex: number,
+                        signalsByConstantName: SigsByConstName,
+                        portSignals: Signals,
+                        module: FlatModule) {
+    // we've been appending to nameCollector, so reverse to get const name
+    let constName = nameCollector.split('').reverse().join('');
+    // if the constant has already been used
+    if (signalsByConstantName.hasOwnProperty(constName)) {
+        let constSigs: number[] = signalsByConstantName[constName];
+        // go back and fix signal values
+        let constLength = constSigs.length;
+        constSigs.forEach((constSig, constIndex) => {
+            // i is where in port_signals we need to update
+            let i: number = currIndex - constLength + constIndex;
+            portSignals[i] = constSig;
+        });
+    } else {
+        let constant: Cell = {
+            'key': constName,
+            'type': '$_constant_',
+            'inputPorts':[],
+            'outputPorts':[{'key':'Y','value':constants}]
+        };
+        module.nodes.push(constant);
+        signalsByConstantName[constName] = constants;
+    }
+}
+
 // converts input ports with constant assignments to constant nodes
-function addConstants(module)
+function addConstants(module: FlatModule)
 {
     // find the maximum signal number
-    var maxNum=-1;
-    module.nodes.forEach(function(n)
-    {
-        n.outputPorts.forEach(function(p) {
-            maxNum = _.max([maxNum, _.max(p.value)]);
+    let maxNum: number = -1;
+    module.nodes.forEach((n) => {
+        n.outputPorts.forEach((p) => {
+            let maxVal: number = _.max(_.map(p.value, (v) => {
+                return Number(v);
+            }));
+            maxNum = _.max([maxNum, maxVal]);
         });
     });
 
-
     // add constants to nodes
-    var signalsByConstantName = {};
-    module.nodes.forEach(function(n)
-    {
-        n.inputPorts.forEach(function(p)
-        {
-            var name = '';
-            var constants = [];
-            for (var i in p.value) {
-                if (p.value[i]<2)
+    let signalsByConstantName: SigsByConstName = {};
+    module.nodes.forEach((n) => {
+        n.inputPorts.forEach((p) => {
+            let constNameCollector = '';
+            let constNumCollector: number[] = [];
+            let portSigs: Signals = p.value;
+            portSigs.forEach((portSig, portSigIndex) => {
+                let portSigNum = Number(portSig)
+                // is constant?
+                if (portSig == "0" || portSig == "1")
                 {
                     maxNum += 1;
-                    name += p.value[i];
-                    p.value[i] = maxNum;
-                    constants.push(maxNum);
+                    constNameCollector += portSig;
+                    // replace the constant with new signal num
+                    portSigs[portSigIndex] = maxNum;
+                    constNumCollector.push(maxNum);
                 }
-                else if (constants.length > 0)
+                // string of constants ended before end of p.value
+                else if (constNumCollector.length > 0)
                 {
-                    var key = name.split('').reverse().join('');
-                    if (signalsByConstantName.hasOwnProperty(key)) {
-                        var val = signalsByConstantName[key];
-                        for (var vi in val) {
-                            var j = i - val.length + vi;
-                            p.value[j] = val[vi];
-                        }
-                    } else {
-                        var constant = {
-                            'key': key,
-                            'type': '$_constant_',
-                            'inputPorts':[],
-                            'outputPorts':[{'key':'Y','value':constants}]
-                        };
-                        module.nodes.push(constant);
-                        signalsByConstantName[key] = constants;
-                    }
-                    name='';
-                    constants = [];
+                    assignConstant(constNameCollector, constNumCollector, portSigIndex, signalsByConstantName, portSigs, module)
+                    // reset name and num collectors
+                    constNameCollector = '';
+                    constNumCollector = [];
                 }
-            }
-            if (constants.length > 0)
+            });
+            if (constNumCollector.length > 0)
             {
-                var key = name.split('').reverse().join('');
-                if (signalsByConstantName.hasOwnProperty(key)) {
-                    var val = signalsByConstantName[key];
-                    for (vi in val) {
-                        var j = i - (val.length-1) + parseInt(vi);
-                        p.value[j] = val[vi];
-                    }
-                } else {
-                    var constant = {
-                        'key': key,
-                        'type': '$_constant_',
-                        'inputPorts':[],
-                        'outputPorts':[{'key':'Y','value':constants}]
-                    };
-                    module.nodes.push(constant);
-                    signalsByConstantName[key] = constants;
-                }
+                assignConstant(constNameCollector, constNumCollector, portSigs.length, signalsByConstantName, portSigs, module)
             }
         });
     });
@@ -902,38 +985,37 @@ function addSplitsJoins(module: FlatModule)
             joins);
     });
 
-    for (let join in joins) {
+    for (let target in joins) {
         // turn string into array of signal names
-        let signals: Signals = join.slice(1, -1).split(',');
-        // convert the signals into actual numbers
-        for (let i in signals) {
-            signals[i] = Number(signals[i]);
-        }
-
-        var outPorts = [{'key': 'Y', 'value': signals}];
-        var inPorts = [];
-        joins[join].forEach(function(name) {
-            var value = getBits(signals, name);
-            inPorts.push({'key': name, 'value': value});
+        let signalStrs: string[] = target.slice(1, -1).split(',');
+        let signals: Signals = _.map(signalStrs, (ss) => { return Number(ss)});
+        let outPorts: FlatPort[] = [{'key': 'Y', 'value': signals}];
+        let inPorts: FlatPort[] = [];
+        joins[target].forEach(function(name) {
+            let sigs: Signals = getBits(signals, name);
+            inPorts.push({'key': name, 'value': sigs});
         });
-        module.nodes.push({'key': '$join$' + join,
+        module.nodes.push({'key': '$join$' + target,
             'type': '$_join_',
             'inputPorts': inPorts,
             'outputPorts': outPorts});
     }
 
-    for (let split in splits) {
-        let signals: Signals = split.slice(1, -1).split(',');
+    for (let source in splits) {
+        // turn string into array of signal names
+        let signals: Signals = source.slice(1, -1).split(',');
+        // convert the signals into actual numbers
+        // after running constant pass, all signals should be numbers
         for (let i in signals) {
             signals[i] = Number(signals[i]);
         }
-        var inPorts = [{'key': 'A', 'value': signals}];
-        var outPorts = [];
-        splits[split].forEach(function(name) {
-            var value = getBits(signals, name);
-            outPorts.push({'key': name, 'value': value});
+        let inPorts: FlatPort[] = [{'key': 'A', 'value': signals}];
+        var outPorts: FlatPort[] = [];
+        splits[source].forEach(function(name) {
+            let sigs: Signals = getBits(signals, name);
+            outPorts.push({'key': name, 'value': sigs});
         });
-        module.nodes.push({'key': '$split$' + split,
+        module.nodes.push({'key': '$split$' + source,
             'type': '$_split_',
             'inputPorts': inPorts,
             'outputPorts': outPorts});
@@ -987,7 +1069,7 @@ interface SplitJoin {
     [port_name:string]: string[]
 }
 
-function addToDefaultDict(dict: SplitJoin, key: string, value: string) {
+function addToDefaultDict(dict: any, key: string, value: any) {
     if (dict[key] == undefined) {
         dict[key] = [value];
     } else {
@@ -1066,42 +1148,60 @@ function gather(inputs: string[],  // all inputs
     gather(inputs, outputs, toSolve, start, start+ query.slice(0,-1).lastIndexOf(',')+1, splits, joins);
 }
 
+interface NameToPorts {
+    [netName:string]: FlatPort[];
+}
+
+interface StringToBool {
+    [s:string]: boolean;
+}
+
+function removeDups(inStrs: string[])
+{
+    let map:StringToBool = {};
+    inStrs.forEach(str => {
+        map[str] = true;
+    });
+    return _.keys(map);
+}
+
 // search through all the ports to find all of the wires
 function createWires(module: FlatModule, skin)
 {
-    var layoutProps = getProperties(skin);
-    var ridersByNet = {};
-    var driversByNet = {};
-    var lateralsByNet = {};
-    module.nodes.forEach(function(n)
-    {
-        var template = findSkinType(skin, n.type);
-        var lateralPids = getLateralPortPids(template);
+    let layoutProps = getProperties(skin);
+    let ridersByNet: NameToPorts = {};
+    let driversByNet: NameToPorts = {};
+    let lateralsByNet: NameToPorts = {};
+    module.nodes.forEach((n) => {
+        let template = findSkinType(skin, n.type);
+        let lateralPids = getLateralPortPids(template);
         // find all ports connected to the same net
-        n.inputPorts.forEach(function(port) {
+        n.inputPorts.forEach((port) => {
             port.parentNode = n;
+            let portSigs: number[] = port.value as number[];
             if (lateralPids.indexOf(port.key) !== -1 || (template[1]['s:type'] === 'generic' && layoutProps.genericsLaterals)) {
-                addToDefaultDict(lateralsByNet, arrayToBitstring(port.value), port);
+                addToDefaultDict(lateralsByNet, arrayToBitstring(portSigs), port);
             } else {
-                addToDefaultDict(ridersByNet, arrayToBitstring(port.value), port);
+                addToDefaultDict(ridersByNet, arrayToBitstring(portSigs), port);
             }
         });
         n.outputPorts.forEach(function(port) {
             port.parentNode = n;
+            let portSigs: number[] = port.value as number[];
             if (lateralPids.indexOf(port.key) !== -1 || (template[1]['s:type'] === 'generic' && layoutProps.genericsLaterals)) {
-                addToDefaultDict(lateralsByNet, arrayToBitstring(port.value), port);
+                addToDefaultDict(lateralsByNet, arrayToBitstring(portSigs), port);
             } else {
-                addToDefaultDict(driversByNet, arrayToBitstring(port.value), port);
+                addToDefaultDict(driversByNet, arrayToBitstring(portSigs), port);
             }
         });
     });
     // list of unique nets
-    var nets = Array.from(new Set(_.keys(ridersByNet).concat(_.keys(driversByNet)).concat(_.keys(lateralsByNet))));
-    var wires = _.map(nets, function(net) {
-        var drivers = driversByNet[net] || [];
-        var riders = ridersByNet[net] || [];
-        var laterals = lateralsByNet[net] || [];
-        var wire = {'drivers':drivers, 'riders':riders, 'laterals':laterals};
+    let nets = removeDups(_.keys(ridersByNet).concat(_.keys(driversByNet)).concat(_.keys(lateralsByNet)));
+    let wires: Wire[] = nets.map((net) => {
+        let drivers: FlatPort[] = driversByNet[net] || [];
+        let riders: FlatPort[] = ridersByNet[net] || [];
+        let laterals: FlatPort[] = lateralsByNet[net] || [];
+        let wire: Wire = {'drivers':drivers, 'riders':riders, 'laterals':laterals};
         drivers.concat(riders).concat(laterals).forEach(function (port) {
             port.wire = wire;
         });
