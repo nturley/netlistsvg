@@ -7,7 +7,7 @@ import onml = require('onml');
 
 const elk = new ELK();
 
-type ICallback = (error: Error, result?: number) => void;
+type ICallback = (error: Error, result?: string) => void;
 
 type Signals = Array<number | string>;
 
@@ -137,6 +137,10 @@ interface ElkLayoutOptions {
     [option: string]: any;
 }
 
+interface ElkOptions {
+    layoutOptions: ElkLayoutOptions;
+}
+
 interface ElkCell {
     id: string;
     width: number;
@@ -187,19 +191,22 @@ export function render(skinData: string, yosysNetlist: YosysNetlist, done?: ICal
         addSplitsJoins(module);
     }
     createWires(module, skin);
-    const kgraph = buildKGraph(module, moduleName, skin);
+    const kgraph: ElkGraph = buildKGraph(module, moduleName, skin);
 
     const promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine })
-        .then((g) => klayed_out(g, module, skin));
+        .then((g) => klayed_out(g, module, skin))
+        // tslint:disable-next-line:no-console
+        .catch((e) => { console.error(e); });
 
     // support legacy callback style
     if (typeof done === 'function') {
-        promise.then((output) => {
+        promise.then((output: string) => {
             done(null, output);
             return output;
-        }).catch(done);
+        }).catch((reason) => {
+            throw Error(reason);
+        });
     }
-
     return promise;
 }
 
@@ -418,7 +425,7 @@ function klayed_out(g: ElkGraph, module: FlatModule, skinData) {
         return _.flatMap(e.sections, (s: ElkSegment) => {
             let startPoint = s.startPoint;
             s.bendPoints = s.bendPoints || [];
-            const bends1: any[] = s.bendPoints.map((b) => {
+            let bends: any[] = s.bendPoints.map((b) => {
                 const l = ['line', {
                     x1: startPoint.x,
                     x2: b.x,
@@ -428,9 +435,11 @@ function klayed_out(g: ElkGraph, module: FlatModule, skinData) {
                 startPoint = b;
                 return l;
             });
-            const circles: any[] = e.junctionPoints.map((j: WirePoint) =>
-                ['circle', { cx: j.x, cy: j.y, r: 2, style: 'fill:#000' }]);
-            const bends = bends1.concat(circles);
+            if (e.junctionPoints) {
+                const circles: any[] = e.junctionPoints.map((j: WirePoint) =>
+                    ['circle', { cx: j.x, cy: j.y, r: 2, style: 'fill:#000' }]);
+                bends = bends.concat(circles);
+            }
             const line = [['line', {
                 x1: startPoint.x,
                 x2: s.endPoint.x,
@@ -819,20 +828,20 @@ function getReformattedModule(module: YosysModule, skin): FlatModule {
     const ports: Cell[] = toCellArray(module.ports);
     // convert external inputs to cells
     const inputPorts: Cell[] = _.filter(ports, (p: Cell, i: number) => {
-        const yp: YosysExtPort = module.ports[i];
-        const isInput: boolean = yp.direction === Direction.Input;
+        const yosysPort: YosysExtPort = module.ports[p.key];
+        const isInput: boolean = yosysPort.direction === Direction.Input;
         if (isInput) {
             p.inputPorts = [];
-            p.outputPorts = [{ key: 'Y', value: yp.bits }];
+            p.outputPorts = [{ key: 'Y', value: yosysPort.bits }];
         }
         return isInput;
     });
     // convert external outputs to cells
     const outputPorts: Cell[] = _.filter(ports, (p, i) => {
-        const yp: YosysExtPort = module.ports[i];
-        const isOutput = yp.direction === Direction.Output;
+        const yosysPort: YosysExtPort = module.ports[p.key];
+        const isOutput = yosysPort.direction === Direction.Output;
         if (isOutput) {
-            p.inputPorts = [{ key: 'A', value: yp.bits }];
+            p.inputPorts = [{ key: 'A', value: yosysPort.bits }];
             p.outputPorts = [];
         }
         return isOutput;
@@ -841,19 +850,19 @@ function getReformattedModule(module: YosysModule, skin): FlatModule {
     inputPorts.forEach((p) => { p.type = '$_inputExt_'; });
     outputPorts.forEach((p) => { p.type = '$_outputExt_'; });
     mcells.forEach((c: Cell, i: number) => {
-        const yc: YosysCell = module.cells[i];
+        const yosysCell: YosysCell = module.cells[c.key];
         const template = findSkinType(skin, c.type);
-        if (!yc.port_directions) {
-            yc.port_directions = {};
+        if (!yosysCell.port_directions) {
+            yosysCell.port_directions = {};
         }
         getInputPortPids(template).forEach((pid) => {
-            yc.port_directions[pid] = Direction.Input;
+            yosysCell.port_directions[pid] = Direction.Input;
         });
         getOutputPortPids(template).forEach((pid) => {
-            yc.port_directions[pid] = Direction.Output;
+            yosysCell.port_directions[pid] = Direction.Output;
         });
-        c.inputPorts = getCellPortList(yc, Direction.Input);
-        c.outputPorts = getCellPortList(yc, Direction.Output);
+        c.inputPorts = getCellPortList(yosysCell, Direction.Input);
+        c.outputPorts = getCellPortList(yosysCell, Direction.Output);
     });
     const flatModule: FlatModule = {
         nodes:
