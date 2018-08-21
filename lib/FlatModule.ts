@@ -1,44 +1,51 @@
-import { CellAttributes, Signals, YosysModule } from './YosysModel';
+import { YosysNetlist, CellAttributes, Signals, IYosysModule } from './YosysModel';
 import { getProperties, findSkinType, getLateralPortPids } from './skin';
+import { Cell } from './Cell';
 import _ = require('lodash');
 
-export interface FlatPort {
+export interface IFlatPort {
     key: string;
     value?: number[] | Signals;
-    parentNode?: Cell;
-    wire?: Wire;
+    parentNode?: ICell;
+    wire?: IWire;
 }
 
-export interface Wire {
-    drivers: FlatPort[];
-    riders: FlatPort[];
-    laterals: FlatPort[];
+export interface IWire {
+    drivers: IFlatPort[];
+    riders: IFlatPort[];
+    laterals: IFlatPort[];
 }
 
-export interface IFlatModule {
-    nodes: Cell[];
-    wires: Wire[];
-}
-
-export interface Cell {
+export interface ICell {
     key: string;
     type: string;
-    inputPorts: FlatPort[];
-    outputPorts: FlatPort[];
+    inputPorts: IFlatPort[];
+    outputPorts: IFlatPort[];
     attributes?: CellAttributes;
 }
 
 export class FlatModule {
     private moduleName: string;
     private nodes: Cell[];
-    private wires: Wire[];
+    private wires: IWire[];
     private skin: any;
 
-    constructor(yModule: YosysModule, skin) {
-        this.moduleName = yModule.moduleName;
-        const cells = yModule.getFlatCells(skin);
-        const portCells = yModule.getPortCells();
-        this.nodes = cells.concat(portCells);
+    constructor(netlist: YosysNetlist, skin: any) {
+        this.moduleName = null;
+        _.forEach(netlist.modules, (mod: IYosysModule, name: string) => {
+            if (mod.attributes && mod.attributes.top === 1) {
+                this.moduleName = name;
+            }
+        });
+        // Otherwise default the first one in the file...
+        if (this.moduleName == null) {
+            this.moduleName = Object.keys(netlist.modules)[0];
+        }
+        const top = netlist.modules[this.moduleName];
+        const ports = _.map(top.ports, Cell.fromPort);
+        const cells = _.map(top.cells, (c, key) => Cell.fromYosysCell(c, key, skin));
+        this.nodes = cells.concat(ports);
+        // populated by createWires
         this.wires = [];
         this.skin = skin;
     }
@@ -47,7 +54,7 @@ export class FlatModule {
         return this.nodes;
     }
 
-    public getWires(): Wire[] {
+    public getWires(): IWire[] {
         return this.wires;
     }
 
@@ -62,67 +69,21 @@ export class FlatModule {
     // converts input ports with constant assignments to constant nodes
     public addConstants(): void {
         // find the maximum signal number
-        let maxNum: number = -1;
-        this.nodes.forEach((n) => {
-            n.outputPorts.forEach((p) => {
-                const maxVal: number = _.max(_.map(p.value, (v) => {
-                    return Number(v);
-                }));
-                maxNum = _.max([maxNum, maxVal]);
-            });
-        });
+        let maxNum: number = this.nodes.reduce(((acc, v) => v.maxOutVal(acc)), -1);
 
         // add constants to nodes
         const signalsByConstantName: SigsByConstName = {};
+        const cells: Cell[] = [];
         this.nodes.forEach((n) => {
-            n.inputPorts.forEach((p) => {
-                let constNameCollector = '';
-                let constNumCollector: number[] = [];
-                const portSigs: Signals = p.value;
-                portSigs.forEach((portSig, portSigIndex) => {
-                    const portSigNum = Number(portSig);
-                    // is constant?
-                    if (portSig === '0' || portSig === '1') {
-                        maxNum += 1;
-                        constNameCollector += portSig;
-                        // replace the constant with new signal num
-                        portSigs[portSigIndex] = maxNum;
-                        constNumCollector.push(maxNum);
-                    // string of constants ended before end of p.value
-                    } else if (constNumCollector.length > 0) {
-                        this.assignConstant(constNameCollector,
-                                    constNumCollector,
-                                    portSigIndex,
-                                    signalsByConstantName,
-                                    portSigs);
-                        // reset name and num collectors
-                        constNameCollector = '';
-                        constNumCollector = [];
-                    }
-                });
-                if (constNumCollector.length > 0) {
-                    this.assignConstant(constNameCollector,
-                                constNumCollector,
-                                portSigs.length,
-                                signalsByConstantName,
-                                portSigs);
-                }
-            });
+            maxNum = n.findConstants(signalsByConstantName, maxNum, cells);
         });
+        this.nodes = this.nodes.concat(cells);
     }
 
     // solves for minimal bus splits and joins and adds them to module
     public addSplitsJoins() {
-        const allInputs = [];
-        const allOutputs = [];
-        this.nodes.forEach((n) => {
-            n.inputPorts.forEach((i) => {
-                allInputs.push(',' + i.value.join() + ',');
-            });
-            n.outputPorts.forEach((i) => {
-                allOutputs.push(',' + i.value.join() + ',');
-            });
-        });
+        const allInputs = _.flatMap(this.nodes, (n) => n.inputPortVals());
+        const allOutputs = _.flatMap(this.nodes, (n) => n.outputPortVals());
 
         const allInputsCopy = allInputs.slice();
         const splits: SplitJoin = {};
@@ -138,45 +99,11 @@ export class FlatModule {
                 joins);
         });
 
-        for (const target of Object.keys(joins)) {
-            // turn string into array of signal names
-            const signalStrs: string[] = target.slice(1, -1).split(',');
-            const signals: Signals = _.map(signalStrs, (ss) =>  Number(ss) );
-            const joinOutPorts: FlatPort[] = [{ key: 'Y', value: signals }];
-            const inPorts: FlatPort[] = [];
-            joins[target].forEach((name) => {
-                const sigs: Signals = getBits(signals, name);
-                inPorts.push({ key: name, value: sigs });
-            });
-            this.nodes.push({
-                key: '$join$' + target,
-                type: '$_join_',
-                inputPorts: inPorts,
-                outputPorts: joinOutPorts,
-            });
-        }
-
-        for (const source of Object.keys(splits)) {
-            // turn string into array of signal names
-            const signals: Signals = source.slice(1, -1).split(',');
-            // convert the signals into actual numbers
-            // after running constant pass, all signals should be numbers
-            for (const i of Object.keys(signals)) {
-                signals[i] = Number(signals[i]);
-            }
-            const inPorts: FlatPort[] = [{ key: 'A', value: signals }];
-            const splitOutPorts: FlatPort[] = [];
-            splits[source].forEach((name) => {
-                const sigs: Signals = getBits(signals, name);
-                splitOutPorts.push({ key: name, value: sigs });
-            });
-            this.nodes.push({
-                key: '$split$' + source,
-                type: '$_split_',
-                inputPorts: inPorts,
-                outputPorts: splitOutPorts,
-            });
-        }
+        this.nodes = this.nodes.concat(_.map(joins, (joinOutput, joinInputs) => {
+            return Cell.fromJoinInfo(joinInputs, joinOutput);
+        })).concat(_.map(splits, (splitOutputs, splitInput) => {
+            return Cell.fromSplitInfo(splitInput, splitOutputs);
+        }));
     }
 
     // search through all the ports to find all of the wires
@@ -212,11 +139,11 @@ export class FlatModule {
         });
         // list of unique nets
         const nets = removeDups(_.keys(ridersByNet).concat(_.keys(driversByNet)).concat(_.keys(lateralsByNet)));
-        const wires: Wire[] = nets.map((net) => {
-            const drivers: FlatPort[] = driversByNet[net] || [];
-            const riders: FlatPort[] = ridersByNet[net] || [];
-            const laterals: FlatPort[] = lateralsByNet[net] || [];
-            const wire: Wire = { drivers, riders, laterals};
+        const wires: IWire[] = nets.map((net) => {
+            const drivers: IFlatPort[] = driversByNet[net] || [];
+            const riders: IFlatPort[] = ridersByNet[net] || [];
+            const laterals: IFlatPort[] = lateralsByNet[net] || [];
+            const wire: IWire = { drivers, riders, laterals};
             drivers.concat(riders).concat(laterals).forEach((port) => {
                 port.wire = wire;
             });
@@ -224,38 +151,9 @@ export class FlatModule {
         });
         this.wires = wires;
     }
-
-    private assignConstant(nameCollector: string,
-                           constants: number[],
-                           currIndex: number,
-                           signalsByConstantName: SigsByConstName,
-                           portSignals: Signals) {
-        // we've been appending to nameCollector, so reverse to get const name
-        const constName = nameCollector.split('').reverse().join('');
-        // if the constant has already been used
-        if (signalsByConstantName.hasOwnProperty(constName)) {
-            const constSigs: number[] = signalsByConstantName[constName];
-            // go back and fix signal values
-            const constLength = constSigs.length;
-            constSigs.forEach((constSig, constIndex) => {
-                // i is where in port_signals we need to update
-                const i: number = currIndex - constLength + constIndex;
-                portSignals[i] = constSig;
-            });
-        } else {
-            const constant: Cell = {
-                key: constName,
-                type: '$_constant_',
-                inputPorts: [],
-                outputPorts: [{ key: 'Y', value: constants }],
-            };
-            this.nodes.push(constant);
-            signalsByConstantName[constName] = constants;
-        }
-    }
 }
 
-interface SigsByConstName {
+export interface SigsByConstName {
     [constantName: string]: number[];
 }
 
@@ -287,7 +185,7 @@ function indexOfContains(needle: string, arrhaystack: string[]): number {
     });
 }
 
-function getBits(signals: Signals, indicesString: string) {
+export function getBits(signals: Signals, indicesString: string) {
     const index = indicesString.indexOf(':');
     // is it the whole thing?
     if (index === -1) {
@@ -383,7 +281,7 @@ function gather(inputs: string[],  // all inputs
 }
 
 interface NameToPorts {
-    [netName: string]: FlatPort[];
+    [netName: string]: IFlatPort[];
 }
 
 interface StringToBool {

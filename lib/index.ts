@@ -4,7 +4,7 @@ import ELK = require('elkjs');
 import { FlatModule } from './FlatModule';
 import _ = require('lodash');
 import onml = require('onml');
-import { YosysModule, YosysNetlist } from './YosysModel';
+import { YosysNetlist } from './YosysModel';
 import { getProperties } from './skin';
 import { ElkGraph, buildElkGraph } from './elkGraph';
 import { klayed_out } from './draw';
@@ -17,8 +17,7 @@ export function render(skinData: string, yosysNetlist: YosysNetlist, done?: ICal
     const skin = onml.p(skinData);
     const layoutProps = getProperties(skin);
 
-    const yModule = new YosysModule(yosysNetlist);
-    const flatModule = new FlatModule(yModule, skin);
+    const flatModule = new FlatModule(yosysNetlist, skin);
 
     // this can be skipped if there are no 0's or 1's
     if (layoutProps.constants !== false) {

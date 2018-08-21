@@ -1,5 +1,5 @@
 import {ElkGraph, ElkCell, getGenericHeight, ElkEdge, ElkSegment, WirePoint} from './elkGraph';
-import {FlatModule, Cell, removeDups} from './FlatModule';
+import {FlatModule, ICell, removeDups} from './FlatModule';
 import {findSkinType, getPortsWithPrefix} from './skin';
 
 import _ = require('lodash');
@@ -11,7 +11,7 @@ enum WireDirection {
 }
 
 export function klayed_out(g: ElkGraph, module: FlatModule) {
-    const nodes = module.getNodes().map((n: Cell) => {
+    const nodes = module.getNodes().map((n: ICell) => {
         const kchild: ElkCell = _.find(g.children, (c) => c.id === n.key);
         const template = findSkinType(module.getSkin(), n.type);
         const tempclone = clone(template);

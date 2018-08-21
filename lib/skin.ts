@@ -10,7 +10,7 @@ export function getPortsWithPrefix(template: any[], prefix: string) {
     return ports;
 }
 
-function filterPortPids(template, filter) {
+function filterPortPids(template, filter): string[] {
     const ports = _.filter(template, (element: any[]) => {
         const tag: string = element[0];
         if (element instanceof Array && tag === 'g') {
@@ -24,7 +24,7 @@ function filterPortPids(template, filter) {
     });
 }
 
-export function getLateralPortPids(template) {
+export function getLateralPortPids(template): string[] {
     return filterPortPids(template, (attrs) => {
         if (attrs['s:dir']) {
             return attrs['s:dir'] === 'lateral';
@@ -37,7 +37,7 @@ export function getLateralPortPids(template) {
     });
 }
 
-export function getInputPortPids(template) {
+export function getInputPortPids(template): string[] {
     return filterPortPids(template, (attrs) => {
         if (attrs['s:position']) {
             return attrs['s:position'] === 'left' ||
@@ -47,7 +47,7 @@ export function getInputPortPids(template) {
     });
 }
 
-export function getOutputPortPids(template) {
+export function getOutputPortPids(template): string[] {
     return filterPortPids(template, (attrs) => {
         if (attrs['s:position']) {
             return attrs['s:position'] === 'right' ||

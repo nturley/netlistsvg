@@ -1,4 +1,4 @@
-import {FlatModule, Cell, FlatPort} from './FlatModule';
+import {FlatModule, ICell, IFlatPort} from './FlatModule';
 import {findSkinType, getPortsWithPrefix} from './skin';
 import _ = require('lodash');
 
@@ -151,7 +151,7 @@ export function buildElkGraph(module: FlatModule): ElkGraph {
 }
 
 // given a module type, build kgraphchild
-function buildElkGraphChild(skinData, n: Cell): ElkCell {
+function buildElkGraphChild(skinData, n: ICell): ElkCell {
     //   labels: [ { text: "n2" } ],
     const template = findSkinType(skinData, n.type);
     const type: string = template[1]['s:type'];
@@ -258,8 +258,8 @@ function route(sourcePorts, targetPorts, i: number): ElkEdge[] {
     });
 }
 
-function getGenericPortsFrom(nports: FlatPort[], templatePorts, nkey: string, type: string, dir: string): ElkPort[] {
-    return nports.map((p: FlatPort, i: number) => {
+function getGenericPortsFrom(nports: IFlatPort[], templatePorts, nkey: string, type: string, dir: string): ElkPort[] {
+    return nports.map((p: IFlatPort, i: number) => {
 
         if (i === 0) {
             const ret: ElkPort = {
