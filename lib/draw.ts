@@ -1,6 +1,7 @@
-import {ElkGraph, ElkCell, getGenericHeight, ElkEdge, ElkSegment, WirePoint} from './elkGraph';
-import {FlatModule, ICell, removeDups} from './FlatModule';
-import {findSkinType, getPortsWithPrefix} from './skin';
+import { ElkGraph, IElkCell, ElkEdge, ElkSegment, WirePoint } from './elkGraph';
+import { FlatModule, removeDups } from './FlatModule';
+import { getPortsWithPrefix } from './skin';
+import { Cell } from './Cell';
 
 import _ = require('lodash');
 import clone = require('clone');
@@ -10,76 +11,10 @@ enum WireDirection {
     Up, Down, Left, Right,
 }
 
-export function klayed_out(g: ElkGraph, module: FlatModule) {
-    const nodes = module.getNodes().map((n: ICell) => {
-        const kchild: ElkCell = _.find(g.children, (c) => c.id === n.key);
-        const template = findSkinType(module.getSkin(), n.type);
-        const tempclone = clone(template);
-        setTextAttribute(tempclone, 'ref', n.key);
-        if (n.attributes && n.attributes.value) {
-            setTextAttribute(tempclone, 'name', n.attributes.value);
-        }
-        tempclone[1].transform = 'translate(' + kchild.x + ',' + kchild.y + ')';
-        if (n.type === '$_constant_' && n.key.length > 3) {
-            const num: number = parseInt(n.key, 2);
-            setTextAttribute(tempclone, 'ref', '0x' + num.toString(16));
-        } else if (n.type === '$_split_') {
-            setGenericSize(tempclone, Number(getGenericHeight(template, n)));
-            const outPorts = getPortsWithPrefix(template, 'out');
-            const gap: number = Number(outPorts[1][1]['s:y']) - Number(outPorts[0][1]['s:y']);
-            const startY: number = Number(outPorts[0][1]['s:y']);
-            tempclone.pop();
-            tempclone.pop();
-            n.outputPorts.forEach((p, i) => {
-                const portClone = clone(outPorts[0]);
-                portClone[portClone.length - 1][2] = p.key;
-                portClone[1].transform = 'translate(' + outPorts[1][1]['s:x'] + ','
-                    + (startY + i * gap) + ')';
-                tempclone.push(portClone);
-            });
-        } else if (n.type === '$_join_') {
-            setGenericSize(tempclone, Number(getGenericHeight(template, n)));
-            const inPorts = getPortsWithPrefix(template, 'in');
-            const gap: number = Number(inPorts[1][1]['s:y']) - Number(inPorts[0][1]['s:y']);
-            const startY: number = Number(inPorts[0][1]['s:y']);
-            tempclone.pop();
-            tempclone.pop();
-            n.inputPorts.forEach((port, i) => {
-                const portClone = clone(inPorts[0]);
-                portClone[portClone.length - 1][2] = port.key;
-                portClone[1].transform = 'translate(' + inPorts[1][1]['s:x'] + ','
-                    + (startY + i * gap) + ')';
-                tempclone.push(portClone);
-            });
-        } else if (template[1]['s:type'] === 'generic') {
-            setGenericSize(tempclone, Number(getGenericHeight(template, n)));
-            const inPorts = getPortsWithPrefix(template, 'in');
-            const ingap = Number(inPorts[1][1]['s:y']) - Number(inPorts[0][1]['s:y']);
-            const instartY = Number(inPorts[0][1]['s:y']);
-            const outPorts = getPortsWithPrefix(template, 'out');
-            const outgap = Number(outPorts[1][1]['s:y']) - Number(outPorts[0][1]['s:y']);
-            const outstartY = Number(outPorts[0][1]['s:y']);
-            tempclone.pop();
-            tempclone.pop();
-            tempclone.pop();
-            tempclone.pop();
-            n.inputPorts.forEach((port, i) => {
-                const portClone = clone(inPorts[0]);
-                portClone[portClone.length - 1][2] = port.key;
-                portClone[1].transform = 'translate(' + inPorts[1][1]['s:x'] + ','
-                    + (instartY + i * ingap) + ')';
-                tempclone.push(portClone);
-            });
-            n.outputPorts.forEach((port, i) => {
-                const portClone = clone(outPorts[0]);
-                portClone[portClone.length - 1][2] = port.key;
-                portClone[1].transform = 'translate(' + outPorts[1][1]['s:x'] + ','
-                    + (outstartY + i * outgap) + ')';
-                tempclone.push(portClone);
-            });
-            tempclone[2][2] = n.type;
-        }
-        return tempclone;
+export function drawModule(g: ElkGraph, module: FlatModule) {
+    const nodes = module.getNodes().map((n: Cell) => {
+        const kchild: IElkCell = _.find(g.children, (c) => c.id === n.Key);
+        return n.render(kchild);
     });
     removeDummyEdges(g);
     const lines = _.flatMap(g.edges, (e: ElkEdge) => {
@@ -121,7 +56,7 @@ export function klayed_out(g: ElkGraph, module: FlatModule) {
     return onml.s(ret);
 }
 
-function setGenericSize(tempclone, height) {
+export function setGenericSize(tempclone, height) {
     onml.traverse(tempclone, {
         enter: (node) => {
             if (node.name === 'rect' && node.attr['s:generic'] === 'body') {
@@ -131,7 +66,7 @@ function setGenericSize(tempclone, height) {
     });
 }
 
-function setTextAttribute(tempclone, attribute, value) {
+export function setTextAttribute(tempclone, attribute, value) {
     onml.traverse(tempclone, {
         enter: (node) => {
             if (node.name === 'text' && node.attr['s:attribute'] === attribute) {

@@ -1,46 +1,47 @@
-import { IFlatPort, SigsByConstName, getBits } from './FlatModule';
+import { SigsByConstName, getBits, NameToPorts, addToDefaultDict } from './FlatModule';
 import { CellAttributes, IYosysCell, YosysExtPort, Direction, Signals } from './YosysModel';
-import { findSkinType, getInputPortPids, getOutputPortPids } from './skin';
+import { findSkinType, getInputPortPids, getOutputPortPids, getLateralPortPids, getPortsWithPrefix } from './skin';
+import {Port} from './Port';
+import {setTextAttribute, setGenericSize} from './draw';
 import _ = require('lodash');
+import { IElkCell, ElkPort } from './elkGraph';
+import { p } from 'onml';
+import clone = require('clone');
 
 export class Cell {
+
+    public static skin: any;
 
     public static fromPort(yPort: YosysExtPort, name: string): Cell {
         const isInput: boolean = yPort.direction === Direction.Input;
         if (isInput) {
-            return new Cell(name, '$_inputExt_', [], [{ key: 'Y', value: yPort.bits }], {});
+            return new Cell(name, '$_inputExt_', [], [new Port('Y', yPort.bits)], {});
         }
-        return new Cell(name, '$_outputExt_', [{ key: 'A', value: yPort.bits }], [], {});
+        return new Cell(name, '$_outputExt_', [new Port('A', yPort.bits)], [], {});
     }
 
-    public static fromYosysCell(yCell: IYosysCell, name: string, skin: any) {
-        const template = findSkinType(skin, yCell.type);
+    public static fromYosysCell(yCell: IYosysCell, name: string) {
+        const template = findSkinType(Cell.skin, yCell.type);
         const inputPids: string[] = getInputPortPids(template);
         const outputPids: string[] = getOutputPortPids(template);
-        const ports: IFlatPort[] = _.map(yCell.connections, (conn, portName) => {
-            return { key: portName, value: conn};
+        const ports: Port[] = _.map(yCell.connections, (conn, portName) => {
+            return new Port(portName, conn);
         });
-        const inputPorts = ports.filter((port) => {
-            return _.includes(inputPids, port.key);
-        });
-        const outputPorts = ports.filter((port) => {
-            return _.includes(outputPids, port.key);
-        });
+        const inputPorts = ports.filter((port) => port.keyIn(inputPids));
+        const outputPorts = ports.filter((port) => port.keyIn(outputPids));
         return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes);
     }
 
     public static fromConstantInfo(name: string, constants: number[]): Cell {
-        return new Cell(name, '$_constant_', [], [{ key: 'Y', value: constants }], {});
+        return new Cell(name, '$_constant_', [], [new Port('Y', constants)], {});
     }
 
     public static fromJoinInfo(target: string, sources: string[]): Cell {
         const signalStrs: string[] = target.slice(1, -1).split(',');
-        const signals: Signals = _.map(signalStrs, (ss) =>  Number(ss) );
-        const joinOutPorts: IFlatPort[] = [{ key: 'Y', value: signals }];
-        const inPorts: IFlatPort[] = [];
-        sources.forEach((name) => {
-            const sigs: Signals = getBits(signals, name);
-            inPorts.push({ key: name, value: sigs });
+        const signals: Signals = signalStrs.map((ss) =>  Number(ss));
+        const joinOutPorts: Port[] = [new Port('Y', signals)];
+        const inPorts: Port[] = sources.map((name) => {
+            return new Port(name, getBits(signals, name));
         });
         return new Cell('$join$' + target, '$_join_', inPorts, joinOutPorts, {});
     }
@@ -53,114 +54,256 @@ export class Cell {
         for (const i of Object.keys(signals)) {
             signals[i] = Number(signals[i]);
         }
-        const inPorts: IFlatPort[] = [{ key: 'A', value: signals }];
-        const splitOutPorts: IFlatPort[] = [];
-        targets.forEach((name) => {
+        const inPorts: Port[] = [new Port('A', signals)];
+        const splitOutPorts: Port[] = targets.map((name) => {
             const sigs: Signals = getBits(signals, name);
-            splitOutPorts.push({ key: name, value: sigs });
+            return new Port(name, sigs);
         });
         return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {});
     }
 
-    private key: string;
-    private type: string;
-    private inputPorts: IFlatPort[];
-    private outputPorts: IFlatPort[];
-    private attributes: CellAttributes;
+    protected key: string;
+    protected type: string;
+    protected inputPorts: Port[];
+    protected outputPorts: Port[];
+    protected attributes: CellAttributes;
 
     constructor(key: string,
                 type: string,
-                inputPorts: IFlatPort[],
-                outputPorts: IFlatPort[],
+                inputPorts: Port[],
+                outputPorts: Port[],
                 attributes: CellAttributes) {
         this.key = key;
         this.type = type;
         this.inputPorts = inputPorts;
         this.outputPorts = outputPorts;
         this.attributes = attributes;
+        inputPorts.forEach((ip) => {
+            ip.ParentNode = this;
+        });
+        outputPorts.forEach((op) => {
+            op.ParentNode = this;
+        });
+    }
+
+    public get Type(): string {
+        return this.type;
+    }
+
+    public get Key(): string {
+        return this.key;
+    }
+
+    public get InputPorts(): Port[] {
+        return this.inputPorts;
+    }
+
+    public get OutputPorts(): Port[] {
+        return this.outputPorts;
     }
 
     public maxOutVal(atLeast: number): number {
-        let maxNum: number = atLeast;
-        this.outputPorts.forEach((p) => {
-            const maxVal: number = _.max(_.map(p.value, (v) => {
-                return Number(v);
-            }));
-            maxNum = _.max([maxNum, maxVal]);
-        });
-        return maxNum;
+        const maxVal: number = _.max(this.outputPorts.map((op) => op.maxVal()));
+        return _.max([maxVal, atLeast]);
     }
 
     public findConstants(sigsByConstantName: SigsByConstName,
                          maxNum: number,
                          constantCollector: Cell[]): number {
-        this.inputPorts.forEach((p) => {
-            let constNameCollector = '';
-            let constNumCollector: number[] = [];
-            const portSigs: Signals = p.value;
-            portSigs.forEach((portSig, portSigIndex) => {
-                // is constant?
-                if (portSig === '0' || portSig === '1') {
-                    maxNum += 1;
-                    constNameCollector += portSig;
-                    // replace the constant with new signal num
-                    portSigs[portSigIndex] = maxNum;
-                    constNumCollector.push(maxNum);
-                // string of constants ended before end of p.value
-                } else if (constNumCollector.length > 0) {
-                    this.assignConstant(constNameCollector,
-                                constNumCollector,
-                                portSigIndex,
-                                sigsByConstantName,
-                                portSigs,
-                                constantCollector);
-                    // reset name and num collectors
-                    constNameCollector = '';
-                    constNumCollector = [];
-                }
-            });
-            if (constNumCollector.length > 0) {
-                this.assignConstant(constNameCollector,
-                            constNumCollector,
-                            portSigs.length,
-                            sigsByConstantName,
-                            portSigs,
-                            constantCollector);
-            }
+        this.inputPorts.forEach((ip) => {
+            maxNum = ip.findConstants(sigsByConstantName, maxNum, constantCollector);
         });
         return maxNum;
     }
 
     public inputPortVals(): string[] {
-        return this.inputPorts.map((port) => ',' + port.value.join() + ',');
+        return this.inputPorts.map((port) => port.valString());
     }
 
     public outputPortVals(): string[] {
-        return this.outputPorts.map((port) => ',' + port.value.join() + ',');
+        return this.outputPorts.map((port) => port.valString());
     }
 
-    private assignConstant(nameCollector: string,
-                           constants: number[],
-                           currIndex: number,
-                           signalsByConstantName: SigsByConstName,
-                           portSignals: Signals,
-                           constantCollector: Cell[]) {
-        // we've been appending to nameCollector, so reverse to get const name
-        const constName = nameCollector.split('').reverse().join('');
-        // if the constant has already been used
-        if (signalsByConstantName.hasOwnProperty(constName)) {
-            const constSigs: number[] = signalsByConstantName[constName];
-            // go back and fix signal values
-            const constLength = constSigs.length;
-            constSigs.forEach((constSig, constIndex) => {
-                // i is where in port_signals we need to update
-                const i: number = currIndex - constLength + constIndex;
-                portSignals[i] = constSig;
-            });
-        } else {
-            constantCollector.push(Cell.fromConstantInfo(constName, constants));
-            signalsByConstantName[constName] = constants;
+    public collectPortsByDirection(ridersByNet: NameToPorts,
+                                   driversByNet: NameToPorts,
+                                   lateralsByNet: NameToPorts,
+                                   genericsLaterals: boolean): void {
+        const template = findSkinType(Cell.skin, this.type);
+        const lateralPids = getLateralPortPids(template);
+        // find all ports connected to the same net
+        this.inputPorts.forEach((port) => {
+            const isLateral = port.keyIn(lateralPids);
+            if (isLateral || (template[1]['s:type'] === 'generic' && genericsLaterals)) {
+                addToDefaultDict(lateralsByNet, port.valString(), port);
+            } else {
+                addToDefaultDict(ridersByNet, port.valString(), port);
+            }
+        });
+        this.outputPorts.forEach((port) => {
+            const isLateral = port.keyIn(lateralPids);
+            if (isLateral || (template[1]['s:type'] === 'generic' && genericsLaterals)) {
+                addToDefaultDict(lateralsByNet, port.valString(), port);
+            } else {
+                addToDefaultDict(driversByNet, port.valString(), port);
+            }
+        });
+    }
+
+    public getValueAttribute(): string {
+        if (this.attributes && this.attributes.value) {
+            return this.attributes.value;
         }
+        return null;
+    }
+
+    public getTemplate(): any {
+        return findSkinType(Cell.skin, this.type);
+    }
+
+    public buildElkChild(): IElkCell {
+        const template = this.getTemplate();
+        const type: string = template[1]['s:type'];
+        if (type === 'join' ||
+            type === 'split' ||
+            type === 'generic') {
+            const inTemplates: any[] = getPortsWithPrefix(template, 'in');
+            const outTemplates: any[] = getPortsWithPrefix(template, 'out');
+            const inPorts = this.inputPorts.map((ip, i) =>
+                ip.getGenericElkPort(i, inTemplates, 'in'));
+            const outPorts = this.outputPorts.map((op, i) =>
+                op.getGenericElkPort(i, outTemplates, 'out'));
+            const cell: IElkCell = {
+                id: this.key,
+                width: Number(template[1]['s:width']),
+                height: Number(this.getGenericHeight()),
+                ports: inPorts.concat(outPorts),
+                layoutOptions: { 'de.cau.cs.kieler.portConstraints': 'FIXED_POS' },
+            };
+            if (type === 'generic') {
+                cell.labels = [{
+                    text: this.type,
+                    x: Number(template[2][1].x),
+                    y: Number(template[2][1].y),
+                    height: 11,
+                    width: (6 * this.type.length),
+                }];
+            }
+            return cell;
+        }
+        const ports: ElkPort[] = getPortsWithPrefix(template, '').map((tp) => {
+            return {
+                id: this.key + '.' + tp[1]['s:pid'],
+                width: 0,
+                height: 0,
+                x: Number(tp[1]['s:x']),
+                y: Number(tp[1]['s:y']),
+            };
+        });
+        const nodeWidth: number = Number(template[1]['s:width']);
+        const ret: IElkCell = {
+            id: this.key,
+            width: nodeWidth,
+            height: Number(template[1]['s:height']),
+            ports,
+            layoutOptions: { 'de.cau.cs.kieler.portConstraints': 'FIXED_POS' },
+        };
+        if (type === 'inputExt' ||
+            type === 'outputExt') {
+            ret.labels = [{
+                text: this.key,
+                x: Number(template[2][1].x) + nodeWidth / 2 - 3 * this.key.length,
+                y: Number(template[2][1].y),
+                height: 11,
+                width: (6 * this.key.length),
+            }];
+        }
+        return ret;
+    }
+
+    public render(kChild: IElkCell): any[] {
+        const template = this.getTemplate();
+        const tempclone = clone(template);
+        setTextAttribute(tempclone, 'ref', this.key);
+        const attrValue = this.getValueAttribute();
+        if (attrValue) {
+            setTextAttribute(tempclone, 'name', attrValue);
+        }
+        tempclone[1].transform = 'translate(' + kChild.x + ',' + kChild.y + ')';
+        if (this.type === '$_constant_' && this.key.length > 3) {
+            const num: number = parseInt(this.key, 2);
+            setTextAttribute(tempclone, 'ref', '0x' + num.toString(16));
+        } else if (this.type === '$_split_') {
+            setGenericSize(tempclone, Number(this.getGenericHeight()));
+            const outPorts = getPortsWithPrefix(template, 'out');
+            const gap: number = Number(outPorts[1][1]['s:y']) - Number(outPorts[0][1]['s:y']);
+            const startY: number = Number(outPorts[0][1]['s:y']);
+            tempclone.pop();
+            tempclone.pop();
+            this.outputPorts.forEach((op, i) => {
+                const portClone = clone(outPorts[0]);
+                portClone[portClone.length - 1][2] = op.Key;
+                portClone[1].transform = 'translate(' + outPorts[1][1]['s:x'] + ','
+                    + (startY + i * gap) + ')';
+                tempclone.push(portClone);
+            });
+        } else if (this.type === '$_join_') {
+            setGenericSize(tempclone, Number(this.getGenericHeight()));
+            const inPorts = getPortsWithPrefix(template, 'in');
+            const gap: number = Number(inPorts[1][1]['s:y']) - Number(inPorts[0][1]['s:y']);
+            const startY: number = Number(inPorts[0][1]['s:y']);
+            tempclone.pop();
+            tempclone.pop();
+            this.inputPorts.forEach((port, i) => {
+                const portClone = clone(inPorts[0]);
+                portClone[portClone.length - 1][2] = port.Key;
+                portClone[1].transform = 'translate(' + inPorts[1][1]['s:x'] + ','
+                    + (startY + i * gap) + ')';
+                tempclone.push(portClone);
+            });
+        } else if (template[1]['s:type'] === 'generic') {
+            setGenericSize(tempclone, Number(this.getGenericHeight()));
+            const inPorts = getPortsWithPrefix(template, 'in');
+            const ingap = Number(inPorts[1][1]['s:y']) - Number(inPorts[0][1]['s:y']);
+            const instartY = Number(inPorts[0][1]['s:y']);
+            const outPorts = getPortsWithPrefix(template, 'out');
+            const outgap = Number(outPorts[1][1]['s:y']) - Number(outPorts[0][1]['s:y']);
+            const outstartY = Number(outPorts[0][1]['s:y']);
+            tempclone.pop();
+            tempclone.pop();
+            tempclone.pop();
+            tempclone.pop();
+            this.inputPorts.forEach((port, i) => {
+                const portClone = clone(inPorts[0]);
+                portClone[portClone.length - 1][2] = port.Key;
+                portClone[1].transform = 'translate(' + inPorts[1][1]['s:x'] + ','
+                    + (instartY + i * ingap) + ')';
+                tempclone.push(portClone);
+            });
+            this.outputPorts.forEach((port, i) => {
+                const portClone = clone(outPorts[0]);
+                portClone[portClone.length - 1][2] = port.Key;
+                portClone[1].transform = 'translate(' + outPorts[1][1]['s:x'] + ','
+                    + (outstartY + i * outgap) + ')';
+                tempclone.push(portClone);
+            });
+            tempclone[2][2] = this.type;
+        }
+        return tempclone;
+    }
+
+    private getGenericHeight() {
+        const template = this.getTemplate();
+        const inPorts = getPortsWithPrefix(template, 'in');
+        const outPorts = getPortsWithPrefix(template, 'out');
+        if (this.inputPorts.length > this.outputPorts.length) {
+            const gap = Number(inPorts[1][1]['s:y']) - Number(inPorts[0][1]['s:y']);
+            return Number(template[1]['s:height']) + gap * (this.inputPorts.length - 2);
+        }
+        if (outPorts.length > 1) {
+            const gap = Number(outPorts[1][1]['s:y']) - Number(outPorts[0][1]['s:y']);
+            return Number(template[1]['s:height']) + gap * (this.outputPorts.length - 2);
+        }
+        return Number(template[1]['s:height']);
     }
 
 }

@@ -7,7 +7,7 @@ import onml = require('onml');
 import { YosysNetlist } from './YosysModel';
 import { getProperties } from './skin';
 import { ElkGraph, buildElkGraph } from './elkGraph';
-import { klayed_out } from './draw';
+import { drawModule } from './draw';
 
 const elk = new ELK();
 
@@ -31,7 +31,7 @@ export function render(skinData: string, yosysNetlist: YosysNetlist, done?: ICal
     const kgraph: ElkGraph = buildElkGraph(flatModule);
 
     const promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine })
-        .then((g) => klayed_out(g, flatModule))
+        .then((g) => drawModule(g, flatModule))
         // tslint:disable-next-line:no-console
         .catch((e) => { console.error(e); });
 

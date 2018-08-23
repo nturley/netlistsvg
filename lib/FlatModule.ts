@@ -1,12 +1,12 @@
 import { YosysNetlist, CellAttributes, Signals, IYosysModule } from './YosysModel';
-import { getProperties, findSkinType, getLateralPortPids } from './skin';
+import { getProperties } from './skin';
 import { Cell } from './Cell';
 import _ = require('lodash');
 
 export interface IFlatPort {
     key: string;
     value?: number[] | Signals;
-    parentNode?: ICell;
+    parentNode?: Cell;
     wire?: IWire;
 }
 
@@ -42,8 +42,9 @@ export class FlatModule {
             this.moduleName = Object.keys(netlist.modules)[0];
         }
         const top = netlist.modules[this.moduleName];
+        Cell.skin = skin;
         const ports = _.map(top.ports, Cell.fromPort);
-        const cells = _.map(top.cells, (c, key) => Cell.fromYosysCell(c, key, skin));
+        const cells = _.map(top.cells, (c, key) => Cell.fromYosysCell(c, key));
         this.nodes = cells.concat(ports);
         // populated by createWires
         this.wires = [];
@@ -81,7 +82,7 @@ export class FlatModule {
     }
 
     // solves for minimal bus splits and joins and adds them to module
-    public addSplitsJoins() {
+    public addSplitsJoins(): void {
         const allInputs = _.flatMap(this.nodes, (n) => n.inputPortVals());
         const allOutputs = _.flatMap(this.nodes, (n) => n.outputPortVals());
 
@@ -113,29 +114,11 @@ export class FlatModule {
         const driversByNet: NameToPorts = {};
         const lateralsByNet: NameToPorts = {};
         this.nodes.forEach((n) => {
-            const template = findSkinType(this.skin, n.type);
-            const lateralPids = getLateralPortPids(template);
-            // find all ports connected to the same net
-            n.inputPorts.forEach((port) => {
-                port.parentNode = n;
-                const portSigs: number[] = port.value as number[];
-                const isLateral = lateralPids.indexOf(port.key) !== -1;
-                if (isLateral || (template[1]['s:type'] === 'generic' && layoutProps.genericsLaterals)) {
-                    addToDefaultDict(lateralsByNet, arrayToBitstring(portSigs), port);
-                } else {
-                    addToDefaultDict(ridersByNet, arrayToBitstring(portSigs), port);
-                }
-            });
-            n.outputPorts.forEach((port) => {
-                port.parentNode = n;
-                const portSigs: number[] = port.value as number[];
-                const isLateral = lateralPids.indexOf(port.key) !== -1;
-                if (isLateral || (template[1]['s:type'] === 'generic' && layoutProps.genericsLaterals)) {
-                    addToDefaultDict(lateralsByNet, arrayToBitstring(portSigs), port);
-                } else {
-                    addToDefaultDict(driversByNet, arrayToBitstring(portSigs), port);
-                }
-            });
+            n.collectPortsByDirection(
+                ridersByNet,
+                driversByNet,
+                lateralsByNet,
+                layoutProps.genericsLaterals);
         });
         // list of unique nets
         const nets = removeDups(_.keys(ridersByNet).concat(_.keys(driversByNet)).concat(_.keys(lateralsByNet)));
@@ -159,7 +142,7 @@ export interface SigsByConstName {
 
 // returns a string that represents the values of the array of integers
 // [1, 2, 3] -> ',1,2,3,'
-function arrayToBitstring(bitArray: number[]): string {
+export function arrayToBitstring(bitArray: number[]): string {
     let ret: string = '';
     bitArray.forEach((bit: number) => {
         const sbit = String(bit);
@@ -185,7 +168,7 @@ function indexOfContains(needle: string, arrhaystack: string[]): number {
     });
 }
 
-export function getBits(signals: Signals, indicesString: string) {
+export function getBits(signals: Signals, indicesString: string): Signals {
     const index = indicesString.indexOf(':');
     // is it the whole thing?
     if (index === -1) {
@@ -202,7 +185,7 @@ interface SplitJoin {
     [portName: string]: string[];
 }
 
-function addToDefaultDict(dict: any, key: string, value: any) {
+export function addToDefaultDict(dict: any, key: string, value: any): void {
     if (dict[key] === undefined) {
         dict[key] = [value];
     } else {
@@ -212,7 +195,9 @@ function addToDefaultDict(dict: any, key: string, value: any) {
 
 // string (for labels), that represents an index
 // or range of indices.
-function getIndicesString(bitstring: string, query: string, start: number): string {
+function getIndicesString(bitstring: string,
+                          query: string,
+                          start: number): string {
     const splitStart: number = _.max([bitstring.indexOf(query), start]);
     const startIndex: number = bitstring.substring(0, splitStart).split(',').length - 1;
     const endIndex: number = startIndex + query.split(',').length - 3;
@@ -231,7 +216,7 @@ function gather(inputs: string[],  // all inputs
                 start: number,   // index of toSolve to start from
                 end: number,     // index of toSolve to end at
                 splits: SplitJoin,  // container collecting the splits
-                joins: SplitJoin) {  // container collecting the joins
+                joins: SplitJoin): void {  // container collecting the joins
     // remove myself from outputs list if present
     const outputIndex: number = outputs.indexOf(toSolve);
     if (outputIndex !== -1) {
@@ -280,7 +265,7 @@ function gather(inputs: string[],  // all inputs
     gather(inputs, outputs, toSolve, start, start + query.slice(0, -1).lastIndexOf(',') + 1, splits, joins);
 }
 
-interface NameToPorts {
+export interface NameToPorts {
     [netName: string]: IFlatPort[];
 }
 
@@ -288,7 +273,7 @@ interface StringToBool {
     [s: string]: boolean;
 }
 
-export function removeDups(inStrs: string[]) {
+export function removeDups(inStrs: string[]): string[] {
     const map: StringToBool = {};
     inStrs.forEach((str) => {
         map[str] = true;

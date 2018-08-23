@@ -1,5 +1,7 @@
-import {FlatModule, ICell, IFlatPort} from './FlatModule';
-import {findSkinType, getPortsWithPrefix} from './skin';
+import {FlatModule} from './FlatModule';
+import {getPortsWithPrefix} from './skin';
+import {Cell} from './Cell';
+import {Port} from './Port';
 import _ = require('lodash');
 
 export interface WirePoint {
@@ -7,15 +9,26 @@ export interface WirePoint {
     y: number;
 }
 
+export interface IElkCell {
+    id: string;
+    width: number;
+    height: number;
+    ports: ElkPort[];
+    layoutOptions?: ElkLayoutOptions;
+    labels?: ElkLabel[];
+    x?: number;
+    y?: number;
+}
+
 export interface ElkGraph {
     id: string;
-    children: ElkCell[];
+    children: IElkCell[];
     edges: ElkEdge[];
     width?: number;
     height?: number;
 }
 
-interface ElkPort {
+export interface ElkPort {
     id: string;
     width: number;
     height: number;
@@ -42,7 +55,7 @@ export interface ElkEdge {
     sections?: ElkSegment[];
 }
 
-interface ElkLayoutOptions {
+export interface ElkLayoutOptions {
     [option: string]: any;
 }
 
@@ -50,18 +63,7 @@ interface ElkOptions {
     layoutOptions: ElkLayoutOptions;
 }
 
-export interface ElkCell {
-    id: string;
-    width: number;
-    height: number;
-    ports: ElkPort[];
-    layoutOptions?: ElkLayoutOptions;
-    labels?: ElkLabel[];
-    x?: number;
-    y?: number;
-}
-
-interface ElkLabel {
+export interface ElkLabel {
     text: string;
     x: number;
     y: number;
@@ -70,8 +72,8 @@ interface ElkLabel {
 }
 
 export function buildElkGraph(module: FlatModule): ElkGraph {
-    const children: ElkCell[] = module.getNodes().map((n) => {
-        return buildElkGraphChild(module.getSkin(), n);
+    const children: IElkCell[] = module.getNodes().map((n) => {
+        return n.buildElkChild();
     });
     let i: number = 0;
     let dummies: number = 0;
@@ -90,7 +92,7 @@ export function buildElkGraph(module: FlatModule): ElkGraph {
             const dummyId: string = addDummy(children, dummies);
             dummies += 1;
             const dummyEdges: ElkEdge[] = w.drivers.map((driver) => {
-                const sourceParentKey: string = driver.parentNode.key;
+                const sourceParentKey: string = driver.parentNode.Key;
                 const id: string = 'e' + String(i);
                 i += 1;
                 const d: ElkEdge = {
@@ -109,7 +111,7 @@ export function buildElkGraph(module: FlatModule): ElkGraph {
             const dummyId: string = addDummy(children, dummies);
             dummies += 1;
             const dummyEdges: ElkEdge[] = w.riders.map((rider) => {
-                const sourceParentKey: string = rider.parentNode.key;
+                const sourceParentKey: string = rider.parentNode.Key;
                 const id: string = 'e' + String(i);
                 i += 1;
                 const edge: ElkEdge = {
@@ -124,9 +126,9 @@ export function buildElkGraph(module: FlatModule): ElkGraph {
             return dummyEdges;
         } else if (w.laterals.length > 1) {
             const source = w.laterals[0];
-            const sourceParentKey: string = source.parentNode.key;
+            const sourceParentKey: string = source.parentNode.Key;
             const lateralEdges: ElkEdge[] = w.laterals.slice(1).map((lateral) => {
-                const lateralParentKey: string = lateral.parentNode.key;
+                const lateralParentKey: string = lateral.parentNode.Key;
                 const id: string = 'e' + String(i);
                 i += 1;
                 const edge: ElkEdge = {
@@ -150,77 +152,9 @@ export function buildElkGraph(module: FlatModule): ElkGraph {
     };
 }
 
-// given a module type, build kgraphchild
-function buildElkGraphChild(skinData, n: ICell): ElkCell {
-    //   labels: [ { text: "n2" } ],
-    const template = findSkinType(skinData, n.type);
-    const type: string = template[1]['s:type'];
-    if (type === 'join' ||
-        type === 'split' ||
-        type === 'generic') {
-        const inPorts: string[] = getPortsWithPrefix(template, 'in');
-        const outPorts: string[] = getPortsWithPrefix(template, 'out');
-        const allPorts: ElkPort[] = getGenericPortsFrom(n.inputPorts,
-            inPorts,
-            n.key,
-            type,
-            'in').concat(
-                getGenericPortsFrom(n.outputPorts,
-                    outPorts,
-                    n.key,
-                    type,
-                    'out'));
-        const cell: ElkCell = {
-            id: n.key,
-            width: Number(template[1]['s:width']),
-            height: Number(getGenericHeight(template, n)),
-            ports: allPorts,
-            layoutOptions: { 'de.cau.cs.kieler.portConstraints': 'FIXED_POS' },
-        };
-        if (type === 'generic') {
-            cell.labels = [{
-                text: n.type,
-                x: Number(template[2][1].x),
-                y: Number(template[2][1].y),
-                height: 11,
-                width: (6 * n.type.length),
-            }];
-        }
-        return cell;
-    }
-    const ports: ElkPort[] = getPortsWithPrefix(template, '').map((p) => {
-        return {
-            id: n.key + '.' + p[1]['s:pid'],
-            width: 0,
-            height: 0,
-            x: Number(p[1]['s:x']),
-            y: Number(p[1]['s:y']),
-        };
-    });
-    const nodeWidth: number = Number(template[1]['s:width']);
-    const ret: ElkCell = {
-        id: n.key,
-        width: nodeWidth,
-        height: Number(template[1]['s:height']),
-        ports,
-        layoutOptions: { 'de.cau.cs.kieler.portConstraints': 'FIXED_POS' },
-    };
-    if (type === 'inputExt' ||
-        type === 'outputExt') {
-        ret.labels = [{
-            text: n.key,
-            x: Number(template[2][1].x) + nodeWidth / 2 - 3 * n.key.length,
-            y: Number(template[2][1].y),
-            height: 11,
-            width: (6 * n.key.length),
-        }];
-    }
-    return ret;
-}
-
-function addDummy(children: ElkCell[], dummyNum: number) {
+function addDummy(children: IElkCell[], dummyNum: number) {
     const dummyId: string = '$d_' + String(dummyNum);
-    const child: ElkCell = {
+    const child: IElkCell = {
         id: dummyId,
         width: 0,
         height: 0,
@@ -256,73 +190,4 @@ function route(sourcePorts, targetPorts, i: number): ElkEdge[] {
             return edge;
         });
     });
-}
-
-function getGenericPortsFrom(nports: IFlatPort[], templatePorts, nkey: string, type: string, dir: string): ElkPort[] {
-    return nports.map((p: IFlatPort, i: number) => {
-
-        if (i === 0) {
-            const ret: ElkPort = {
-                id: nkey + '.' + p.key,
-                width: 1,
-                height: 1,
-                x: Number(templatePorts[0][1]['s:x']),
-                y: Number(templatePorts[0][1]['s:y']),
-            };
-
-            if ((type === 'generic' || type === 'join') && dir === 'in') {
-                ret.labels = [{
-                    text: p.key,
-                    x: Number(templatePorts[0][2][1].x),
-                    y: Number(templatePorts[0][2][1].y),
-                    width: (6 * p.key.length),
-                    height: 11,
-                }];
-            }
-
-            if ((type === 'generic' || type === 'split') && dir === 'out') {
-                ret.labels = [{
-                    text: p.key,
-                    x: Number(templatePorts[0][2][1].x),
-                    y: Number(templatePorts[0][2][1].y),
-                    width: (6 * p.key.length),
-                    height: 11,
-                }];
-            }
-            return ret;
-        } else {
-            const gap: number = Number(templatePorts[1][1]['s:y']) - Number(templatePorts[0][1]['s:y']);
-            const ret: ElkPort = {
-                id: nkey + '.' + p.key,
-                width: 1,
-                height: 1,
-                x: Number(templatePorts[0][1]['s:x']),
-                y: (i) * gap + Number(templatePorts[0][1]['s:y']),
-            };
-            if (type === 'generic') {
-                ret.labels = [{
-                    text: p.key,
-                    x: Number(templatePorts[0][2][1].x),
-                    y: Number(templatePorts[0][2][1].y),
-                    width: (6 * p.key.length),
-                    height: 11,
-                }];
-            }
-            return ret;
-        }
-    });
-}
-
-export function getGenericHeight(template, node) {
-    const inPorts = getPortsWithPrefix(template, 'in');
-    const outPorts = getPortsWithPrefix(template, 'out');
-    if (node.inputPorts.length > node.outputPorts.length) {
-        const gap = Number(inPorts[1][1]['s:y']) - Number(inPorts[0][1]['s:y']);
-        return Number(template[1]['s:height']) + gap * (node.inputPorts.length - 2);
-    }
-    if (outPorts.length > 1) {
-        const gap = Number(outPorts[1][1]['s:y']) - Number(outPorts[0][1]['s:y']);
-        return Number(template[1]['s:height']) + gap * (node.outputPorts.length - 2);
-    }
-    return Number(template[1]['s:height']);
 }
