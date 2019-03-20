@@ -37,8 +37,10 @@
   "homepage": "https://github.com/nturley/netlistsvg#readme",
   "devDependencies": {
     "browserify": "^14.5.0",
+    "browserify-shim": "^3.8.14",
     "superagent": "^3.8.2",
-    "browserify-shim": "^3.8.14"
+    "tslint": "^5.14.0",
+    "typescript": "^3.3.4000"
   },
   "browserify-shim": {
     "elkjs": "global:ELK"

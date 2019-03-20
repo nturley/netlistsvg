@@ -11,7 +11,6 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install -y yosys
   - sudo apt-get install -y inkscape
-  - npm install -g typescript
 
 # Once https://github.com/travis-ci/apt-source-whitelist/pull/376 is merged,
 # the above lines can be replaced with the following;
