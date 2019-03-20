@@ -80,11 +80,14 @@ export function buildElkGraph(module: FlatModule): ElkGraph {
     const edges: ElkEdge[] = _.flatMap(module.getWires(), (w) => {
         // at least one driver and at least one rider and no laterals
         if (w.drivers.length > 0 && w.riders.length > 0 && w.laterals.length === 0) {
-            const ret: ElkEdge[] = route(w.drivers, w.riders, i);
+            const ret: ElkEdge[] = [];
+            i = route(w.drivers, w.riders, i, ret);
             return ret;
             // at least one driver or rider and at least one lateral
         } else if (w.drivers.concat(w.riders).length > 0 && w.laterals.length > 0) {
-            const ret: ElkEdge[] = route(w.drivers, w.laterals, i).concat(route(w.laterals, w.riders, i));
+            const ret: ElkEdge[] = [];
+            i = route(w.drivers, w.laterals, i, ret);
+            i = route(w.laterals, w.riders, i, ret);
             return ret;
             // at least two drivers and no riders
         } else if (w.riders.length === 0 && w.drivers.length > 1) {
@@ -169,15 +172,15 @@ function addDummy(children: IElkCell[], dummyNum: number) {
     return dummyId;
 }
 
-function route(sourcePorts, targetPorts, i: number): ElkEdge[] {
-    return _.flatMap(sourcePorts, (sourcePort) => {
+function route(sourcePorts, targetPorts, edgeIndex: number, edges: ElkEdge[]): number {
+    const newEdges: ElkEdge[] = (_.flatMap(sourcePorts, (sourcePort) => {
         const sourceParentKey: string = sourcePort.parentNode.key;
         const sourceKey: string = sourceParentKey + '.' + sourcePort.key;
         return targetPorts.map((targetPort) => {
             const targetParentKey: string = targetPort.parentNode.key;
             const targetKey: string = targetParentKey + '.' + targetPort.key;
             const edge: ElkEdge = {
-                id: 'e' + i,
+                id: 'e' + edgeIndex,
                 source: sourceParentKey,
                 sourcePort: sourceKey,
                 target: targetParentKey,
@@ -186,8 +189,10 @@ function route(sourcePorts, targetPorts, i: number): ElkEdge[] {
             if (sourcePort.parentNode.type !== '$dff') {
                 edge.layoutOptions = { 'org.eclipse.elk.layered.priority.direction': 10 };
             }
-            i += 1;
+            edgeIndex += 1;
             return edge;
         });
-    });
+    }));
+    edges.push.apply(edges, newEdges);
+    return edgeIndex;
 }
