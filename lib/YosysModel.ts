@@ -47,6 +47,14 @@ export interface IYosysCell {
     attributes?: CellAttributes;
 }
 
+export function getInputPortPids(cell: IYosysCell): string[] {
+    return Object.keys(cell.port_directions).filter((k) => cell.port_directions[k] === 'input');
+}
+
+export function getOutputPortPids(cell: IYosysCell): string[] {
+    return Object.keys(cell.port_directions).filter((k) => cell.port_directions[k] === 'output');
+}
+
 interface YosysCellMap {
     [cellName: string]: IYosysCell;
 }

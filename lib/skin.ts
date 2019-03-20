@@ -37,26 +37,6 @@ export function getLateralPortPids(template): string[] {
     });
 }
 
-export function getInputPortPids(template): string[] {
-    return filterPortPids(template, (attrs) => {
-        if (attrs['s:position']) {
-            return attrs['s:position'] === 'left' ||
-                attrs['s:position'] === 'top';
-        }
-        return false;
-    });
-}
-
-export function getOutputPortPids(template): string[] {
-    return filterPortPids(template, (attrs) => {
-        if (attrs['s:position']) {
-            return attrs['s:position'] === 'right' ||
-                attrs['s:position'] === 'bottom';
-        }
-        return false;
-    });
-}
-
 export function findSkinType(skinData, type: string) {
     let ret = null;
     onml.traverse(skinData, {

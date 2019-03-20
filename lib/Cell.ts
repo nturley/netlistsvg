@@ -1,11 +1,18 @@
 import { SigsByConstName, getBits, NameToPorts, addToDefaultDict } from './FlatModule';
-import { CellAttributes, IYosysCell, YosysExtPort, Direction, Signals } from './YosysModel';
-import { findSkinType, getInputPortPids, getOutputPortPids, getLateralPortPids, getPortsWithPrefix } from './skin';
+import {
+    CellAttributes,
+    IYosysCell,
+    YosysExtPort,
+    Direction,
+    Signals,
+    getInputPortPids,
+    getOutputPortPids,
+} from './YosysModel';
+import { findSkinType, getLateralPortPids, getPortsWithPrefix } from './skin';
 import {Port} from './Port';
 import {setTextAttribute, setGenericSize} from './draw';
 import _ = require('lodash');
 import { IElkCell, ElkPort } from './elkGraph';
-import { p } from 'onml';
 import clone = require('clone');
 
 export class Cell {
@@ -21,9 +28,8 @@ export class Cell {
     }
 
     public static fromYosysCell(yCell: IYosysCell, name: string) {
-        const template = findSkinType(Cell.skin, yCell.type);
-        const inputPids: string[] = getInputPortPids(template);
-        const outputPids: string[] = getOutputPortPids(template);
+        const inputPids: string[] = getInputPortPids(yCell);
+        const outputPids: string[] = getOutputPortPids(yCell);
         const ports: Port[] = _.map(yCell.connections, (conn, portName) => {
             return new Port(portName, conn);
         });

@@ -1,7 +1,7 @@
 'use strict';
 var superagent = require('superagent');
 var json5 = require('json5');
-var netlistSvg = require('../lib');
+var netlistSvg = require('../built');
 var up3down5 = require('../test/up3down5.json');
 
 var skins = ['lib/default.svg', 'lib/analog.svg'];
