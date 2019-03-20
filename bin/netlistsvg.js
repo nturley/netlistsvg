@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-var lib = require('../lib'),
+var lib = require('../built'),
     fs = require('fs'),
     path = require('path'),
     json5 = require('json5'),
@@ -16,21 +16,30 @@ if (require.main === module) {
     main(argv._[0], argv.o, argv.skin);
 }
 
-function main(netlistpath, outputPath, skinPath) {
+function render(skinData, netlist, outputPath) {
+    lib.render(skinData, netlist, (err, svgData) => {
+        if (err) throw err;
+        fs.writeFile(outputPath, svgData, 'utf-8', (err) => {
+            if (err) throw err;
+        });
+    });
+}
+
+function parseFiles(skinPath, netlistPath, callback) {
+    fs.readFile(skinPath, 'utf-8', (err, skinData) => {
+        if (err) throw err;
+        fs.readFile(netlistPath, (err, netlistData) => {
+            if (err) throw err;
+            callback(skinData, netlistData);
+        });
+    });
+}
+
+function main(netlistPath, outputPath, skinPath) {
     skinPath = skinPath || path.join(__dirname, '../lib/default.svg');
     outputPath = outputPath || 'out.svg';
-    fs.readFile(skinPath, 'utf-8', function(err, skin_data) {
-        if (err) throw err;
-        fs.readFile(netlistpath, function(err, netlist_data) {
-            if (err) throw err;
-            var netlist = json5.parse(netlist_data);
-            lib.render(skin_data, netlist, function(err, svg_data) {
-                if (err) throw err;
-                fs.writeFile(outputPath, svg_data, 'utf-8', function(err) {
-                    if (err) throw err;
-                });
-            });
-        });
+    parseFiles(skinPath, netlistPath, (skinData, netlistData) => {
+        render(skinData, json5.parse(netlistData), outputPath);
     });
 }
 
