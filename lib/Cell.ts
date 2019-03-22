@@ -187,9 +187,10 @@ export class Cell {
             };
             if (type === 'generic') {
                 cell.labels = [{
+                    id: this.key + '.label',
                     text: this.type,
                     x: Number(template[2][1].x),
-                    y: Number(template[2][1].y),
+                    y: Number(template[2][1].y) - 6,
                     height: 11,
                     width: (6 * this.type.length),
                 }];
@@ -216,9 +217,10 @@ export class Cell {
         if (type === 'inputExt' ||
             type === 'outputExt') {
             ret.labels = [{
+                id: this.key + '.label',
                 text: this.key,
                 x: Number(template[2][1].x) + nodeWidth / 2 - 3 * this.key.length,
-                y: Number(template[2][1].y),
+                y: Number(template[2][1].y) - 6,
                 height: 11,
                 width: (6 * this.key.length),
             }];

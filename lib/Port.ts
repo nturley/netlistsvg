@@ -79,7 +79,7 @@ export class Port {
         dir: string,
     ): ElkPort {
         const nkey = this.parentNode.Key;
-        const type = this.parentNode.Type;
+        const type = this.parentNode.getTemplate()[1]['s:type'];
         if (index === 0) {
             const ret: ElkPort = {
                 id: nkey + '.' + this.key,
@@ -91,9 +91,10 @@ export class Port {
 
             if ((type === 'generic' || type === 'join') && dir === 'in') {
                 ret.labels = [{
+                    id: nkey + '.' + this.key + '.label',
                     text: this.key,
-                    x: Number(templatePorts[0][2][1].x),
-                    y: Number(templatePorts[0][2][1].y),
+                    x: Number(templatePorts[0][2][1].x) - 10,
+                    y: Number(templatePorts[0][2][1].y) - 6,
                     width: (6 * this.key.length),
                     height: 11,
                 }];
@@ -101,9 +102,10 @@ export class Port {
 
             if ((type === 'generic' || type === 'split') && dir === 'out') {
                 ret.labels = [{
+                    id: nkey + '.' + this.key + '.label',
                     text: this.key,
-                    x: Number(templatePorts[0][2][1].x),
-                    y: Number(templatePorts[0][2][1].y),
+                    x: Number(templatePorts[0][2][1].x) - 10,
+                    y: Number(templatePorts[0][2][1].y) - 6,
                     width: (6 * this.key.length),
                     height: 11,
                 }];
@@ -120,9 +122,10 @@ export class Port {
             };
             if (type === 'generic') {
                 ret.labels = [{
+                    id: nkey + '.' + this.key + '.label',
                     text: this.key,
-                    x: Number(templatePorts[0][2][1].x),
-                    y: Number(templatePorts[0][2][1].y),
+                    x: Number(templatePorts[0][2][1].x) - 10,
+                    y: Number(templatePorts[0][2][1].y) - 6,
                     width: (6 * this.key.length),
                     height: 11,
                 }];

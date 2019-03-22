@@ -64,6 +64,7 @@ interface ElkOptions {
 }
 
 export interface ElkLabel {
+    id: string;
     text: string;
     x: number;
     y: number;
