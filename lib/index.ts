@@ -2,7 +2,6 @@
 
 import ELK = require('elkjs');
 import { FlatModule } from './FlatModule';
-import _ = require('lodash');
 import onml = require('onml');
 import { YosysNetlist } from './YosysModel';
 import { getProperties } from './skin';

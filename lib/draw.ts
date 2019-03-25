@@ -1,6 +1,5 @@
 import { ElkGraph, IElkCell, ElkEdge, ElkSegment, WirePoint } from './elkGraph';
 import { FlatModule, removeDups } from './FlatModule';
-import { getPortsWithPrefix } from './skin';
 import { Cell } from './Cell';
 
 import _ = require('lodash');
@@ -33,7 +32,12 @@ export function drawModule(g: ElkGraph, module: FlatModule) {
             });
             if (e.junctionPoints) {
                 const circles: any[] = e.junctionPoints.map((j: WirePoint) =>
-                    ['circle', { cx: j.x, cy: j.y, r: 2, style: 'fill:#000' }]);
+                    ['circle', {
+                        cx: j.x,
+                        cy: j.y,
+                        r: 2,
+                        style: 'fill:#000',
+                    }]);
                 bends = bends.concat(circles);
             }
             const line = [['line', {

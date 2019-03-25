@@ -1,7 +1,4 @@
 import {FlatModule} from './FlatModule';
-import {getPortsWithPrefix} from './skin';
-import {Cell} from './Cell';
-import {Port} from './Port';
 import _ = require('lodash');
 
 export interface WirePoint {

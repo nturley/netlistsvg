@@ -232,6 +232,7 @@ export class Cell {
         const template = this.getTemplate();
         const tempclone = clone(template);
         setTextAttribute(tempclone, 'ref', this.key);
+        setTextAttribute(tempclone, 'id', this.key);
         const attrValue = this.getValueAttribute();
         if (attrValue) {
             setTextAttribute(tempclone, 'name', attrValue);
