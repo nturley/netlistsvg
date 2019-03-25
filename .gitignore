@@ -8,6 +8,3 @@ examples/**/*.png
 .yosys_extra
 package-lock.json
 built/*.js
-bundle.js
-elk.bundled.js
-index.html
