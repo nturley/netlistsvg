@@ -7,4 +7,4 @@ examples/**/*.svg
 examples/**/*.png
 .yosys_extra
 package-lock.json
-built/*.js
+built/*.test.js

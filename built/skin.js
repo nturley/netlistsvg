@@ -1,0 +1,83 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var onml = require("onml");
+var _ = require("lodash");
+function getPortsWithPrefix(template, prefix) {
+    var ports = _.filter(template, function (e) {
+        if (e instanceof Array && e[0] === 'g') {
+            return e[1]['s:pid'].startsWith(prefix);
+        }
+    });
+    return ports;
+}
+exports.getPortsWithPrefix = getPortsWithPrefix;
+function filterPortPids(template, filter) {
+    var ports = _.filter(template, function (element) {
+        var tag = element[0];
+        if (element instanceof Array && tag === 'g') {
+            var attrs = element[1];
+            return filter(attrs);
+        }
+        return false;
+    });
+    return ports.map(function (port) {
+        return port[1]['s:pid'];
+    });
+}
+function getLateralPortPids(template) {
+    return filterPortPids(template, function (attrs) {
+        if (attrs['s:dir']) {
+            return attrs['s:dir'] === 'lateral';
+        }
+        if (attrs['s:position']) {
+            return attrs['s:position'] === 'left' ||
+                attrs['s:position'] === 'right';
+        }
+        return false;
+    });
+}
+exports.getLateralPortPids = getLateralPortPids;
+function findSkinType(skinData, type) {
+    var ret = null;
+    onml.traverse(skinData, {
+        enter: function (node, parent) {
+            if (node.name === 's:alias' && node.attr.val === type) {
+                ret = parent;
+            }
+        },
+    });
+    if (ret == null) {
+        onml.traverse(skinData, {
+            enter: function (node) {
+                if (node.attr['s:type'] === 'generic') {
+                    ret = node;
+                }
+            },
+        });
+    }
+    return ret.full;
+}
+exports.findSkinType = findSkinType;
+function getProperties(skin) {
+    var properties = _.find(skin, function (el) {
+        return el[0] === 's:properties';
+    });
+    var vals = _.mapValues(properties[1], function (val) {
+        if (!isNaN(val)) {
+            return Number(val);
+        }
+        if (val === 'true') {
+            return true;
+        }
+        if (val === 'false') {
+            return false;
+        }
+        return val;
+    });
+    var layoutEngine = _.find(properties, function (el) {
+        return el[0] === 's:layoutEngine';
+    }) || {};
+    vals.layoutEngine = layoutEngine[1];
+    return vals;
+}
+exports.getProperties = getProperties;
