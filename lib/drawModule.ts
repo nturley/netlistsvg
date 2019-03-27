@@ -1,23 +1,22 @@
-import { ElkGraph, IElkCell, ElkEdge, ElkSegment, WirePoint } from './elkGraph';
+import { ElkModel } from './elkGraph';
 import { FlatModule, removeDups } from './FlatModule';
-import { Cell } from './Cell';
+import Cell from './Cell';
 
 import _ = require('lodash');
-import clone = require('clone');
 import onml = require('onml');
 
 enum WireDirection {
     Up, Down, Left, Right,
 }
 
-export function drawModule(g: ElkGraph, module: FlatModule) {
+export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
     const nodes = module.getNodes().map((n: Cell) => {
-        const kchild: IElkCell = _.find(g.children, (c) => c.id === n.Key);
+        const kchild: ElkModel.Cell = _.find(g.children, (c) => c.id === n.Key);
         return n.render(kchild);
     });
     removeDummyEdges(g);
-    const lines = _.flatMap(g.edges, (e: ElkEdge) => {
-        return _.flatMap(e.sections, (s: ElkSegment) => {
+    const lines = _.flatMap(g.edges, (e: ElkModel.Edge) => {
+        return _.flatMap(e.sections, (s: ElkModel.Segment) => {
             let startPoint = s.startPoint;
             s.bendPoints = s.bendPoints || [];
             let bends: any[] = s.bendPoints.map((b) => {
@@ -31,7 +30,7 @@ export function drawModule(g: ElkGraph, module: FlatModule) {
                 return l;
             });
             if (e.junctionPoints) {
-                const circles: any[] = e.junctionPoints.map((j: WirePoint) =>
+                const circles: any[] = e.junctionPoints.map((j: ElkModel.WirePoint) =>
                     ['circle', {
                         cx: j.x,
                         cy: j.y,
@@ -60,27 +59,7 @@ export function drawModule(g: ElkGraph, module: FlatModule) {
     return onml.s(ret);
 }
 
-export function setGenericSize(tempclone, height) {
-    onml.traverse(tempclone, {
-        enter: (node) => {
-            if (node.name === 'rect' && node.attr['s:generic'] === 'body') {
-                node.attr.height = height;
-            }
-        },
-    });
-}
-
-export function setTextAttribute(tempclone, attribute, value) {
-    onml.traverse(tempclone, {
-        enter: (node) => {
-            if (node.name === 'text' && node.attr['s:attribute'] === attribute) {
-                node.full[2] = value;
-            }
-        },
-    });
-}
-
-function which_dir(start: WirePoint, end: WirePoint): WireDirection {
+function which_dir(start: ElkModel.WirePoint, end: ElkModel.WirePoint): WireDirection {
     if (end.x === start.x && end.y === start.y) {
         throw new Error('start and end are the same');
     }
@@ -102,7 +81,7 @@ function which_dir(start: WirePoint, end: WirePoint): WireDirection {
     throw new Error('unexpected direction');
 }
 
-function removeDummyEdges(g: ElkGraph) {
+function removeDummyEdges(g: ElkModel.Graph) {
     // go through each edge group for each dummy
     let dummyNum: number = 0;
     // loop until we can't find an edge group or we hit 10,000
@@ -140,7 +119,7 @@ function removeDummyEdges(g: ElkGraph) {
         });
         const junct = junctEdge.junctionPoints[0];
 
-        const dirs: WireDirection[] = edgeGroup.map((e: ElkEdge) => {
+        const dirs: WireDirection[] = edgeGroup.map((e: ElkModel.Edge) => {
             const s = e.sections[0];
             if (e.source === dummyId) {
                 s.startPoint = junct;

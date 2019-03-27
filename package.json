@@ -7,6 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "@types/clone": "^0.1.30",
+    "@types/json5": "0.0.30",
     "@types/lodash": "^4.14.116",
     "clone": "^2.1.0",
     "elkjs": "^0.3.0",
@@ -24,7 +25,7 @@
     "netlistsvg": "./bin/netlistsvg.js"
   },
   "scripts": {
-    "test": "tsc && node --trace-warnings test/test-all.js && tslint --project . && eslint bin/**/*.js && eslint --global=document demo/**/*.js",
+    "test": "tsc && node --trace-warnings test/test-all.js && tslint --project . && eslint bin/**/*.js && eslint --global=document demo/**/*.js && jest",
     "build-demo": "cp demo/index.html . && cp node_modules/elkjs/lib/elk.bundled.js . && browserify demo/demo.js > bundle.js"
   },
   "keywords": [
@@ -36,10 +37,13 @@
   },
   "homepage": "https://github.com/nturley/netlistsvg#readme",
   "devDependencies": {
+    "@types/jest": "^24.0.11",
     "browserify": "^14.5.0",
     "browserify-shim": "^3.8.14",
     "eslint": "^5.15.3",
+    "jest": "^24.5.0",
     "superagent": "^3.8.2",
+    "ts-jest": "^24.0.0",
     "tslint": "^5.14.0",
     "typescript": "^3.3.4000"
   },

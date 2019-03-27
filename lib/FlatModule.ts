@@ -1,38 +1,30 @@
-import { YosysNetlist, CellAttributes, Signals, IYosysModule } from './YosysModel';
+import Yosys from './YosysModel';
 import { getProperties } from './skin';
-import { Cell } from './Cell';
+import Cell from './Cell';
 import _ = require('lodash');
 
-export interface IFlatPort {
+export interface FlatPort {
     key: string;
-    value?: number[] | Signals;
+    value?: number[] | Yosys.Signals;
     parentNode?: Cell;
-    wire?: IWire;
+    wire?: Wire;
 }
 
-export interface IWire {
-    drivers: IFlatPort[];
-    riders: IFlatPort[];
-    laterals: IFlatPort[];
-}
-
-export interface ICell {
-    key: string;
-    type: string;
-    inputPorts: IFlatPort[];
-    outputPorts: IFlatPort[];
-    attributes?: CellAttributes;
+export interface Wire {
+    drivers: FlatPort[];
+    riders: FlatPort[];
+    laterals: FlatPort[];
 }
 
 export class FlatModule {
     private moduleName: string;
     private nodes: Cell[];
-    private wires: IWire[];
+    private wires: Wire[];
     private skin: any;
 
-    constructor(netlist: YosysNetlist, skin: any) {
+    constructor(netlist: Yosys.Netlist, skin: any) {
         this.moduleName = null;
-        _.forEach(netlist.modules, (mod: IYosysModule, name: string) => {
+        _.forEach(netlist.modules, (mod: Yosys.Module, name: string) => {
             if (mod.attributes && mod.attributes.top === 1) {
                 this.moduleName = name;
             }
@@ -55,7 +47,7 @@ export class FlatModule {
         return this.nodes;
     }
 
-    public getWires(): IWire[] {
+    public getWires(): Wire[] {
         return this.wires;
     }
 
@@ -122,11 +114,11 @@ export class FlatModule {
         });
         // list of unique nets
         const nets = removeDups(_.keys(ridersByNet).concat(_.keys(driversByNet)).concat(_.keys(lateralsByNet)));
-        const wires: IWire[] = nets.map((net) => {
-            const drivers: IFlatPort[] = driversByNet[net] || [];
-            const riders: IFlatPort[] = ridersByNet[net] || [];
-            const laterals: IFlatPort[] = lateralsByNet[net] || [];
-            const wire: IWire = { drivers, riders, laterals};
+        const wires: Wire[] = nets.map((net) => {
+            const drivers: FlatPort[] = driversByNet[net] || [];
+            const riders: FlatPort[] = ridersByNet[net] || [];
+            const laterals: FlatPort[] = lateralsByNet[net] || [];
+            const wire: Wire = { drivers, riders, laterals};
             drivers.concat(riders).concat(laterals).forEach((port) => {
                 port.wire = wire;
             });
@@ -166,19 +158,6 @@ function indexOfContains(needle: string, arrhaystack: string[]): number {
     return _.findIndex(arrhaystack, (haystack: string) => {
         return arrayContains(needle, haystack);
     });
-}
-
-export function getBits(signals: Signals, indicesString: string): Signals {
-    const index = indicesString.indexOf(':');
-    // is it the whole thing?
-    if (index === -1) {
-        return [signals[Number(indicesString)]];
-    } else {
-        const start = indicesString.slice(0, index);
-        const end = indicesString.slice(index + 1);
-        const slice = signals.slice(Number(start), Number(end) + 1);
-        return slice;
-    }
 }
 
 interface SplitJoin {
@@ -266,7 +245,7 @@ function gather(inputs: string[],  // all inputs
 }
 
 export interface NameToPorts {
-    [netName: string]: IFlatPort[];
+    [netName: string]: FlatPort[];
 }
 
 interface StringToBool {

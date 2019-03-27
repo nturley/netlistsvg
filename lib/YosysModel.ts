@@ -1,66 +1,70 @@
-export type Signals = Array<number | string>;
 
-interface ModuleMap {
-    [moduleName: string]: IYosysModule;
-}
+namespace Yosys {
+    export type Signals = Array<number | string>;
 
-export interface YosysNetlist {
-    modules: ModuleMap;
-}
+    interface ModuleMap {
+        [moduleName: string]: Module;
+    }
 
-interface YosysModuleAttributes {
-    top?: number;
-    [attrName: string]: any;
-}
+    export interface Netlist {
+        modules: ModuleMap;
+    }
 
-export interface CellAttributes {
-    value?: string;
-    [attrName: string]: any;
-}
+    interface ModuleAttributes {
+        top?: number;
+        [attrName: string]: any;
+    }
 
-export enum Direction {
-    Input = 'input',
-    Output = 'output',
-}
+    export interface CellAttributes {
+        value?: string;
+        [attrName: string]: any;
+    }
 
-export interface YosysExtPort {
-    direction: Direction;
-    bits: Signals;
-}
+    export enum Direction {
+        Input = 'input',
+        Output = 'output',
+    }
 
-interface YosysExtPortMap {
-    [portName: string]: YosysExtPort;
-}
+    export interface ExtPort {
+        direction: Direction;
+        bits: Signals;
+    }
 
-export interface YosysPortDirMap {
-    [portName: string]: Direction;
-}
+    interface ExtPortMap {
+        [portName: string]: ExtPort;
+    }
 
-export interface YosysPortConnectionMap {
-    [portName: string]: Signals;
-}
+    export interface PortDirMap {
+        [portName: string]: Direction;
+    }
 
-export interface IYosysCell {
-    type: string;
-    port_directions: YosysPortDirMap;
-    connections: YosysPortConnectionMap;
-    attributes?: CellAttributes;
-}
+    export interface PortConnectionMap {
+        [portName: string]: Signals;
+    }
 
-export function getInputPortPids(cell: IYosysCell): string[] {
-    return Object.keys(cell.port_directions).filter((k) => cell.port_directions[k] === 'input');
-}
+    export interface Cell {
+        type: string;
+        port_directions: PortDirMap;
+        connections: PortConnectionMap;
+        attributes?: CellAttributes;
+    }
 
-export function getOutputPortPids(cell: IYosysCell): string[] {
-    return Object.keys(cell.port_directions).filter((k) => cell.port_directions[k] === 'output');
-}
+    export function getInputPortPids(cell: Cell): string[] {
+        return Object.keys(cell.port_directions).filter((k) => cell.port_directions[k] === 'input');
+    }
 
-interface YosysCellMap {
-    [cellName: string]: IYosysCell;
-}
+    export function getOutputPortPids(cell: Cell): string[] {
+        return Object.keys(cell.port_directions).filter((k) => cell.port_directions[k] === 'output');
+    }
 
-export interface IYosysModule {
-    ports: YosysExtPortMap;
-    cells: YosysCellMap;
-    attributes?: YosysModuleAttributes;
+    interface CellMap {
+        [cellName: string]: Cell;
+    }
+
+    export interface Module {
+        ports: ExtPortMap;
+        cells: CellMap;
+        attributes?: ModuleAttributes;
+    }
 }
+export default Yosys;

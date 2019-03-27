@@ -1,35 +1,32 @@
-import { SigsByConstName, getBits, NameToPorts, addToDefaultDict } from './FlatModule';
-import {
-    CellAttributes,
-    IYosysCell,
-    YosysExtPort,
-    Direction,
-    Signals,
-    getInputPortPids,
-    getOutputPortPids,
-} from './YosysModel';
+import { SigsByConstName, NameToPorts, addToDefaultDict } from './FlatModule';
+import Yosys from './YosysModel';
 import { findSkinType, getLateralPortPids, getPortsWithPrefix } from './skin';
 import {Port} from './Port';
-import {setTextAttribute, setGenericSize} from './draw';
 import _ = require('lodash');
-import { IElkCell, ElkPort } from './elkGraph';
+import { ElkModel } from './elkGraph';
 import clone = require('clone');
+import onml = require('onml');
 
-export class Cell {
+export default class Cell {
 
     public static skin: any;
 
-    public static fromPort(yPort: YosysExtPort, name: string): Cell {
-        const isInput: boolean = yPort.direction === Direction.Input;
+    /**
+     * creates a Cell from a Yosys Port
+     * @param yPort the Yosys Port with our port data
+     * @param name the name of the port
+     */
+    public static fromPort(yPort: Yosys.ExtPort, name: string): Cell {
+        const isInput: boolean = yPort.direction === Yosys.Direction.Input;
         if (isInput) {
             return new Cell(name, '$_inputExt_', [], [new Port('Y', yPort.bits)], {});
         }
         return new Cell(name, '$_outputExt_', [new Port('A', yPort.bits)], [], {});
     }
 
-    public static fromYosysCell(yCell: IYosysCell, name: string) {
-        const inputPids: string[] = getInputPortPids(yCell);
-        const outputPids: string[] = getOutputPortPids(yCell);
+    public static fromYosysCell(yCell: Yosys.Cell, name: string) {
+        const inputPids: string[] = Yosys.getInputPortPids(yCell);
+        const outputPids: string[] = Yosys.getOutputPortPids(yCell);
         const ports: Port[] = _.map(yCell.connections, (conn, portName) => {
             return new Port(portName, conn);
         });
@@ -42,9 +39,14 @@ export class Cell {
         return new Cell(name, '$_constant_', [], [new Port('Y', constants)], {});
     }
 
+    /**
+     * creates a join cell
+     * @param target string name of net (starts and ends with and delimited by commas)
+     * @param sources list of index strings (one number, or two numbers separated by a colon)
+     */
     public static fromJoinInfo(target: string, sources: string[]): Cell {
         const signalStrs: string[] = target.slice(1, -1).split(',');
-        const signals: Signals = signalStrs.map((ss) =>  Number(ss));
+        const signals: number[] = signalStrs.map((ss) =>  Number(ss));
         const joinOutPorts: Port[] = [new Port('Y', signals)];
         const inPorts: Port[] = sources.map((name) => {
             return new Port(name, getBits(signals, name));
@@ -52,9 +54,14 @@ export class Cell {
         return new Cell('$join$' + target, '$_join_', inPorts, joinOutPorts, {});
     }
 
+    /**
+     * creates a split cell
+     * @param source string name of net (starts and ends with and delimited by commas)
+     * @param targets list of index strings (one number, or two numbers separated by a colon)
+     */
     public static fromSplitInfo(source: string, targets: string[]): Cell {
         // turn string into array of signal names
-        const signals: Signals = source.slice(1, -1).split(',');
+        const signals: Yosys.Signals = source.slice(1, -1).split(',');
         // convert the signals into actual numbers
         // after running constant pass, all signals should be numbers
         for (const i of Object.keys(signals)) {
@@ -62,7 +69,7 @@ export class Cell {
         }
         const inPorts: Port[] = [new Port('A', signals)];
         const splitOutPorts: Port[] = targets.map((name) => {
-            const sigs: Signals = getBits(signals, name);
+            const sigs: Yosys.Signals = getBits(signals, name);
             return new Port(name, sigs);
         });
         return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {});
@@ -72,13 +79,13 @@ export class Cell {
     protected type: string;
     protected inputPorts: Port[];
     protected outputPorts: Port[];
-    protected attributes: CellAttributes;
+    protected attributes: Yosys.CellAttributes;
 
     constructor(key: string,
                 type: string,
                 inputPorts: Port[],
                 outputPorts: Port[],
-                attributes: CellAttributes) {
+                attributes: Yosys.CellAttributes) {
         this.key = key;
         this.type = type;
         this.inputPorts = inputPorts;
@@ -166,7 +173,7 @@ export class Cell {
         return findSkinType(Cell.skin, this.type);
     }
 
-    public buildElkChild(): IElkCell {
+    public buildElkChild(): ElkModel.Cell {
         const template = this.getTemplate();
         const type: string = template[1]['s:type'];
         if (type === 'join' ||
@@ -178,7 +185,7 @@ export class Cell {
                 ip.getGenericElkPort(i, inTemplates, 'in'));
             const outPorts = this.outputPorts.map((op, i) =>
                 op.getGenericElkPort(i, outTemplates, 'out'));
-            const cell: IElkCell = {
+            const cell: ElkModel.Cell = {
                 id: this.key,
                 width: Number(template[1]['s:width']),
                 height: Number(this.getGenericHeight()),
@@ -197,7 +204,7 @@ export class Cell {
             }
             return cell;
         }
-        const ports: ElkPort[] = getPortsWithPrefix(template, '').map((tp) => {
+        const ports: ElkModel.Port[] = getPortsWithPrefix(template, '').map((tp) => {
             return {
                 id: this.key + '.' + tp[1]['s:pid'],
                 width: 0,
@@ -207,7 +214,7 @@ export class Cell {
             };
         });
         const nodeWidth: number = Number(template[1]['s:width']);
-        const ret: IElkCell = {
+        const ret: ElkModel.Cell = {
             id: this.key,
             width: nodeWidth,
             height: Number(template[1]['s:height']),
@@ -228,7 +235,7 @@ export class Cell {
         return ret;
     }
 
-    public render(kChild: IElkCell): any[] {
+    public render(kChild: ElkModel.Cell): any[] {
         const template = this.getTemplate();
         const tempclone = clone(template);
         setTextAttribute(tempclone, 'ref', this.key);
@@ -315,4 +322,37 @@ export class Cell {
         return Number(template[1]['s:height']);
     }
 
+}
+
+function setGenericSize(tempclone, height) {
+    onml.traverse(tempclone, {
+        enter: (node) => {
+            if (node.name === 'rect' && node.attr['s:generic'] === 'body') {
+                node.attr.height = height;
+            }
+        },
+    });
+}
+
+function setTextAttribute(tempclone, attribute, value) {
+    onml.traverse(tempclone, {
+        enter: (node) => {
+            if (node.name === 'text' && node.attr['s:attribute'] === attribute) {
+                node.full[2] = value;
+            }
+        },
+    });
+}
+
+function getBits(signals: Yosys.Signals, indicesString: string): Yosys.Signals {
+    const index = indicesString.indexOf(':');
+    // is it the whole thing?
+    if (index === -1) {
+        return [signals[Number(indicesString)]];
+    } else {
+        const start = indicesString.slice(0, index);
+        const end = indicesString.slice(index + 1);
+        const slice = signals.slice(Number(start), Number(end) + 1);
+        return slice;
+    }
 }

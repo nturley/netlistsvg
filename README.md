@@ -407,6 +407,7 @@ It does it's best to be smart about how to split and join buses. I spent a lot o
 * Always prefer using an existing signal over adding a new split or join
 
 ElkJS handles all of the wire junctions. Sometimes it does some odd things.
+
 ## Input JSON
 This is designed to handle Yosys netlist format but we ignore most of it. This is what we are looking at. Currently, we only draw the first module in the modules object.
 ```json
@@ -437,6 +438,7 @@ This is designed to handle Yosys netlist format but we ignore most of it. This i
   }
 }
 ```
+
 ## ElkJS
 I'm super impressed with this. Layout is a non-trivial problem and this tool is amazing. ELK is written in Java and transpiled to javascript.
 

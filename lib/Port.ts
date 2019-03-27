@@ -1,21 +1,20 @@
-import {Cell} from './Cell';
-import {IWire, SigsByConstName} from './FlatModule';
-import {Signals} from './YosysModel';
+import Cell from './Cell';
+import {SigsByConstName} from './FlatModule';
+import Yosys from './YosysModel';
 import _ = require('lodash');
-import { ElkPort } from './elkGraph';
+import { ElkModel } from './elkGraph';
 
 export class Port {
     private key: string;
-    private value: number[] | Signals;
+    private value: number[] | Yosys.Signals;
     private parentNode?: Cell;
-    private wire?: IWire;
 
-    constructor(key, value) {
+    constructor(key: string, value: number[] | Yosys.Signals) {
         this.key = key;
         this.value = value;
     }
 
-    public set ParentNode(v) {
+    public set ParentNode(v: Cell) {
         this.parentNode = v;
     }
 
@@ -40,7 +39,7 @@ export class Port {
                          constantCollector: Cell[]): number {
         let constNameCollector = '';
         let constNumCollector: number[] = [];
-        const portSigs: Signals = this.value;
+        const portSigs: Yosys.Signals = this.value;
         portSigs.forEach((portSig, portSigIndex) => {
             // is constant?
             if (portSig === '0' || portSig === '1') {
@@ -77,11 +76,11 @@ export class Port {
         index: number,
         templatePorts: any[],
         dir: string,
-    ): ElkPort {
+    ): ElkModel.Port {
         const nkey = this.parentNode.Key;
         const type = this.parentNode.getTemplate()[1]['s:type'];
         if (index === 0) {
-            const ret: ElkPort = {
+            const ret: ElkModel.Port = {
                 id: nkey + '.' + this.key,
                 width: 1,
                 height: 1,
@@ -113,7 +112,7 @@ export class Port {
             return ret;
         } else {
             const gap: number = Number(templatePorts[1][1]['s:y']) - Number(templatePorts[0][1]['s:y']);
-            const ret: ElkPort = {
+            const ret: ElkModel.Port = {
                 id: nkey + '.' + this.key,
                 width: 1,
                 height: 1,

@@ -1,18 +1,19 @@
 'use strict';
 
 import ELK = require('elkjs');
-import { FlatModule } from './FlatModule';
 import onml = require('onml');
-import { YosysNetlist } from './YosysModel';
+
+import { FlatModule } from './FlatModule';
+import Yosys from './YosysModel';
 import { getProperties } from './skin';
-import { ElkGraph, buildElkGraph } from './elkGraph';
-import { drawModule } from './draw';
+import { ElkModel, buildElkGraph } from './elkGraph';
+import drawModule from './drawModule';
 
 const elk = new ELK();
 
 type ICallback = (error: Error, result?: string) => void;
 
-export function render(skinData: string, yosysNetlist: YosysNetlist, done?: ICallback) {
+export function render(skinData: string, yosysNetlist: Yosys.Netlist, done?: ICallback) {
     const skin = onml.p(skinData);
     const layoutProps = getProperties(skin);
 
@@ -27,7 +28,7 @@ export function render(skinData: string, yosysNetlist: YosysNetlist, done?: ICal
         flatModule.addSplitsJoins();
     }
     flatModule.createWires();
-    const kgraph: ElkGraph = buildElkGraph(flatModule);
+    const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
 
     const promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine })
         .then((g) => drawModule(g, flatModule))
