@@ -1,4 +1,4 @@
-import {FlatModule} from './FlatModule';
+import {FlatModule, FlatPort} from './FlatModule';
 import _ = require('lodash');
 
 export namespace ElkModel {
@@ -69,7 +69,7 @@ export namespace ElkModel {
 export function buildElkGraph(module: FlatModule): ElkModel.Graph {
     const children: ElkModel.Cell[] = module.getNodes().map((n) => {
         return n.buildElkChild();
-    });
+    }).filter((child) => child !== null);
     let i: number = 0;
     let dummies: number = 0;
     const edges: ElkModel.Edge[] = _.flatMap(module.getWires(), (w) => {
@@ -167,13 +167,31 @@ function addDummy(children: ElkModel.Cell[], dummyNum: number) {
     return dummyId;
 }
 
-function route(sourcePorts, targetPorts, edgeIndex: number, edges: ElkModel.Edge[]): number {
-    const newEdges: ElkModel.Edge[] = (_.flatMap(sourcePorts, (sourcePort) => {
-        const sourceParentKey: string = sourcePort.parentNode.key;
-        const sourceKey: string = sourceParentKey + '.' + sourcePort.key;
+function route(sourcePorts: FlatPort[], targetPorts: FlatPort[], edgeIndex: number, edges: ElkModel.Edge[]): number {
+    const newEdges: ElkModel.Edge[] = (_.flatMap(sourcePorts, (sourcePort: FlatPort) => {
+        const sourceType = sourcePort.parentNode.Type;
+        const sourceIsPort = sourceType === '$_inputExt_' || sourceType === '$_outputExt_';
+        let sourceParentKey: string;
+        let sourceKey: string;
+        if (sourcePort.parentNode.parent.parent === null || !sourceIsPort) {
+            sourceParentKey = sourcePort.parentNode.Key;
+            sourceKey = sourceParentKey + '.' + sourcePort.key;
+        } else {
+            sourceParentKey = sourcePort.parentNode.parent.getName();
+            sourceKey = sourceParentKey + '.' + sourcePort.parentNode.Key;
+        }
         return targetPorts.map((targetPort) => {
-            const targetParentKey: string = targetPort.parentNode.key;
-            const targetKey: string = targetParentKey + '.' + targetPort.key;
+            const targetType = targetPort.parentNode.Type;
+            const targetIsPort = targetType === '$_inputExt_' || targetType === '$_outputExt_';
+            let targetParentKey: string;
+            let targetKey: string;
+            if (targetPort.parentNode.parent.parent === null || !targetIsPort) {
+                targetParentKey = targetPort.parentNode.Key;
+                targetKey = targetParentKey + '.' + targetPort.key;
+            } else {
+                targetParentKey = targetPort.parentNode.parent.getName();
+                targetKey = targetParentKey + '.' + targetPort.parentNode.Key;
+            }
             const edge: ElkModel.Edge = {
                 id: 'e' + edgeIndex,
                 source: sourceParentKey,
@@ -181,7 +199,7 @@ function route(sourcePorts, targetPorts, edgeIndex: number, edges: ElkModel.Edge
                 target: targetParentKey,
                 targetPort: targetKey,
             };
-            if (sourcePort.parentNode.type !== '$dff') {
+            if (sourcePort.parentNode.Type !== '$dff') {
                 edge.layoutOptions = { 'org.eclipse.elk.layered.priority.direction': 10 };
             }
             edgeIndex += 1;

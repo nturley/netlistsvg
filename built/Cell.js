@@ -8,13 +8,16 @@ var _ = require("lodash");
 var clone = require("clone");
 var onml = require("onml");
 var Cell = /** @class */ (function () {
-    function Cell(key, type, inputPorts, outputPorts, attributes) {
+    function Cell(key, type, inputPorts, outputPorts, attributes, parentModule, subModule) {
+        if (subModule === void 0) { subModule = null; }
         var _this = this;
         this.key = key;
         this.type = type;
         this.inputPorts = inputPorts;
         this.outputPorts = outputPorts;
         this.attributes = attributes;
+        this.parent = parentModule;
+        this.subModule = subModule;
         inputPorts.forEach(function (ip) {
             ip.ParentNode = _this;
         });
@@ -27,14 +30,14 @@ var Cell = /** @class */ (function () {
      * @param yPort the Yosys Port with our port data
      * @param name the name of the port
      */
-    Cell.fromPort = function (yPort, name) {
+    Cell.fromPort = function (yPort, name, parent) {
         var isInput = yPort.direction === YosysModel_1.default.Direction.Input;
         if (isInput) {
-            return new Cell(name, '$_inputExt_', [], [new Port_1.Port('Y', yPort.bits)], {});
+            return new Cell(name, '$_inputExt_', [], [new Port_1.Port('Y', yPort.bits)], {}, parent);
         }
-        return new Cell(name, '$_outputExt_', [new Port_1.Port('A', yPort.bits)], [], {});
+        return new Cell(name, '$_outputExt_', [new Port_1.Port('A', yPort.bits)], [], {}, parent);
     };
-    Cell.fromYosysCell = function (yCell, name) {
+    Cell.fromYosysCell = function (yCell, name, parent) {
         var inputPids = YosysModel_1.default.getInputPortPids(yCell);
         var outputPids = YosysModel_1.default.getOutputPortPids(yCell);
         var ports = _.map(yCell.connections, function (conn, portName) {
@@ -42,31 +45,31 @@ var Cell = /** @class */ (function () {
         });
         var inputPorts = ports.filter(function (port) { return port.keyIn(inputPids); });
         var outputPorts = ports.filter(function (port) { return port.keyIn(outputPids); });
-        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes);
+        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent);
     };
-    Cell.fromConstantInfo = function (name, constants) {
-        return new Cell(name, '$_constant_', [], [new Port_1.Port('Y', constants)], {});
+    Cell.fromConstantInfo = function (name, constants, parent) {
+        return new Cell(name, '$_constant_', [], [new Port_1.Port('Y', constants)], {}, parent);
     };
     /**
      * creates a join cell
      * @param target string name of net (starts and ends with and delimited by commas)
      * @param sources list of index strings (one number, or two numbers separated by a colon)
      */
-    Cell.fromJoinInfo = function (target, sources) {
+    Cell.fromJoinInfo = function (target, sources, parent) {
         var signalStrs = target.slice(1, -1).split(',');
         var signals = signalStrs.map(function (ss) { return Number(ss); });
         var joinOutPorts = [new Port_1.Port('Y', signals)];
         var inPorts = sources.map(function (name) {
             return new Port_1.Port(name, getBits(signals, name));
         });
-        return new Cell('$join$' + target, '$_join_', inPorts, joinOutPorts, {});
+        return new Cell('$join$' + target, '$_join_', inPorts, joinOutPorts, {}, parent);
     };
     /**
      * creates a split cell
      * @param source string name of net (starts and ends with and delimited by commas)
      * @param targets list of index strings (one number, or two numbers separated by a colon)
      */
-    Cell.fromSplitInfo = function (source, targets) {
+    Cell.fromSplitInfo = function (source, targets, parent) {
         // turn string into array of signal names
         var signals = source.slice(1, -1).split(',');
         // convert the signals into actual numbers
@@ -80,7 +83,18 @@ var Cell = /** @class */ (function () {
             var sigs = getBits(signals, name);
             return new Port_1.Port(name, sigs);
         });
-        return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {});
+        return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {}, parent);
+    };
+    Cell.createSubModule = function (yCell, name, parent, subModule) {
+        var inputPids = YosysModel_1.default.getInputPortPids(yCell);
+        var outputPids = YosysModel_1.default.getOutputPortPids(yCell);
+        var ports = _.map(yCell.connections, function (conn, portName) {
+            return new Port_1.Port(portName, conn);
+        });
+        var inputPorts = ports.filter(function (port) { return port.keyIn(inputPids); });
+        var outputPorts = ports.filter(function (port) { return port.keyIn(outputPids); });
+        var mod = new FlatModule_1.FlatModule(subModule, name, parent);
+        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod);
     };
     Object.defineProperty(Cell.prototype, "Type", {
         get: function () {
@@ -115,8 +129,9 @@ var Cell = /** @class */ (function () {
         return _.max([maxVal, atLeast]);
     };
     Cell.prototype.findConstants = function (sigsByConstantName, maxNum, constantCollector) {
+        var _this = this;
         this.inputPorts.forEach(function (ip) {
-            maxNum = ip.findConstants(sigsByConstantName, maxNum, constantCollector);
+            maxNum = ip.findConstants(sigsByConstantName, maxNum, constantCollector, _this.parent);
         });
         return maxNum;
     };
@@ -127,7 +142,7 @@ var Cell = /** @class */ (function () {
         return this.outputPorts.map(function (port) { return port.valString(); });
     };
     Cell.prototype.collectPortsByDirection = function (ridersByNet, driversByNet, lateralsByNet, genericsLaterals) {
-        var template = skin_1.findSkinType(Cell.skin, this.type);
+        var template = skin_1.findSkinType(FlatModule_1.FlatModule.skin, this.type);
         var lateralPids = skin_1.getLateralPortPids(template);
         // find all ports connected to the same net
         this.inputPorts.forEach(function (port) {
@@ -156,12 +171,12 @@ var Cell = /** @class */ (function () {
         return null;
     };
     Cell.prototype.getTemplate = function () {
-        return skin_1.findSkinType(Cell.skin, this.type);
+        return skin_1.findSkinType(FlatModule_1.FlatModule.skin, this.type);
     };
     Cell.prototype.buildElkChild = function () {
-        var _this = this;
         var template = this.getTemplate();
         var type = template[1]['s:type'];
+        var key = this.parent.prefix() + this.key;
         if (type === 'join' ||
             type === 'split' ||
             type === 'generic') {
@@ -174,7 +189,7 @@ var Cell = /** @class */ (function () {
                 return op.getGenericElkPort(i, outTemplates_1, 'out');
             });
             var cell = {
-                id: this.key,
+                id: key,
                 width: Number(template[1]['s:width']),
                 height: Number(this.getGenericHeight()),
                 ports: inPorts.concat(outPorts),
@@ -182,7 +197,7 @@ var Cell = /** @class */ (function () {
             };
             if (type === 'generic') {
                 cell.labels = [{
-                        id: this.key + '.label',
+                        id: key + '.label',
                         text: this.type,
                         x: Number(template[2][1].x),
                         y: Number(template[2][1].y) - 6,
@@ -194,7 +209,7 @@ var Cell = /** @class */ (function () {
         }
         var ports = skin_1.getPortsWithPrefix(template, '').map(function (tp) {
             return {
-                id: _this.key + '.' + tp[1]['s:pid'],
+                id: key + '.' + tp[1]['s:pid'],
                 width: 0,
                 height: 0,
                 x: Number(tp[1]['s:x']),
@@ -203,7 +218,7 @@ var Cell = /** @class */ (function () {
         });
         var nodeWidth = Number(template[1]['s:width']);
         var ret = {
-            id: this.key,
+            id: key,
             width: nodeWidth,
             height: Number(template[1]['s:height']),
             ports: ports,
@@ -211,8 +226,11 @@ var Cell = /** @class */ (function () {
         };
         if (type === 'inputExt' ||
             type === 'outputExt') {
+            if (this.parent.parent !== null) {
+                return null;
+            }
             ret.labels = [{
-                    id: this.key + '.label',
+                    id: key + '.label',
                     text: this.key,
                     x: Number(template[2][1].x) + nodeWidth / 2 - 3 * this.key.length,
                     y: Number(template[2][1].y) - 6,

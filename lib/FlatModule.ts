@@ -17,30 +17,57 @@ export interface Wire {
 }
 
 export class FlatModule {
-    private moduleName: string;
-    private nodes: Cell[];
-    private wires: Wire[];
-    private skin: any;
+    public static skin: any;
+    public static netlist: Yosys.Netlist;
+    public static modNames: string[];
+    public static layoutProps: {[x: string]: any};
 
-    constructor(netlist: Yosys.Netlist, skin: any) {
-        this.moduleName = null;
+    public static fromNetlist(netlist: Yosys.Netlist, skin: any): FlatModule {
+        this.skin = skin;
+        this.layoutProps = getProperties(FlatModule.skin);
+        this.modNames = Object.keys(netlist.modules);
+        this.netlist = netlist;
+        let topName = null;
         _.forEach(netlist.modules, (mod: Yosys.Module, name: string) => {
             if (mod.attributes && mod.attributes.top === 1) {
-                this.moduleName = name;
+                topName = name;
             }
         });
         // Otherwise default the first one in the file...
-        if (this.moduleName == null) {
-            this.moduleName = Object.keys(netlist.modules)[0];
+        if (topName == null) {
+            topName = this.modNames[0];
         }
-        const top = netlist.modules[this.moduleName];
-        Cell.skin = skin;
-        const ports = _.map(top.ports, Cell.fromPort);
-        const cells = _.map(top.cells, (c, key) => Cell.fromYosysCell(c, key));
-        this.nodes = cells.concat(ports);
-        // populated by createWires
-        this.wires = [];
-        this.skin = skin;
+        const top = netlist.modules[topName];
+        const ret = new FlatModule(top, topName);
+        return ret;
+    }
+
+    public parent: FlatModule;
+    private moduleName: string;
+    private nodes: Cell[];
+    private wires: Wire[];
+
+    constructor(mod: Yosys.Module, name: string, parent: FlatModule = null) {
+        this.moduleName = name;
+        this.parent = parent;
+        this.nodes = _.map(mod.cells, (c, key) => {
+            if (!_.includes(FlatModule.modNames, c.type)) {
+                return Cell.fromYosysCell(c, key, this);
+            } else {
+                return Cell.createSubModule(c, key, this, FlatModule.netlist.modules[c.type]);
+            }
+        });
+        const ports = _.map(mod.ports, (port, portName) => Cell.fromPort(port, portName, this));
+        this.nodes = this.nodes.concat(ports);
+        // this can be skipped if there are no 0's or 1's
+        if (FlatModule.layoutProps.constants !== false) {
+            this.addConstants();
+        }
+        // this can be skipped if there are no splits or joins
+        if (FlatModule.layoutProps.splitsAndJoins !== false) {
+            this.addSplitsJoins();
+        }
+        this.createWires();
     }
 
     public getNodes(): Cell[] {
@@ -56,7 +83,15 @@ export class FlatModule {
     }
 
     public getSkin(): any {
-        return this.skin;
+        return FlatModule.skin;
+    }
+
+    public prefix(): string {
+        if (this.parent === null) {
+            return '';
+        } else {
+            return this.parent.prefix() + this.moduleName + '/';
+        }
     }
 
     // converts input ports with constant assignments to constant nodes
@@ -93,15 +128,14 @@ export class FlatModule {
         });
 
         this.nodes = this.nodes.concat(_.map(joins, (joinOutput, joinInputs) => {
-            return Cell.fromJoinInfo(joinInputs, joinOutput);
+            return Cell.fromJoinInfo(joinInputs, joinOutput, this);
         })).concat(_.map(splits, (splitOutputs, splitInput) => {
-            return Cell.fromSplitInfo(splitInput, splitOutputs);
+            return Cell.fromSplitInfo(splitInput, splitOutputs, this);
         }));
     }
 
     // search through all the ports to find all of the wires
     public createWires() {
-        const layoutProps = getProperties(this.skin);
         const ridersByNet: NameToPorts = {};
         const driversByNet: NameToPorts = {};
         const lateralsByNet: NameToPorts = {};
@@ -110,7 +144,7 @@ export class FlatModule {
                 ridersByNet,
                 driversByNet,
                 lateralsByNet,
-                layoutProps.genericsLaterals);
+                FlatModule.layoutProps.genericsLaterals);
         });
         // list of unique nets
         const nets = removeDups(_.keys(ridersByNet).concat(_.keys(driversByNet)).concat(_.keys(lateralsByNet)));

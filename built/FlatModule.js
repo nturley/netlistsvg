@@ -4,27 +4,50 @@ var skin_1 = require("./skin");
 var Cell_1 = require("./Cell");
 var _ = require("lodash");
 var FlatModule = /** @class */ (function () {
-    function FlatModule(netlist, skin) {
+    function FlatModule(mod, name, parent) {
+        if (parent === void 0) { parent = null; }
         var _this = this;
-        this.moduleName = null;
+        this.moduleName = name;
+        this.parent = parent;
+        this.nodes = _.map(mod.cells, function (c, key) {
+            if (!_.includes(FlatModule.modNames, c.type)) {
+                return Cell_1.default.fromYosysCell(c, key, _this);
+            }
+            else {
+                return Cell_1.default.createSubModule(c, key, _this, FlatModule.netlist.modules[c.type]);
+            }
+        });
+        var ports = _.map(mod.ports, function (port, portName) { return Cell_1.default.fromPort(port, portName, _this); });
+        this.nodes = this.nodes.concat(ports);
+        // this can be skipped if there are no 0's or 1's
+        if (FlatModule.layoutProps.constants !== false) {
+            this.addConstants();
+        }
+        // this can be skipped if there are no splits or joins
+        if (FlatModule.layoutProps.splitsAndJoins !== false) {
+            this.addSplitsJoins();
+        }
+        this.createWires();
+    }
+    FlatModule.fromNetlist = function (netlist, skin) {
+        this.skin = skin;
+        this.layoutProps = skin_1.getProperties(FlatModule.skin);
+        this.modNames = Object.keys(netlist.modules);
+        this.netlist = netlist;
+        var topName = null;
         _.forEach(netlist.modules, function (mod, name) {
             if (mod.attributes && mod.attributes.top === 1) {
-                _this.moduleName = name;
+                topName = name;
             }
         });
         // Otherwise default the first one in the file...
-        if (this.moduleName == null) {
-            this.moduleName = Object.keys(netlist.modules)[0];
+        if (topName == null) {
+            topName = this.modNames[0];
         }
-        var top = netlist.modules[this.moduleName];
-        Cell_1.default.skin = skin;
-        var ports = _.map(top.ports, Cell_1.default.fromPort);
-        var cells = _.map(top.cells, function (c, key) { return Cell_1.default.fromYosysCell(c, key); });
-        this.nodes = cells.concat(ports);
-        // populated by createWires
-        this.wires = [];
-        this.skin = skin;
-    }
+        var top = netlist.modules[topName];
+        var ret = new FlatModule(top, topName);
+        return ret;
+    };
     FlatModule.prototype.getNodes = function () {
         return this.nodes;
     };
@@ -35,7 +58,15 @@ var FlatModule = /** @class */ (function () {
         return this.moduleName;
     };
     FlatModule.prototype.getSkin = function () {
-        return this.skin;
+        return FlatModule.skin;
+    };
+    FlatModule.prototype.prefix = function () {
+        if (this.parent === null) {
+            return '';
+        }
+        else {
+            return this.parent.prefix() + this.moduleName + '/';
+        }
     };
     // converts input ports with constant assignments to constant nodes
     FlatModule.prototype.addConstants = function () {
@@ -51,6 +82,7 @@ var FlatModule = /** @class */ (function () {
     };
     // solves for minimal bus splits and joins and adds them to module
     FlatModule.prototype.addSplitsJoins = function () {
+        var _this = this;
         var allInputs = _.flatMap(this.nodes, function (n) { return n.inputPortVals(); });
         var allOutputs = _.flatMap(this.nodes, function (n) { return n.outputPortVals(); });
         var allInputsCopy = allInputs.slice();
@@ -60,19 +92,18 @@ var FlatModule = /** @class */ (function () {
             gather(allOutputs, allInputsCopy, input, 0, input.length, splits, joins);
         });
         this.nodes = this.nodes.concat(_.map(joins, function (joinOutput, joinInputs) {
-            return Cell_1.default.fromJoinInfo(joinInputs, joinOutput);
+            return Cell_1.default.fromJoinInfo(joinInputs, joinOutput, _this);
         })).concat(_.map(splits, function (splitOutputs, splitInput) {
-            return Cell_1.default.fromSplitInfo(splitInput, splitOutputs);
+            return Cell_1.default.fromSplitInfo(splitInput, splitOutputs, _this);
         }));
     };
     // search through all the ports to find all of the wires
     FlatModule.prototype.createWires = function () {
-        var layoutProps = skin_1.getProperties(this.skin);
         var ridersByNet = {};
         var driversByNet = {};
         var lateralsByNet = {};
         this.nodes.forEach(function (n) {
-            n.collectPortsByDirection(ridersByNet, driversByNet, lateralsByNet, layoutProps.genericsLaterals);
+            n.collectPortsByDirection(ridersByNet, driversByNet, lateralsByNet, FlatModule.layoutProps.genericsLaterals);
         });
         // list of unique nets
         var nets = removeDups(_.keys(ridersByNet).concat(_.keys(driversByNet)).concat(_.keys(lateralsByNet)));

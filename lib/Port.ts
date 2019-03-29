@@ -1,5 +1,5 @@
 import Cell from './Cell';
-import {SigsByConstName} from './FlatModule';
+import {SigsByConstName, FlatModule} from './FlatModule';
 import Yosys from './YosysModel';
 import _ = require('lodash');
 import { ElkModel } from './elkGraph';
@@ -36,7 +36,8 @@ export class Port {
 
     public findConstants(sigsByConstantName: SigsByConstName,
                          maxNum: number,
-                         constantCollector: Cell[]): number {
+                         constantCollector: Cell[],
+                         parent: FlatModule): number {
         let constNameCollector = '';
         let constNumCollector: number[] = [];
         const portSigs: Yosys.Signals = this.value;
@@ -55,7 +56,8 @@ export class Port {
                     constNumCollector,
                     portSigIndex,
                     sigsByConstantName,
-                    constantCollector);
+                    constantCollector,
+                    parent);
                 // reset name and num collectors
                 constNameCollector = '';
                 constNumCollector = [];
@@ -67,7 +69,8 @@ export class Port {
                 constNumCollector,
                 portSigs.length,
                 sigsByConstantName,
-                constantCollector);
+                constantCollector,
+                parent);
         }
         return maxNum;
     }
@@ -137,7 +140,8 @@ export class Port {
                            constants: number[],
                            currIndex: number,
                            signalsByConstantName: SigsByConstName,
-                           constantCollector: Cell[]) {
+                           constantCollector: Cell[],
+                           parent: FlatModule) {
         // we've been appending to nameCollector, so reverse to get const name
         const constName = nameCollector.split('').reverse().join('');
         // if the constant has already been used
@@ -151,7 +155,7 @@ export class Port {
                 this.value[i] = constSig;
             });
         } else {
-            constantCollector.push(Cell.fromConstantInfo(constName, constants));
+            constantCollector.push(Cell.fromConstantInfo(constName, constants, parent));
             signalsByConstantName[constName] = constants;
         }
     }

@@ -4,7 +4,7 @@ var _ = require("lodash");
 function buildElkGraph(module) {
     var children = module.getNodes().map(function (n) {
         return n.buildElkChild();
-    });
+    }).filter(function (child) { return child !== null; });
     var i = 0;
     var dummies = 0;
     var edges = _.flatMap(module.getWires(), function (w) {
@@ -107,11 +107,31 @@ function addDummy(children, dummyNum) {
 }
 function route(sourcePorts, targetPorts, edgeIndex, edges) {
     var newEdges = (_.flatMap(sourcePorts, function (sourcePort) {
-        var sourceParentKey = sourcePort.parentNode.key;
-        var sourceKey = sourceParentKey + '.' + sourcePort.key;
+        var sourceType = sourcePort.parentNode.Type;
+        var sourceIsPort = sourceType === '$_inputExt_' || sourceType === '$_outputExt_';
+        var sourceParentKey;
+        var sourceKey;
+        if (sourcePort.parentNode.parent.parent === null || !sourceIsPort) {
+            sourceParentKey = sourcePort.parentNode.Key;
+            sourceKey = sourceParentKey + '.' + sourcePort.key;
+        }
+        else {
+            sourceParentKey = sourcePort.parentNode.parent.getName();
+            sourceKey = sourceParentKey + '.' + sourcePort.parentNode.Key;
+        }
         return targetPorts.map(function (targetPort) {
-            var targetParentKey = targetPort.parentNode.key;
-            var targetKey = targetParentKey + '.' + targetPort.key;
+            var targetType = targetPort.parentNode.Type;
+            var targetIsPort = targetType === '$_inputExt_' || targetType === '$_outputExt_';
+            var targetParentKey;
+            var targetKey;
+            if (targetPort.parentNode.parent.parent === null || !targetIsPort) {
+                targetParentKey = targetPort.parentNode.Key;
+                targetKey = targetParentKey + '.' + targetPort.key;
+            }
+            else {
+                targetParentKey = targetPort.parentNode.parent.getName();
+                targetKey = targetParentKey + '.' + targetPort.parentNode.Key;
+            }
             var edge = {
                 id: 'e' + edgeIndex,
                 source: sourceParentKey,
@@ -119,7 +139,7 @@ function route(sourcePorts, targetPorts, edgeIndex, edges) {
                 target: targetParentKey,
                 targetPort: targetKey,
             };
-            if (sourcePort.parentNode.type !== '$dff') {
+            if (sourcePort.parentNode.Type !== '$dff') {
                 edge.layoutOptions = { 'org.eclipse.elk.layered.priority.direction': 10 };
             }
             edgeIndex += 1;

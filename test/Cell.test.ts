@@ -32,7 +32,7 @@ test('Create Cell from Join', () => {
 });
 
 test('Create Cell from Split', () => {
-    const cell: Cell = Cell.fromSplitInfo(',3,4,5,', ['0:1', '2']);
+    const cell: Cell = Cell.fromSplitInfo(',3,4,5,', ['0:1', '2'], null);
     expect(cell.Type).toEqual('$_split_');
     expect(cell.inputPortVals()).toEqual([',3,4,5,']);
     expect(cell.outputPortVals()).toEqual([',3,4,', ',5,']);

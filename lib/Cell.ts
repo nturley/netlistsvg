@@ -1,4 +1,4 @@
-import { SigsByConstName, NameToPorts, addToDefaultDict } from './FlatModule';
+import { SigsByConstName, NameToPorts, addToDefaultDict, FlatModule } from './FlatModule';
 import Yosys from './YosysModel';
 import { findSkinType, getLateralPortPids, getPortsWithPrefix } from './skin';
 import {Port} from './Port';
@@ -16,15 +16,15 @@ export default class Cell {
      * @param yPort the Yosys Port with our port data
      * @param name the name of the port
      */
-    public static fromPort(yPort: Yosys.ExtPort, name: string): Cell {
+    public static fromPort(yPort: Yosys.ExtPort, name: string, parent: FlatModule): Cell {
         const isInput: boolean = yPort.direction === Yosys.Direction.Input;
         if (isInput) {
-            return new Cell(name, '$_inputExt_', [], [new Port('Y', yPort.bits)], {});
+            return new Cell(name, '$_inputExt_', [], [new Port('Y', yPort.bits)], {}, parent);
         }
-        return new Cell(name, '$_outputExt_', [new Port('A', yPort.bits)], [], {});
+        return new Cell(name, '$_outputExt_', [new Port('A', yPort.bits)], [], {}, parent);
     }
 
-    public static fromYosysCell(yCell: Yosys.Cell, name: string) {
+    public static fromYosysCell(yCell: Yosys.Cell, name: string, parent: FlatModule) {
         const inputPids: string[] = Yosys.getInputPortPids(yCell);
         const outputPids: string[] = Yosys.getOutputPortPids(yCell);
         const ports: Port[] = _.map(yCell.connections, (conn, portName) => {
@@ -32,11 +32,11 @@ export default class Cell {
         });
         const inputPorts = ports.filter((port) => port.keyIn(inputPids));
         const outputPorts = ports.filter((port) => port.keyIn(outputPids));
-        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes);
+        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent);
     }
 
-    public static fromConstantInfo(name: string, constants: number[]): Cell {
-        return new Cell(name, '$_constant_', [], [new Port('Y', constants)], {});
+    public static fromConstantInfo(name: string, constants: number[], parent: FlatModule): Cell {
+        return new Cell(name, '$_constant_', [], [new Port('Y', constants)], {}, parent);
     }
 
     /**
@@ -44,14 +44,14 @@ export default class Cell {
      * @param target string name of net (starts and ends with and delimited by commas)
      * @param sources list of index strings (one number, or two numbers separated by a colon)
      */
-    public static fromJoinInfo(target: string, sources: string[]): Cell {
+    public static fromJoinInfo(target: string, sources: string[], parent: FlatModule): Cell {
         const signalStrs: string[] = target.slice(1, -1).split(',');
         const signals: number[] = signalStrs.map((ss) =>  Number(ss));
         const joinOutPorts: Port[] = [new Port('Y', signals)];
         const inPorts: Port[] = sources.map((name) => {
             return new Port(name, getBits(signals, name));
         });
-        return new Cell('$join$' + target, '$_join_', inPorts, joinOutPorts, {});
+        return new Cell('$join$' + target, '$_join_', inPorts, joinOutPorts, {}, parent);
     }
 
     /**
@@ -59,7 +59,7 @@ export default class Cell {
      * @param source string name of net (starts and ends with and delimited by commas)
      * @param targets list of index strings (one number, or two numbers separated by a colon)
      */
-    public static fromSplitInfo(source: string, targets: string[]): Cell {
+    public static fromSplitInfo(source: string, targets: string[], parent: FlatModule): Cell {
         // turn string into array of signal names
         const signals: Yosys.Signals = source.slice(1, -1).split(',');
         // convert the signals into actual numbers
@@ -72,25 +72,44 @@ export default class Cell {
             const sigs: Yosys.Signals = getBits(signals, name);
             return new Port(name, sigs);
         });
-        return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {});
+        return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {}, parent);
     }
 
+    public static createSubModule(yCell: Yosys.Cell, name: string, parent: FlatModule, subModule: Yosys.Module): Cell {
+        const inputPids: string[] = Yosys.getInputPortPids(yCell);
+        const outputPids: string[] = Yosys.getOutputPortPids(yCell);
+        const ports: Port[] = _.map(yCell.connections, (conn, portName) => {
+            return new Port(portName, conn);
+        });
+        const inputPorts = ports.filter((port) => port.keyIn(inputPids));
+        const outputPorts = ports.filter((port) => port.keyIn(outputPids));
+        const mod = new FlatModule(subModule, name, parent);
+        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod);
+    }
+
+    public parent: FlatModule;
     protected key: string;
     protected type: string;
     protected inputPorts: Port[];
     protected outputPorts: Port[];
     protected attributes: Yosys.CellAttributes;
+    protected subModule: FlatModule;
 
     constructor(key: string,
                 type: string,
                 inputPorts: Port[],
                 outputPorts: Port[],
-                attributes: Yosys.CellAttributes) {
+                attributes: Yosys.CellAttributes,
+                parentModule: FlatModule,
+                subModule: FlatModule = null,
+                ) {
         this.key = key;
         this.type = type;
         this.inputPorts = inputPorts;
         this.outputPorts = outputPorts;
         this.attributes = attributes;
+        this.parent = parentModule;
+        this.subModule = subModule;
         inputPorts.forEach((ip) => {
             ip.ParentNode = this;
         });
@@ -124,7 +143,7 @@ export default class Cell {
                          maxNum: number,
                          constantCollector: Cell[]): number {
         this.inputPorts.forEach((ip) => {
-            maxNum = ip.findConstants(sigsByConstantName, maxNum, constantCollector);
+            maxNum = ip.findConstants(sigsByConstantName, maxNum, constantCollector, this.parent);
         });
         return maxNum;
     }
@@ -141,7 +160,7 @@ export default class Cell {
                                    driversByNet: NameToPorts,
                                    lateralsByNet: NameToPorts,
                                    genericsLaterals: boolean): void {
-        const template = findSkinType(Cell.skin, this.type);
+        const template = findSkinType(FlatModule.skin, this.type);
         const lateralPids = getLateralPortPids(template);
         // find all ports connected to the same net
         this.inputPorts.forEach((port) => {
@@ -170,12 +189,13 @@ export default class Cell {
     }
 
     public getTemplate(): any {
-        return findSkinType(Cell.skin, this.type);
+        return findSkinType(FlatModule.skin, this.type);
     }
 
     public buildElkChild(): ElkModel.Cell {
         const template = this.getTemplate();
         const type: string = template[1]['s:type'];
+        const key: string = this.parent.prefix() + this.key;
         if (type === 'join' ||
             type === 'split' ||
             type === 'generic') {
@@ -186,7 +206,7 @@ export default class Cell {
             const outPorts = this.outputPorts.map((op, i) =>
                 op.getGenericElkPort(i, outTemplates, 'out'));
             const cell: ElkModel.Cell = {
-                id: this.key,
+                id: key,
                 width: Number(template[1]['s:width']),
                 height: Number(this.getGenericHeight()),
                 ports: inPorts.concat(outPorts),
@@ -194,7 +214,7 @@ export default class Cell {
             };
             if (type === 'generic') {
                 cell.labels = [{
-                    id: this.key + '.label',
+                    id: key + '.label',
                     text: this.type,
                     x: Number(template[2][1].x),
                     y: Number(template[2][1].y) - 6,
@@ -206,7 +226,7 @@ export default class Cell {
         }
         const ports: ElkModel.Port[] = getPortsWithPrefix(template, '').map((tp) => {
             return {
-                id: this.key + '.' + tp[1]['s:pid'],
+                id: key + '.' + tp[1]['s:pid'],
                 width: 0,
                 height: 0,
                 x: Number(tp[1]['s:x']),
@@ -215,7 +235,7 @@ export default class Cell {
         });
         const nodeWidth: number = Number(template[1]['s:width']);
         const ret: ElkModel.Cell = {
-            id: this.key,
+            id: key,
             width: nodeWidth,
             height: Number(template[1]['s:height']),
             ports,
@@ -223,8 +243,11 @@ export default class Cell {
         };
         if (type === 'inputExt' ||
             type === 'outputExt') {
+            if (this.parent.parent !== null) {
+                return null;
+            }
             ret.labels = [{
-                id: this.key + '.label',
+                id: key + '.label',
                 text: this.key,
                 x: Number(template[2][1].x) + nodeWidth / 2 - 3 * this.key.length,
                 y: Number(template[2][1].y) - 6,
