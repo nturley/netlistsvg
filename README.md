@@ -450,18 +450,19 @@ ELK is using a layered approach (Sugiyama, Ganser), similar to dot in the Graphv
 Still early stages. But it's usable. Skin definition format is still changing.
 
 # Installation/Usage Instructions
+
+Install nodejs if isn't already installed
 ```
-(install nodejs)
-git clone https://github.com/nturley/netlistsvg
-cd netlistsvg
-npm install
+npm install -g netlistsvg
 ```
-At the moment, the invocation looks something like this.
+
+You can execute netlistsvg like this.
 ```
-node bin/netlistsvg input_json_file [-o output_svg_file] [--skin skin_file]
+netlistsvg input_json_file [-o output_svg_file] [--skin skin_file]
 ```
 The default value for the output file is out.svg.
 
+Should work on Linux, OSX, and Windows. Running the build scripts (examples makefiles and the web demo) is easiest on Linux and OSX.
 
 ## Generating `input_json_file` with Yosys
 
