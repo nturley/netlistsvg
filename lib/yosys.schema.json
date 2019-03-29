@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "required": [
+      "modules"
+  ],
+  "properties": {
+    "modules": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "ports",
+          "cells"
+        ],
+        "properties": {
+          "ports": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "required": [
+                "direction",
+                "bits"
+              ],
+              "properties": {
+                "direction": {
+                  "enum": ["input", "output"]
+                },
+                "bits": {
+                  "type": "array",
+                  "items": {
+                    "type":["string", "number"]
+                  }
+                }
+              }
+            }
+          },
+          "cells": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "required": [
+                "type",
+                "connections",
+                "port_directions"
+              ],
+              "properties": {
+                "connections": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type":"array",
+                    "items": {
+                      "type":["string", "number"]
+                    }
+                  }
+                },
+                "type":{
+                  "type":"string"
+                },
+                "port_directions":{
+                  "type": "object",
+                  "additionalProperties": {
+                    "enum": ["input", "output"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
