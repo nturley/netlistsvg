@@ -86,6 +86,7 @@ text {
 <!-- passives -->
 <g s:type="resistor_h" s:width="50" s:height="10" transform="translate(5,110)">
   <s:alias val="r_h"/>
+  <text class="nodelabel" x="25" y="-5" s:attribute="ref">X1</text>
   <path d="M10,0 H40 V10 H10 Z" class="symbol"/>
   <path d="M0,5 H10 M40,5 H50" class="connect"/>
   <g s:x="0" s:y="5" s:pid="A" s:dir="lateral"/>
@@ -94,6 +95,7 @@ text {
 
 <g s:type="resistor_v" s:width="10" s:height="50" transform="translate(25,130)">
   <s:alias val="r_v"/>
+  <text x="15" y="25" s:attribute="ref">X1</text>
   <path d="M0,10 V40 H10 V10 Z" class="symbol"/>
   <path d="M5,0 V10 M5,40 V50" class="connect"/>
   <g s:x="5" s:y="0" s:pid="A"/>
@@ -102,6 +104,7 @@ text {
 
 <g s:type="capacitor_h" s:width="50" s:height="30" transform="translate(60,100)">
   <s:alias val="c_h"/>
+  <text x="35" y="10" s:attribute="ref">X1</text>
   <path d="M20,0 V30 M30,0 V30" class="symbol"/>
   <path d="M0,15 H20 M30,15 H50" class="connect"/>
   <g s:x="0" s:y="15" s:pid="A" s:dir="lateral"/>
@@ -110,6 +113,7 @@ text {
 
 <g s:type="capacitor_v" s:width="30" s:height="50" transform="translate(70,130)">
   <s:alias val="c_v"/>
+  <text x="25" y="10" s:attribute="ref">X1</text>
   <path d="M0,20 H30 M0,30 H30" class="symbol"/>
   <path d="M15,0 V20 M15,30 V50" class="connect"/>
   <g s:x="15" s:y="0" s:pid="A"/>
@@ -118,6 +122,7 @@ text {
 
 <g s:type="inductor_h" s:width="50" s:height="10" transform="translate(115,110)">
   <s:alias val="l_h"/>
+  <text class="nodelabel" x="25" y="-5" s:attribute="ref">X1</text>
   <path d="M5,5 A5,5 0 0 1 15,5 A5,5 0 0 1 25,5 A5,5 0 0 1 35,5 A5,5 0 0 1 45,5"/>
   <path d="M0,5 H5 M45,5 H50" class="connect"/>
   <g s:x="0" s:y="5" s:pid="A" s:dir="lateral"/>
@@ -126,6 +131,7 @@ text {
 
 <g s:type="inductor_v" s:width="10" s:height="50" transform="translate(135,130)">
   <s:alias val="l_v"/>
+  <text x="15" y="25" s:attribute="ref">X1</text>
   <path d="M5,5 A5,5 0 0 1 5,15 A5,5 0 0 1 5,25 A5,5 0 0 1 5,35 A5,5 0 0 1 5,45"/>
   <path d="M5,0 V5 M5,45 V50" class="connect"/>
   <g s:x="5" s:y="0" s:pid="A"/>
@@ -134,8 +140,9 @@ text {
 <!-- passives -->
 
 <!-- sources -->
-<g s:type="voltage_source" s:width="32" s:height="52" transform="translate(20,200)">
+<g s:type="voltage_source" s:width="32" s:height="52" transform="translate(20,180)">
   <s:alias val="v"/>
+  <text x="35" y="25" s:attribute="ref">X1</text>
   <circle cx="16" cy="26" r="16" class="symbol"/>
   <path d="M16,10 V42" class="detail"/>
   <path d="M16,0 V10 M16,42 V52" class="connect"/>
@@ -143,8 +150,9 @@ text {
   <g s:x="16" s:y="52" s:pid="-"/>
 </g>
 
-<g s:type="current_source" s:width="32" s:height="52" transform="translate(75,200)">
+<g s:type="current_source" s:width="32" s:height="52" transform="translate(75,180)">
   <s:alias val="i"/>
+  <text x="35" y="25" s:attribute="ref">X1</text>
   <circle cx="16" cy="26" r="16" class="symbol"/>
   <path d="M0,26 H32" class="detail"/>
   <path d="M16,0 V10 M16,42 V52" class="connect"/>
@@ -156,6 +164,7 @@ text {
 <!-- diodes -->
 <g s:type="diode_h" s:width="50" s:height="20" transform="translate(5,250)">
   <s:alias val="d_h"/>
+  <text class="nodelabel" x="25" y="-5" s:attribute="ref">X1</text>
   <path d="M15,0 V20 L35,10 Z M35,0 V20" class="symbol"/>
   <path d="M0,10 H15 M35,10 H50" class="connect"/>
   <g s:x="0" s:y="10" s:pid="+" s:dir="lateral"/>
@@ -164,6 +173,7 @@ text {
 
 <g s:type="diode_v" s:width="20" s:height="50" transform="translate(20,280)">
   <s:alias val="d_v"/>
+  <text x="25" y="25" s:attribute="ref">X1</text>
   <path d="M0,15 H20 L10,35 Z M0,35 H20" class="symbol"/>
   <path d="M10,0 V15 M10,35 V50" class="connect"/>
   <g s:x="10" s:y="0" s:pid="+"/>
@@ -172,6 +182,7 @@ text {
 
 <g s:type="diode_schottky_h" s:width="50" s:height="20" transform="translate(60,250)">
   <s:alias val="d_sk_h"/>
+  <text class="nodelabel" x="25" y="-5" s:attribute="ref">X1</text>
   <path d="M15,0 V20 L35,10 Z M35,0 V20" class="symbol"/>
   <path d="M0,10 H15 M35,10 H50" class="connect"/>
   <!-- schottky -->
@@ -182,6 +193,7 @@ text {
 
 <g s:type="diode_schottky_v" s:width="20" s:height="50" transform="translate(75,280)">
   <s:alias val="d_sk_v"/>
+  <text x="25" y="25" s:attribute="ref">X1</text>
   <path d="M0,15 H20 L10,35 Z M0,35 H20" class="symbol"/>
   <path d="M10,0 V15 M10,35 V50" class="connect"/>
   <!-- schottky -->
@@ -192,6 +204,7 @@ text {
 
 <g s:type="diode_led_h" s:width="50" s:height="20" transform="translate(115,250)">
   <s:alias val="d_led_h"/>
+  <text class="nodelabel" x="10" y="-5" s:attribute="ref">X1</text>
   <path d="M15,0 V20 L35,10 Z M35,0 V20" class="symbol"/>
   <path d="M0,10 H15 M35,10 H50" class="connect"/>
   <!-- led -->
@@ -205,6 +218,7 @@ text {
 
 <g s:type="diode_led_v" s:width="20" s:height="50" transform="translate(130,280)">
   <s:alias val="d_led_v"/>
+  <text x="25" y="25" s:attribute="ref">X1</text>
   <path d="M0,15 H20 L10,35 Z M0,35 H20" class="symbol"/>
   <path d="M10,0 V15 M10,35 V50" class="connect"/>
   <!-- led -->
@@ -220,6 +234,7 @@ text {
 <!-- transistors -->
 <g s:type="transistor_npn" s:width="32" s:height="32" transform="translate(15,350)">
   <s:alias val="q_npn"/>
+  <text x="35" y="20" s:attribute="ref">X1</text>
   <circle r="16" cx="16" cy="16" class="symbol"/>
   <path d="M0,16 H12 M12,6 V26" class="detail"/>
   <path d="m12,10 11,-8" class="detail"/>
@@ -231,8 +246,9 @@ text {
   <g s:x="23" s:y="29" s:pid="E"/>
 </g>
 
-<g s:type="transistor_pnp" s:width="32" s:height="32" transform="translate(55,350)">
+<g s:type="transistor_pnp" s:width="32" s:height="32" transform="translate(85,350)">
   <s:alias val="q_pnp"/>
+  <text x="35" y="20" s:attribute="ref">X1</text>
   <circle r="16" cx="16" cy="16" class="symbol"/>
   <path d="M0,16 H12 M12,6 V26" class="detail"/>
   <path d="m12,10 11,-8" class="detail"/>
@@ -303,6 +319,7 @@ text {
 <!-- misc -->
 <g s:type="opamp" s:width="60" s:height="40" transform="translate(20,450)">
   <s:alias val="op"/>
+  <text x="40" y="35" s:attribute="ref">X1</text>
   <path d="M10,0 V40 L50,20 Z" class="symbol"/>
   <path d="M0,10 H10 M0,30 H10 M50,20 H60 M30,0 V10 M30,40 V30" class="connect"/>
   <path d="m15,10 5,0 m-2.5,-2.5 0,5" class="detail"/>
@@ -316,6 +333,7 @@ text {
 
 <g s:type="xtal" s:width="40" s:height="30" transform="translate(90,450)">
   <s:alias val="xtal"/>
+  <text class="nodelabel" x="20" y="45" s:attribute="ref">X1</text>
   <rect x="15" y="0" width="10" height="30" class="symbol" />
   <path d="M0,15 H10 M10,5 V25 M30,5 V25 M30,15 H40"/>
   <g s:x="0" s:y="15" s:pid="A" s:dir="lateral"/>
@@ -324,6 +342,7 @@ text {
 
 <g s:type="transformer_1p_1s" s:width="35" s:height="45" transform="translate(140,450)">
   <s:alias val="transformer_1p_1s"/>
+  <text class="nodelabel" x="25" y="55" s:attribute="ref">X1</text>
   <path d="M10,0 A5,5 0 0 1 10,10 A5,5 0 0 1 10,20 A5,5 0 0 1 10,30 A5,5 0 0 1 10,40"/>
   <path d="M35,0 A5,5 0 0 0 35,10 A5,5 0 0 0 35,20 A5,5 0 0 0 35,30 A5,5 0 0 0 35,40"/>
   <path d="M20,0 V40 M25,0 V40" class="symbol"/>
