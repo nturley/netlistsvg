@@ -7,6 +7,7 @@
     genericsLaterals="true">
     <s:layoutEngine
         org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="5"
+        layered.compaction.postCompaction.strategy="4"
         elk.spacing.nodeNode= "35"
         org.eclipse.elk.direction="DOWN"/>
     <s:low_priority_alias val="$dff" />
