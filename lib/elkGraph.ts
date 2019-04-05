@@ -1,4 +1,4 @@
-import {FlatModule} from './FlatModule';
+import { FlatModule } from './FlatModule';
 import _ = require('lodash');
 
 export namespace ElkModel {

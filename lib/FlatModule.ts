@@ -11,6 +11,7 @@ export interface FlatPort {
 }
 
 export interface Wire {
+    netName: string;
     drivers: FlatPort[];
     riders: FlatPort[];
     laterals: FlatPort[];
@@ -118,7 +119,7 @@ export class FlatModule {
             const drivers: FlatPort[] = driversByNet[net] || [];
             const riders: FlatPort[] = ridersByNet[net] || [];
             const laterals: FlatPort[] = lateralsByNet[net] || [];
-            const wire: Wire = { drivers, riders, laterals};
+            const wire: Wire = { netName: net, drivers, riders, laterals};
             drivers.concat(riders).concat(laterals).forEach((port) => {
                 port.wire = wire;
             });

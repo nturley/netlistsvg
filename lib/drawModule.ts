@@ -4,6 +4,7 @@ import Cell from './Cell';
 
 import _ = require('lodash');
 import onml = require('onml');
+import assert = require('assert');
 
 enum WireDirection {
     Up, Down, Left, Right,
@@ -94,7 +95,6 @@ function removeDummyEdges(g: ElkModel.Graph) {
         if (edgeGroup.length === 0) {
             break;
         }
-
         const junctEdge = _.minBy(edgeGroup, (e) => {
             if (e.source === dummyId) {
                 if (e.junctionPoints) {
@@ -117,37 +117,42 @@ function removeDummyEdges(g: ElkModel.Graph) {
                 return 1000;
             }
         });
-        const junct = junctEdge.junctionPoints[0];
-
-        const dirs: WireDirection[] = edgeGroup.map((e: ElkModel.Edge) => {
-            const s = e.sections[0];
-            if (e.source === dummyId) {
-                s.startPoint = junct;
-                if (s.bendPoints) {
-                    if (s.bendPoints[0].x === junct.x && s.bendPoints[0].y === junct.y) {
-                        s.bendPoints = s.bendPoints.slice(1);
-                    }
-
-                    if (s.bendPoints.length > 0) {
-                        return which_dir(junct, s.bendPoints[0]);
-                    }
+        const dirs: WireDirection[] = edgeGroup.map((edge: ElkModel.Edge) => {
+            const s = edge.sections[0];
+            if (s.bendPoints === undefined || edge.junctionPoints === undefined) {
+                s.bendPoints = [];
+                s.startPoint = s.endPoint;
+                return null;
+            }
+            if (edge.source === dummyId) {
+                const newSourceIndex = s.bendPoints.findIndex( (bend) => {
+                    return junctEdge.junctionPoints.find( (junct) => {
+                        return _.isEqual(bend, junct);
+                    }) !== undefined;
+                });
+                assert.notStrictEqual(newSourceIndex, -1);
+                s.startPoint = s.bendPoints[newSourceIndex];
+                s.bendPoints = s.bendPoints.slice(newSourceIndex + 1);
+                if (s.bendPoints.length > 0) {
+                    return which_dir(s.startPoint, s.bendPoints[0]);
                 }
-                return which_dir(junct, s.endPoint);
+                return which_dir(s.startPoint, s.endPoint);
             } else {
-                s.endPoint = junct;
-                if (s.bendPoints) {
-                    const lastBend = s.bendPoints[s.bendPoints.length - 1];
-                    if (lastBend.x === junct.x && lastBend.y === junct.y) {
-                        s.bendPoints.pop();
-                    }
-                    if (s.bendPoints.length > 0) {
-                        return which_dir(junct, s.bendPoints[s.bendPoints.length - 1]);
-                    }
+                const newTargetIndex = _.findLastIndex(s.bendPoints, (bend) => {
+                    return junctEdge.junctionPoints.find( (junct) => {
+                        return _.isEqual(junct, bend);
+                    }) !== undefined;
+                });
+                assert.notStrictEqual(newTargetIndex, -1);
+                s.endPoint = s.bendPoints[newTargetIndex];
+                s.bendPoints = s.bendPoints.slice(0, newTargetIndex);
+                if (s.bendPoints.length > 0) {
+                    return which_dir(s.endPoint, s.bendPoints[s.bendPoints.length - 1]);
                 }
-                return which_dir(junct, s.startPoint);
+                return which_dir(s.endPoint, s.startPoint);
             }
         });
-        const dirSet = removeDups(dirs.map((wd) => WireDirection[wd]));
+        const dirSet = removeDups(dirs.filter((wd) => wd !== null).map((wd) => WireDirection[wd]));
         if (dirSet.length === 2) {
             junctEdge.junctionPoints = junctEdge.junctionPoints.slice(1);
         }

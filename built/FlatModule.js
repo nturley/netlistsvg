@@ -80,7 +80,7 @@ var FlatModule = /** @class */ (function () {
             var drivers = driversByNet[net] || [];
             var riders = ridersByNet[net] || [];
             var laterals = lateralsByNet[net] || [];
-            var wire = { drivers: drivers, riders: riders, laterals: laterals };
+            var wire = { netName: net, drivers: drivers, riders: riders, laterals: laterals };
             drivers.concat(riders).concat(laterals).forEach(function (port) {
                 port.wire = wire;
             });

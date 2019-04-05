@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var FlatModule_1 = require("./FlatModule");
 var _ = require("lodash");
 var onml = require("onml");
+var assert = require("assert");
 var WireDirection;
 (function (WireDirection) {
     WireDirection[WireDirection["Up"] = 0] = "Up";
@@ -116,36 +117,43 @@ function removeDummyEdges(g) {
                 return 1000;
             }
         });
-        var junct = junctEdge.junctionPoints[0];
-        var dirs = edgeGroup.map(function (e) {
-            var s = e.sections[0];
-            if (e.source === dummyId) {
-                s.startPoint = junct;
-                if (s.bendPoints) {
-                    if (s.bendPoints[0].x === junct.x && s.bendPoints[0].y === junct.y) {
-                        s.bendPoints = s.bendPoints.slice(1);
-                    }
-                    if (s.bendPoints.length > 0) {
-                        return which_dir(junct, s.bendPoints[0]);
-                    }
+        var dirs = edgeGroup.map(function (edge) {
+            var s = edge.sections[0];
+            if (s.bendPoints === undefined || edge.junctionPoints === undefined) {
+                s.bendPoints = [];
+                s.startPoint = s.endPoint;
+                return null;
+            }
+            if (edge.source === dummyId) {
+                var newSourceIndex = s.bendPoints.findIndex(function (bend) {
+                    return junctEdge.junctionPoints.find(function (junct) {
+                        return _.isEqual(bend, junct);
+                    }) !== undefined;
+                });
+                assert.notStrictEqual(newSourceIndex, -1);
+                s.startPoint = s.bendPoints[newSourceIndex];
+                s.bendPoints = s.bendPoints.slice(newSourceIndex + 1);
+                if (s.bendPoints.length > 0) {
+                    return which_dir(s.startPoint, s.bendPoints[0]);
                 }
-                return which_dir(junct, s.endPoint);
+                return which_dir(s.startPoint, s.endPoint);
             }
             else {
-                s.endPoint = junct;
-                if (s.bendPoints) {
-                    var lastBend = s.bendPoints[s.bendPoints.length - 1];
-                    if (lastBend.x === junct.x && lastBend.y === junct.y) {
-                        s.bendPoints.pop();
-                    }
-                    if (s.bendPoints.length > 0) {
-                        return which_dir(junct, s.bendPoints[s.bendPoints.length - 1]);
-                    }
+                var newTargetIndex = _.findLastIndex(s.bendPoints, function (bend) {
+                    return junctEdge.junctionPoints.find(function (junct) {
+                        return _.isEqual(junct, bend);
+                    }) !== undefined;
+                });
+                assert.notStrictEqual(newTargetIndex, -1);
+                s.endPoint = s.bendPoints[newTargetIndex];
+                s.bendPoints = s.bendPoints.slice(0, newTargetIndex);
+                if (s.bendPoints.length > 0) {
+                    return which_dir(s.endPoint, s.bendPoints[s.bendPoints.length - 1]);
                 }
-                return which_dir(junct, s.startPoint);
+                return which_dir(s.endPoint, s.startPoint);
             }
         });
-        var dirSet = FlatModule_1.removeDups(dirs.map(function (wd) { return WireDirection[wd]; }));
+        var dirSet = FlatModule_1.removeDups(dirs.filter(function (wd) { return wd !== null; }).map(function (wd) { return WireDirection[wd]; }));
         if (dirSet.length === 2) {
             junctEdge.junctionPoints = junctEdge.junctionPoints.slice(1);
         }
