@@ -8,9 +8,9 @@ var elkGraph_1 = require("./elkGraph");
 var drawModule_1 = require("./drawModule");
 var elk = new ELK();
 function render(skinData, yosysNetlist, done) {
-    var skin = onml.p(skinData);
-    var layoutProps = Skin_1.default.getProperties(skin);
-    var flatModule = new FlatModule_1.FlatModule(yosysNetlist, skin);
+    Skin_1.default.skin = onml.p(skinData);
+    var layoutProps = Skin_1.default.getProperties();
+    var flatModule = new FlatModule_1.FlatModule(yosysNetlist);
     // this can be skipped if there are no 0's or 1's
     if (layoutProps.constants !== false) {
         flatModule.addConstants();

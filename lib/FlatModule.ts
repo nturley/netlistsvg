@@ -21,9 +21,8 @@ export class FlatModule {
     private moduleName: string;
     private nodes: Cell[];
     private wires: Wire[];
-    private skin: any;
 
-    constructor(netlist: Yosys.Netlist, skin: any) {
+    constructor(netlist: Yosys.Netlist) {
         this.moduleName = null;
         _.forEach(netlist.modules, (mod: Yosys.Module, name: string) => {
             if (mod.attributes && mod.attributes.top === 1) {
@@ -35,13 +34,11 @@ export class FlatModule {
             this.moduleName = Object.keys(netlist.modules)[0];
         }
         const top = netlist.modules[this.moduleName];
-        Cell.skin = skin;
         const ports = _.map(top.ports, Cell.fromPort);
         const cells = _.map(top.cells, (c, key) => Cell.fromYosysCell(c, key));
         this.nodes = cells.concat(ports);
         // populated by createWires
         this.wires = [];
-        this.skin = skin;
     }
 
     public getNodes(): Cell[] {
@@ -54,10 +51,6 @@ export class FlatModule {
 
     public getName(): string {
         return this.moduleName;
-    }
-
-    public getSkin(): any {
-        return this.skin;
     }
 
     // converts input ports with constant assignments to constant nodes
@@ -102,7 +95,7 @@ export class FlatModule {
 
     // search through all the ports to find all of the wires
     public createWires() {
-        const layoutProps = Skin.getProperties(this.skin);
+        const layoutProps = Skin.getProperties();
         const ridersByNet: NameToPorts = {};
         const driversByNet: NameToPorts = {};
         const lateralsByNet: NameToPorts = {};

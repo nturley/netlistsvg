@@ -35,7 +35,7 @@ var Cell = /** @class */ (function () {
         return new Cell(name, '$_outputExt_', [new Port_1.Port('A', yPort.bits)], [], {});
     };
     Cell.fromYosysCell = function (yCell, name) {
-        var template = Skin_1.default.findSkinType(Cell.skin, yCell.type);
+        var template = Skin_1.default.findSkinType(yCell.type);
         var templateInputPids = Skin_1.default.getInputPids(template);
         var templateOutputPids = Skin_1.default.getOutputPids(template);
         var ports = _.map(yCell.connections, function (conn, portName) {
@@ -134,7 +134,7 @@ var Cell = /** @class */ (function () {
         return this.outputPorts.map(function (port) { return port.valString(); });
     };
     Cell.prototype.collectPortsByDirection = function (ridersByNet, driversByNet, lateralsByNet, genericsLaterals) {
-        var template = Skin_1.default.findSkinType(Cell.skin, this.type);
+        var template = Skin_1.default.findSkinType(this.type);
         var lateralPids = Skin_1.default.getLateralPortPids(template);
         // find all ports connected to the same net
         this.inputPorts.forEach(function (port) {
@@ -163,7 +163,7 @@ var Cell = /** @class */ (function () {
         return null;
     };
     Cell.prototype.getTemplate = function () {
-        return Skin_1.default.findSkinType(Cell.skin, this.type);
+        return Skin_1.default.findSkinType(this.type);
     };
     Cell.prototype.buildElkChild = function () {
         var _this = this;

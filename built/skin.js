@@ -4,6 +4,7 @@ var onml = require("onml");
 var _ = require("lodash");
 var Skin;
 (function (Skin) {
+    Skin.skin = null;
     function getPortsWithPrefix(template, prefix) {
         var ports = _.filter(template, function (e) {
             if (e instanceof Array && e[0] === 'g') {
@@ -57,9 +58,9 @@ var Skin;
         });
     }
     Skin.getLateralPortPids = getLateralPortPids;
-    function findSkinType(skinData, type) {
+    function findSkinType(type) {
         var ret = null;
-        onml.traverse(skinData, {
+        onml.traverse(Skin.skin, {
             enter: function (node, parent) {
                 if (node.name === 's:alias' && node.attr.val === type) {
                     ret = parent;
@@ -67,7 +68,7 @@ var Skin;
             },
         });
         if (ret == null) {
-            onml.traverse(skinData, {
+            onml.traverse(Skin.skin, {
                 enter: function (node) {
                     if (node.attr['s:type'] === 'generic') {
                         ret = node;
@@ -78,8 +79,8 @@ var Skin;
         return ret.full;
     }
     Skin.findSkinType = findSkinType;
-    function getProperties(skin) {
-        var properties = _.find(skin, function (el) {
+    function getProperties() {
+        var properties = _.find(Skin.skin, function (el) {
             return el[0] === 's:properties';
         });
         var vals = _.mapValues(properties[1], function (val) {

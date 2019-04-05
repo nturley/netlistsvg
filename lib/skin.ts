@@ -2,6 +2,8 @@ import onml = require('onml');
 import _ = require('lodash');
 
 export namespace Skin {
+    export let skin = null;
+
     export function getPortsWithPrefix(template: any[], prefix: string) {
         const ports = _.filter(template, (e) => {
             if (e instanceof Array && e[0] === 'g') {
@@ -56,9 +58,9 @@ export namespace Skin {
         });
     }
 
-    export function findSkinType(skinData, type: string) {
+    export function findSkinType(type: string) {
         let ret = null;
-        onml.traverse(skinData, {
+        onml.traverse(skin, {
             enter: (node, parent) => {
                 if (node.name === 's:alias' && node.attr.val === type) {
                     ret = parent;
@@ -66,7 +68,7 @@ export namespace Skin {
             },
         });
         if (ret == null) {
-            onml.traverse(skinData, {
+            onml.traverse(skin, {
                 enter: (node) => {
                     if (node.attr['s:type'] === 'generic') {
                         ret = node;
@@ -77,7 +79,7 @@ export namespace Skin {
         return ret.full;
     }
 
-    export function getProperties(skin) {
+    export function getProperties() {
         const properties: any[] = _.find(skin, (el) => {
             return el[0] === 's:properties';
         });

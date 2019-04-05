@@ -14,10 +14,10 @@ const elk = new ELK();
 type ICallback = (error: Error, result?: string) => void;
 
 export function render(skinData: string, yosysNetlist: Yosys.Netlist, done?: ICallback) {
-    const skin = onml.p(skinData);
-    const layoutProps = Skin.getProperties(skin);
+    Skin.skin = onml.p(skinData);
+    const layoutProps = Skin.getProperties();
 
-    const flatModule = new FlatModule(yosysNetlist, skin);
+    const flatModule = new FlatModule(yosysNetlist);
 
     // this can be skipped if there are no 0's or 1's
     if (layoutProps.constants !== false) {

@@ -6,6 +6,7 @@ import onml = require('onml');
 import Yosys from '../lib/YosysModel';
 import Cell from '../lib/Cell';
 import { FlatModule } from '../lib/FlatModule';
+import Skin from '../lib/Skin';
 
 /**
  * Helper function for tests that use test files
@@ -17,7 +18,8 @@ function createFlatModule(testFile: string): FlatModule {
     const testStr = fs.readFileSync(testPath).toString();
     const netlist: Yosys.Netlist = json5.parse(testStr);
     const skin = onml.parse(fs.readFileSync(defaultSkin).toString());
-    return new FlatModule(netlist, skin);
+    Skin.skin = skin;
+    return new FlatModule(netlist);
 }
 
 /**

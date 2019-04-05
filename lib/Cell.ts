@@ -8,9 +8,6 @@ import clone = require('clone');
 import onml = require('onml');
 
 export default class Cell {
-
-    public static skin: any;
-
     /**
      * creates a Cell from a Yosys Port
      * @param yPort the Yosys Port with our port data
@@ -25,7 +22,7 @@ export default class Cell {
     }
 
     public static fromYosysCell(yCell: Yosys.Cell, name: string) {
-        const template = Skin.findSkinType(Cell.skin, yCell.type);
+        const template = Skin.findSkinType(yCell.type);
         const templateInputPids = Skin.getInputPids(template);
         const templateOutputPids = Skin.getOutputPids(template);
         const ports: Port[] = _.map(yCell.connections, (conn, portName) => {
@@ -148,7 +145,7 @@ export default class Cell {
                                    driversByNet: NameToPorts,
                                    lateralsByNet: NameToPorts,
                                    genericsLaterals: boolean): void {
-        const template = Skin.findSkinType(Cell.skin, this.type);
+        const template = Skin.findSkinType(this.type);
         const lateralPids = Skin.getLateralPortPids(template);
         // find all ports connected to the same net
         this.inputPorts.forEach((port) => {
@@ -177,7 +174,7 @@ export default class Cell {
     }
 
     public getTemplate(): any {
-        return Skin.findSkinType(Cell.skin, this.type);
+        return Skin.findSkinType(this.type);
     }
 
     public buildElkChild(): ElkModel.Cell {

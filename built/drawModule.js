@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var FlatModule_1 = require("./FlatModule");
+var Skin_1 = require("./Skin");
 var _ = require("lodash");
 var onml = require("onml");
 var assert = require("assert");
@@ -51,10 +52,10 @@ function drawModule(g, module) {
             return bends.concat(line);
         });
     });
-    var svg = module.getSkin().slice(0, 2);
+    var svg = Skin_1.default.skin.slice(0, 2);
     svg[1].width = g.width;
     svg[1].height = g.height;
-    var styles = _.filter(module.getSkin(), function (el) {
+    var styles = _.filter(Skin_1.default.skin, function (el) {
         return el[0] === 'style';
     });
     var ret = svg.concat(styles).concat(nodes).concat(lines);

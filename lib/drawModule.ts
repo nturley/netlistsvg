@@ -1,6 +1,7 @@
 import { ElkModel } from './elkGraph';
 import { FlatModule, removeDups } from './FlatModule';
 import Cell from './Cell';
+import Skin from './Skin';
 
 import _ = require('lodash');
 import onml = require('onml');
@@ -49,11 +50,11 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
             return bends.concat(line);
         });
     });
-    const svg = module.getSkin().slice(0, 2);
+    const svg = Skin.skin.slice(0, 2);
     svg[1].width = g.width;
     svg[1].height = g.height;
 
-    const styles = _.filter(module.getSkin(), (el) => {
+    const styles = _.filter(Skin.skin, (el) => {
         return el[0] === 'style';
     });
     const ret = svg.concat(styles).concat(nodes).concat(lines);
