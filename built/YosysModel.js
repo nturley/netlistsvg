@@ -8,11 +8,21 @@ var Yosys;
         Direction["Output"] = "output";
     })(Direction = Yosys.Direction || (Yosys.Direction = {}));
     function getInputPortPids(cell) {
-        return Object.keys(cell.port_directions).filter(function (k) { return cell.port_directions[k] === 'input'; });
+        if (cell.port_directions) {
+            return Object.keys(cell.port_directions).filter(function (k) {
+                return cell.port_directions[k] === 'input';
+            });
+        }
+        return [];
     }
     Yosys.getInputPortPids = getInputPortPids;
     function getOutputPortPids(cell) {
-        return Object.keys(cell.port_directions).filter(function (k) { return cell.port_directions[k] === 'output'; });
+        if (cell.port_directions) {
+            return Object.keys(cell.port_directions).filter(function (k) {
+                return cell.port_directions[k] === 'output';
+            });
+        }
+        return [];
     }
     Yosys.getOutputPortPids = getOutputPortPids;
 })(Yosys || (Yosys = {}));

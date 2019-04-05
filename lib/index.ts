@@ -5,7 +5,7 @@ import onml = require('onml');
 
 import { FlatModule } from './FlatModule';
 import Yosys from './YosysModel';
-import { getProperties } from './skin';
+import Skin from './Skin';
 import { ElkModel, buildElkGraph } from './elkGraph';
 import drawModule from './drawModule';
 
@@ -15,7 +15,7 @@ type ICallback = (error: Error, result?: string) => void;
 
 export function render(skinData: string, yosysNetlist: Yosys.Netlist, done?: ICallback) {
     const skin = onml.p(skinData);
-    const layoutProps = getProperties(skin);
+    const layoutProps = Skin.getProperties(skin);
 
     const flatModule = new FlatModule(yosysNetlist, skin);
 

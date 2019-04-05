@@ -4,14 +4,14 @@
       "ports": {},
       "cells": {
         "r1": {
-          "type": "r_h",
+          "type": "r_v",
           "port_directions": {
             "A": "output",
             "B": "input"
           },
           "connections": {
-            "A": [ 3 ],
-            "B": [ 2 ]
+            "A": [ 2 ],
+            "B": [ 3 ]
           }
         },
         "c1": {
@@ -26,7 +26,7 @@
           }
         },
         "r3": {
-          "type": "r_h",
+          "type": "r_v",
           "port_directions": {
             "A": "input",
             "B": "output"

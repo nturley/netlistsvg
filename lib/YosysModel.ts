@@ -50,11 +50,21 @@ namespace Yosys {
     }
 
     export function getInputPortPids(cell: Cell): string[] {
-        return Object.keys(cell.port_directions).filter((k) => cell.port_directions[k] === 'input');
+        if (cell.port_directions) {
+            return Object.keys(cell.port_directions).filter((k) => {
+                return cell.port_directions[k] === 'input';
+            });
+        }
+        return [];
     }
 
     export function getOutputPortPids(cell: Cell): string[] {
-        return Object.keys(cell.port_directions).filter((k) => cell.port_directions[k] === 'output');
+        if (cell.port_directions) {
+            return Object.keys(cell.port_directions).filter((k) => {
+                return cell.port_directions[k] === 'output';
+            });
+        }
+        return [];
     }
 
     interface CellMap {

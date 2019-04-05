@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var skin_1 = require("./skin");
+var Skin_1 = require("./Skin");
 var Cell_1 = require("./Cell");
 var _ = require("lodash");
 var FlatModule = /** @class */ (function () {
@@ -67,7 +67,7 @@ var FlatModule = /** @class */ (function () {
     };
     // search through all the ports to find all of the wires
     FlatModule.prototype.createWires = function () {
-        var layoutProps = skin_1.getProperties(this.skin);
+        var layoutProps = Skin_1.default.getProperties(this.skin);
         var ridersByNet = {};
         var driversByNet = {};
         var lateralsByNet = {};

@@ -1,6 +1,6 @@
 import { SigsByConstName, NameToPorts, addToDefaultDict } from './FlatModule';
 import Yosys from './YosysModel';
-import { findSkinType, getLateralPortPids, getPortsWithPrefix } from './skin';
+import Skin from './Skin';
 import {Port} from './Port';
 import _ = require('lodash');
 import { ElkModel } from './elkGraph';
@@ -25,13 +25,20 @@ export default class Cell {
     }
 
     public static fromYosysCell(yCell: Yosys.Cell, name: string) {
-        const inputPids: string[] = Yosys.getInputPortPids(yCell);
-        const outputPids: string[] = Yosys.getOutputPortPids(yCell);
+        const template = Skin.findSkinType(Cell.skin, yCell.type);
+        const templateInputPids = Skin.getInputPids(template);
+        const templateOutputPids = Skin.getOutputPids(template);
         const ports: Port[] = _.map(yCell.connections, (conn, portName) => {
             return new Port(portName, conn);
         });
-        const inputPorts = ports.filter((port) => port.keyIn(inputPids));
-        const outputPorts = ports.filter((port) => port.keyIn(outputPids));
+        let inputPorts = ports.filter((port) => port.keyIn(templateInputPids));
+        let outputPorts = ports.filter((port) => port.keyIn(templateOutputPids));
+        if (inputPorts.length + outputPorts.length !== ports.length) {
+            const inputPids: string[] = Yosys.getInputPortPids(yCell);
+            const outputPids: string[] = Yosys.getOutputPortPids(yCell);
+            inputPorts = ports.filter((port) => port.keyIn(inputPids));
+            outputPorts = ports.filter((port) => port.keyIn(outputPids));
+        }
         return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes);
     }
 
@@ -141,8 +148,8 @@ export default class Cell {
                                    driversByNet: NameToPorts,
                                    lateralsByNet: NameToPorts,
                                    genericsLaterals: boolean): void {
-        const template = findSkinType(Cell.skin, this.type);
-        const lateralPids = getLateralPortPids(template);
+        const template = Skin.findSkinType(Cell.skin, this.type);
+        const lateralPids = Skin.getLateralPortPids(template);
         // find all ports connected to the same net
         this.inputPorts.forEach((port) => {
             const isLateral = port.keyIn(lateralPids);
@@ -170,7 +177,7 @@ export default class Cell {
     }
 
     public getTemplate(): any {
-        return findSkinType(Cell.skin, this.type);
+        return Skin.findSkinType(Cell.skin, this.type);
     }
 
     public buildElkChild(): ElkModel.Cell {
@@ -179,8 +186,8 @@ export default class Cell {
         if (type === 'join' ||
             type === 'split' ||
             type === 'generic') {
-            const inTemplates: any[] = getPortsWithPrefix(template, 'in');
-            const outTemplates: any[] = getPortsWithPrefix(template, 'out');
+            const inTemplates: any[] = Skin.getPortsWithPrefix(template, 'in');
+            const outTemplates: any[] = Skin.getPortsWithPrefix(template, 'out');
             const inPorts = this.inputPorts.map((ip, i) =>
                 ip.getGenericElkPort(i, inTemplates, 'in'));
             const outPorts = this.outputPorts.map((op, i) =>
@@ -204,7 +211,7 @@ export default class Cell {
             }
             return cell;
         }
-        const ports: ElkModel.Port[] = getPortsWithPrefix(template, '').map((tp) => {
+        const ports: ElkModel.Port[] = Skin.getPortsWithPrefix(template, '').map((tp) => {
             return {
                 id: this.key + '.' + tp[1]['s:pid'],
                 width: 0,
@@ -250,7 +257,7 @@ export default class Cell {
             setTextAttribute(tempclone, 'ref', '0x' + num.toString(16));
         } else if (this.type === '$_split_') {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
-            const outPorts = getPortsWithPrefix(template, 'out');
+            const outPorts = Skin.getPortsWithPrefix(template, 'out');
             const gap: number = Number(outPorts[1][1]['s:y']) - Number(outPorts[0][1]['s:y']);
             const startY: number = Number(outPorts[0][1]['s:y']);
             tempclone.pop();
@@ -264,7 +271,7 @@ export default class Cell {
             });
         } else if (this.type === '$_join_') {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
-            const inPorts = getPortsWithPrefix(template, 'in');
+            const inPorts = Skin.getPortsWithPrefix(template, 'in');
             const gap: number = Number(inPorts[1][1]['s:y']) - Number(inPorts[0][1]['s:y']);
             const startY: number = Number(inPorts[0][1]['s:y']);
             tempclone.pop();
@@ -278,10 +285,10 @@ export default class Cell {
             });
         } else if (template[1]['s:type'] === 'generic') {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
-            const inPorts = getPortsWithPrefix(template, 'in');
+            const inPorts = Skin.getPortsWithPrefix(template, 'in');
             const ingap = Number(inPorts[1][1]['s:y']) - Number(inPorts[0][1]['s:y']);
             const instartY = Number(inPorts[0][1]['s:y']);
-            const outPorts = getPortsWithPrefix(template, 'out');
+            const outPorts = Skin.getPortsWithPrefix(template, 'out');
             const outgap = Number(outPorts[1][1]['s:y']) - Number(outPorts[0][1]['s:y']);
             const outstartY = Number(outPorts[0][1]['s:y']);
             tempclone.pop();
@@ -309,8 +316,8 @@ export default class Cell {
 
     private getGenericHeight() {
         const template = this.getTemplate();
-        const inPorts = getPortsWithPrefix(template, 'in');
-        const outPorts = getPortsWithPrefix(template, 'out');
+        const inPorts = Skin.getPortsWithPrefix(template, 'in');
+        const outPorts = Skin.getPortsWithPrefix(template, 'out');
         if (this.inputPorts.length > this.outputPorts.length) {
             const gap = Number(inPorts[1][1]['s:y']) - Number(inPorts[0][1]['s:y']);
             return Number(template[1]['s:height']) + gap * (this.inputPorts.length - 2);

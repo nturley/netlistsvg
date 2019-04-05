@@ -3,13 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var ELK = require("elkjs");
 var onml = require("onml");
 var FlatModule_1 = require("./FlatModule");
-var skin_1 = require("./skin");
+var Skin_1 = require("./Skin");
 var elkGraph_1 = require("./elkGraph");
 var drawModule_1 = require("./drawModule");
 var elk = new ELK();
 function render(skinData, yosysNetlist, done) {
     var skin = onml.p(skinData);
-    var layoutProps = skin_1.getProperties(skin);
+    var layoutProps = Skin_1.default.getProperties(skin);
     var flatModule = new FlatModule_1.FlatModule(yosysNetlist, skin);
     // this can be skipped if there are no 0's or 1's
     if (layoutProps.constants !== false) {

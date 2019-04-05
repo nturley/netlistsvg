@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var FlatModule_1 = require("./FlatModule");
 var YosysModel_1 = require("./YosysModel");
-var skin_1 = require("./skin");
+var Skin_1 = require("./Skin");
 var Port_1 = require("./Port");
 var _ = require("lodash");
 var clone = require("clone");
@@ -35,13 +35,20 @@ var Cell = /** @class */ (function () {
         return new Cell(name, '$_outputExt_', [new Port_1.Port('A', yPort.bits)], [], {});
     };
     Cell.fromYosysCell = function (yCell, name) {
-        var inputPids = YosysModel_1.default.getInputPortPids(yCell);
-        var outputPids = YosysModel_1.default.getOutputPortPids(yCell);
+        var template = Skin_1.default.findSkinType(Cell.skin, yCell.type);
+        var templateInputPids = Skin_1.default.getInputPids(template);
+        var templateOutputPids = Skin_1.default.getOutputPids(template);
         var ports = _.map(yCell.connections, function (conn, portName) {
             return new Port_1.Port(portName, conn);
         });
-        var inputPorts = ports.filter(function (port) { return port.keyIn(inputPids); });
-        var outputPorts = ports.filter(function (port) { return port.keyIn(outputPids); });
+        var inputPorts = ports.filter(function (port) { return port.keyIn(templateInputPids); });
+        var outputPorts = ports.filter(function (port) { return port.keyIn(templateOutputPids); });
+        if (inputPorts.length + outputPorts.length !== ports.length) {
+            var inputPids_1 = YosysModel_1.default.getInputPortPids(yCell);
+            var outputPids_1 = YosysModel_1.default.getOutputPortPids(yCell);
+            inputPorts = ports.filter(function (port) { return port.keyIn(inputPids_1); });
+            outputPorts = ports.filter(function (port) { return port.keyIn(outputPids_1); });
+        }
         return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes);
     };
     Cell.fromConstantInfo = function (name, constants) {
@@ -127,8 +134,8 @@ var Cell = /** @class */ (function () {
         return this.outputPorts.map(function (port) { return port.valString(); });
     };
     Cell.prototype.collectPortsByDirection = function (ridersByNet, driversByNet, lateralsByNet, genericsLaterals) {
-        var template = skin_1.findSkinType(Cell.skin, this.type);
-        var lateralPids = skin_1.getLateralPortPids(template);
+        var template = Skin_1.default.findSkinType(Cell.skin, this.type);
+        var lateralPids = Skin_1.default.getLateralPortPids(template);
         // find all ports connected to the same net
         this.inputPorts.forEach(function (port) {
             var isLateral = port.keyIn(lateralPids);
@@ -156,7 +163,7 @@ var Cell = /** @class */ (function () {
         return null;
     };
     Cell.prototype.getTemplate = function () {
-        return skin_1.findSkinType(Cell.skin, this.type);
+        return Skin_1.default.findSkinType(Cell.skin, this.type);
     };
     Cell.prototype.buildElkChild = function () {
         var _this = this;
@@ -165,8 +172,8 @@ var Cell = /** @class */ (function () {
         if (type === 'join' ||
             type === 'split' ||
             type === 'generic') {
-            var inTemplates_1 = skin_1.getPortsWithPrefix(template, 'in');
-            var outTemplates_1 = skin_1.getPortsWithPrefix(template, 'out');
+            var inTemplates_1 = Skin_1.default.getPortsWithPrefix(template, 'in');
+            var outTemplates_1 = Skin_1.default.getPortsWithPrefix(template, 'out');
             var inPorts = this.inputPorts.map(function (ip, i) {
                 return ip.getGenericElkPort(i, inTemplates_1, 'in');
             });
@@ -192,7 +199,7 @@ var Cell = /** @class */ (function () {
             }
             return cell;
         }
-        var ports = skin_1.getPortsWithPrefix(template, '').map(function (tp) {
+        var ports = Skin_1.default.getPortsWithPrefix(template, '').map(function (tp) {
             return {
                 id: _this.key + '.' + tp[1]['s:pid'],
                 width: 0,
@@ -238,7 +245,7 @@ var Cell = /** @class */ (function () {
         }
         else if (this.type === '$_split_') {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
-            var outPorts_1 = skin_1.getPortsWithPrefix(template, 'out');
+            var outPorts_1 = Skin_1.default.getPortsWithPrefix(template, 'out');
             var gap_1 = Number(outPorts_1[1][1]['s:y']) - Number(outPorts_1[0][1]['s:y']);
             var startY_1 = Number(outPorts_1[0][1]['s:y']);
             tempclone.pop();
@@ -253,7 +260,7 @@ var Cell = /** @class */ (function () {
         }
         else if (this.type === '$_join_') {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
-            var inPorts_1 = skin_1.getPortsWithPrefix(template, 'in');
+            var inPorts_1 = Skin_1.default.getPortsWithPrefix(template, 'in');
             var gap_2 = Number(inPorts_1[1][1]['s:y']) - Number(inPorts_1[0][1]['s:y']);
             var startY_2 = Number(inPorts_1[0][1]['s:y']);
             tempclone.pop();
@@ -268,10 +275,10 @@ var Cell = /** @class */ (function () {
         }
         else if (template[1]['s:type'] === 'generic') {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
-            var inPorts_2 = skin_1.getPortsWithPrefix(template, 'in');
+            var inPorts_2 = Skin_1.default.getPortsWithPrefix(template, 'in');
             var ingap_1 = Number(inPorts_2[1][1]['s:y']) - Number(inPorts_2[0][1]['s:y']);
             var instartY_1 = Number(inPorts_2[0][1]['s:y']);
-            var outPorts_2 = skin_1.getPortsWithPrefix(template, 'out');
+            var outPorts_2 = Skin_1.default.getPortsWithPrefix(template, 'out');
             var outgap_1 = Number(outPorts_2[1][1]['s:y']) - Number(outPorts_2[0][1]['s:y']);
             var outstartY_1 = Number(outPorts_2[0][1]['s:y']);
             tempclone.pop();
@@ -298,8 +305,8 @@ var Cell = /** @class */ (function () {
     };
     Cell.prototype.getGenericHeight = function () {
         var template = this.getTemplate();
-        var inPorts = skin_1.getPortsWithPrefix(template, 'in');
-        var outPorts = skin_1.getPortsWithPrefix(template, 'out');
+        var inPorts = Skin_1.default.getPortsWithPrefix(template, 'in');
+        var outPorts = Skin_1.default.getPortsWithPrefix(template, 'out');
         if (this.inputPorts.length > this.outputPorts.length) {
             var gap = Number(inPorts[1][1]['s:y']) - Number(inPorts[0][1]['s:y']);
             return Number(template[1]['s:height']) + gap * (this.inputPorts.length - 2);

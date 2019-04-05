@@ -1,5 +1,5 @@
 import Yosys from './YosysModel';
-import { getProperties } from './skin';
+import Skin from './Skin';
 import Cell from './Cell';
 import _ = require('lodash');
 
@@ -102,7 +102,7 @@ export class FlatModule {
 
     // search through all the ports to find all of the wires
     public createWires() {
-        const layoutProps = getProperties(this.skin);
+        const layoutProps = Skin.getProperties(this.skin);
         const ridersByNet: NameToPorts = {};
         const driversByNet: NameToPorts = {};
         const lateralsByNet: NameToPorts = {};
