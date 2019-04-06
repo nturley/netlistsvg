@@ -5,7 +5,10 @@ var lib = require('../built'),
     fs = require('fs'),
     path = require('path'),
     json5 = require('json5'),
-    yargs = require('yargs');
+    yargs = require('yargs'),
+    Ajv = require('ajv');
+
+var ajv = new Ajv({allErrors: true});
 
 if (require.main === module) {
     var argv = yargs
@@ -38,8 +41,14 @@ function parseFiles(skinPath, netlistPath, callback) {
 function main(netlistPath, outputPath, skinPath) {
     skinPath = skinPath || path.join(__dirname, '../lib/default.svg');
     outputPath = outputPath || 'out.svg';
-    parseFiles(skinPath, netlistPath, (skinData, netlistData) => {
-        render(skinData, json5.parse(netlistData), outputPath);
+    var schemaPath = path.join(__dirname, '../lib/yosys.schema.json');
+    parseFiles(skinPath, netlistPath, (skinData, netlistString) => {
+        var netlistJson = json5.parse(netlistString);
+        var valid = ajv.validate(json5.parse(fs.readFileSync(schemaPath)), netlistJson);
+        if (!valid) {
+            throw Error(JSON.stringify(ajv.errors, null, 2));
+        }
+        render(skinData, netlistJson, outputPath);
     });
 }
 

@@ -8,10 +8,6 @@
       "type": "object",
       "additionalProperties": {
         "type": "object",
-        "required": [
-          "ports",
-          "cells"
-        ],
         "properties": {
           "ports": {
             "type": "object",
@@ -40,8 +36,7 @@
               "type": "object",
               "required": [
                 "type",
-                "connections",
-                "port_directions"
+                "connections"
               ],
               "properties": {
                 "connections": {
