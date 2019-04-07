@@ -8,7 +8,8 @@ var lib = require('../built'),
     yargs = require('yargs'),
     Ajv = require('ajv');
 
-var ajv = new Ajv({allErrors: true});
+var ajv = new Ajv({allErrors: true, jsonPointers: true});
+require('ajv-errors')(ajv);
 
 if (require.main === module) {
     var argv = yargs
