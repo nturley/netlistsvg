@@ -86,8 +86,6 @@
               },
               "hide_name": {"enum":[0, 1]},
             },
-            // no point in a netname if you don't specify the bits
-            "required": ["bits"],
           }
         },
         // there must either be ports or cells attribute
