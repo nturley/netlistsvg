@@ -1,5 +1,6 @@
 import { ElkModel } from '../lib/elkGraph';
 import { removeDummyEdges } from '../lib/drawModule';
+import _ = require('lodash');
 
 test('remove dummy edges', () => {
     // this test case came from hyperedges.json
@@ -82,6 +83,8 @@ test('remove dummy edges', () => {
     expect(e5.sections[0].endPoint.x).not.toEqual(initEnd);
     expect(e6.sections[0].endPoint.x).not.toEqual(initEnd);
     expect(e7.sections[0].endPoint.x).not.toEqual(initEnd);
+    const junctionPoints = _.flatMap(testGraph.edges, (edge) => edge.junctionPoints || []);
+    expect(junctionPoints.length).toEqual(1);
 });
 
 function findEdge(graph: ElkModel.Graph, id: string): ElkModel.Edge {

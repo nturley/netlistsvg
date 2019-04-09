@@ -36,7 +36,7 @@ export namespace ElkModel {
     }
 
     export interface Section {
-        id: string;
+        id?: string;
         startPoint: WirePoint;
         endPoint: WirePoint;
         bendPoints?: WirePoint[];

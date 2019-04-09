@@ -1,10 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var FlatModule_1 = require("./FlatModule");
 var Skin_1 = require("./Skin");
 var _ = require("lodash");
 var onml = require("onml");
-var assert = require("assert");
 var WireDirection;
 (function (WireDirection) {
     WireDirection[WireDirection["Up"] = 0] = "Up";
@@ -83,6 +81,20 @@ function which_dir(start, end) {
     }
     throw new Error('unexpected direction');
 }
+function findBendNearDummy(net, dummyIsSource, dummyLoc) {
+    var candidates = net.map(function (edge) {
+        var bends = edge.sections[0].bendPoints || [null];
+        if (dummyIsSource) {
+            return _.first(bends);
+        }
+        else {
+            return _.last(bends);
+        }
+    }).filter(function (p) { return p !== null; });
+    return _.minBy(candidates, function (pt) {
+        return Math.abs(dummyLoc.x - pt.x) + Math.abs(dummyLoc.y - pt.y);
+    });
+}
 function removeDummyEdges(g) {
     // go through each edge group for each dummy
     var dummyNum = 0;
@@ -95,68 +107,32 @@ function removeDummyEdges(g) {
         if (edgeGroup.length === 0) {
             return "break";
         }
-        var junctEdge = _.minBy(edgeGroup, function (e) {
-            if (e.source === dummyId) {
-                if (e.junctionPoints) {
-                    var firstJunction_1 = e.junctionPoints[0];
-                    return _.findIndex(e.bendPoints, function (bend) {
-                        return bend.x === firstJunction_1.x && bend.y === firstJunction_1.y;
-                    });
+        var dummyIsSource = void 0;
+        var dummyLoc = void 0;
+        if (edgeGroup[0].source === dummyId) {
+            dummyIsSource = true;
+            dummyLoc = edgeGroup[0].sections[0].startPoint;
+        }
+        else {
+            dummyIsSource = false;
+            dummyLoc = edgeGroup[0].sections[0].endPoint;
+        }
+        var newEnd = findBendNearDummy(edgeGroup, dummyIsSource, dummyLoc);
+        for (var _i = 0, edgeGroup_1 = edgeGroup; _i < edgeGroup_1.length; _i++) {
+            var edge = edgeGroup_1[_i];
+            var section = edge.sections[0];
+            if (dummyIsSource) {
+                section.startPoint = newEnd;
+                if (section.bendPoints) {
+                    section.bendPoints.shift();
                 }
-                // a number bigger than any bendpoint index
-                return 10000;
             }
             else {
-                if (e.junctionPoints) {
-                    var lastJunction_1 = e.junctionPoints[e.junctionPoints.length - 1];
-                    // flip the sign of the index so we find the max instead of the min
-                    return 0 - _.findIndex(e.bendPoints, function (bend) {
-                        return bend.x === lastJunction_1.x && bend.y === lastJunction_1.y;
-                    });
+                section.endPoint = newEnd;
+                if (section.bendPoints) {
+                    section.bendPoints.pop();
                 }
-                // a number bigger than any bendpoint index
-                return 1000;
             }
-        });
-        var dirs = edgeGroup.map(function (edge) {
-            var s = edge.sections[0];
-            if (s.bendPoints === undefined || edge.junctionPoints === undefined) {
-                s.bendPoints = [];
-                s.startPoint = s.endPoint;
-                return null;
-            }
-            if (edge.source === dummyId) {
-                var newSourceIndex = s.bendPoints.findIndex(function (bend) {
-                    return junctEdge.junctionPoints.find(function (junct) {
-                        return _.isEqual(bend, junct);
-                    }) !== undefined;
-                });
-                assert.notStrictEqual(newSourceIndex, -1);
-                s.startPoint = s.bendPoints[newSourceIndex];
-                s.bendPoints = s.bendPoints.slice(newSourceIndex + 1);
-                if (s.bendPoints.length > 0) {
-                    return which_dir(s.startPoint, s.bendPoints[0]);
-                }
-                return which_dir(s.startPoint, s.endPoint);
-            }
-            else {
-                var newTargetIndex = _.findLastIndex(s.bendPoints, function (bend) {
-                    return junctEdge.junctionPoints.find(function (junct) {
-                        return _.isEqual(junct, bend);
-                    }) !== undefined;
-                });
-                assert.notStrictEqual(newTargetIndex, -1);
-                s.endPoint = s.bendPoints[newTargetIndex];
-                s.bendPoints = s.bendPoints.slice(0, newTargetIndex);
-                if (s.bendPoints.length > 0) {
-                    return which_dir(s.endPoint, s.bendPoints[s.bendPoints.length - 1]);
-                }
-                return which_dir(s.endPoint, s.startPoint);
-            }
-        });
-        var dirSet = FlatModule_1.removeDups(dirs.filter(function (wd) { return wd !== null; }).map(function (wd) { return WireDirection[wd]; }));
-        if (dirSet.length === 2) {
-            junctEdge.junctionPoints = junctEdge.junctionPoints.slice(1);
         }
         dummyNum += 1;
     };
@@ -167,3 +143,4 @@ function removeDummyEdges(g) {
             break;
     }
 }
+exports.removeDummyEdges = removeDummyEdges;

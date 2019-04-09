@@ -83,6 +83,23 @@ function which_dir(start: ElkModel.WirePoint, end: ElkModel.WirePoint): WireDire
     throw new Error('unexpected direction');
 }
 
+function findBendNearDummy(
+        net: ElkModel.Edge[],
+        dummyIsSource: boolean,
+        dummyLoc: ElkModel.WirePoint): ElkModel.WirePoint {
+    const candidates = net.map( (edge) => {
+        const bends = edge.sections[0].bendPoints || [null];
+        if (dummyIsSource) {
+            return _.first(bends);
+        } else {
+            return _.last(bends);
+        }
+    }).filter((p) => p !== null);
+    return _.minBy(candidates, (pt: ElkModel.WirePoint) => {
+        return Math.abs(dummyLoc.x - pt.x) + Math.abs(dummyLoc.y - pt.y);
+    });
+}
+
 export function removeDummyEdges(g: ElkModel.Graph) {
     // go through each edge group for each dummy
     let dummyNum: number = 0;
@@ -96,66 +113,29 @@ export function removeDummyEdges(g: ElkModel.Graph) {
         if (edgeGroup.length === 0) {
             break;
         }
-        const junctEdge = _.minBy(edgeGroup, (e) => {
-            if (e.source === dummyId) {
-                if (e.junctionPoints) {
-                    const firstJunction = e.junctionPoints[0];
-                    return _.findIndex(e.bendPoints, (bend) => {
-                        return bend.x === firstJunction.x && bend.y === firstJunction.y;
-                    });
+        let dummyIsSource: boolean;
+        let dummyLoc: ElkModel.WirePoint;
+        if (edgeGroup[0].source === dummyId) {
+            dummyIsSource = true;
+            dummyLoc = edgeGroup[0].sections[0].startPoint;
+        } else {
+            dummyIsSource = false;
+            dummyLoc = edgeGroup[0].sections[0].endPoint;
+        }
+        const newEnd: ElkModel.WirePoint = findBendNearDummy(edgeGroup, dummyIsSource, dummyLoc);
+        for (const edge of edgeGroup) {
+            const section = edge.sections[0];
+            if (dummyIsSource) {
+                section.startPoint = newEnd;
+                if (section.bendPoints) {
+                    section.bendPoints.shift();
                 }
-                // a number bigger than any bendpoint index
-                return 10000;
             } else {
-                if (e.junctionPoints) {
-                    const lastJunction = e.junctionPoints[e.junctionPoints.length - 1];
-                    // flip the sign of the index so we find the max instead of the min
-                    return 0 - _.findIndex(e.bendPoints, (bend) => {
-                        return bend.x === lastJunction.x && bend.y === lastJunction.y;
-                    });
+                section.endPoint = newEnd;
+                if (section.bendPoints) {
+                    section.bendPoints.pop();
                 }
-                // a number bigger than any bendpoint index
-                return 1000;
             }
-        });
-        const dirs: WireDirection[] = edgeGroup.map((edge: ElkModel.Edge) => {
-            const s = edge.sections[0];
-            if (s.bendPoints === undefined || edge.junctionPoints === undefined) {
-                s.bendPoints = [];
-                s.startPoint = s.endPoint;
-                return null;
-            }
-            if (edge.source === dummyId) {
-                const newSourceIndex = s.bendPoints.findIndex( (bend) => {
-                    return junctEdge.junctionPoints.find( (junct) => {
-                        return _.isEqual(bend, junct);
-                    }) !== undefined;
-                });
-                assert.notStrictEqual(newSourceIndex, -1);
-                s.startPoint = s.bendPoints[newSourceIndex];
-                s.bendPoints = s.bendPoints.slice(newSourceIndex + 1);
-                if (s.bendPoints.length > 0) {
-                    return which_dir(s.startPoint, s.bendPoints[0]);
-                }
-                return which_dir(s.startPoint, s.endPoint);
-            } else {
-                const newTargetIndex = _.findLastIndex(s.bendPoints, (bend) => {
-                    return junctEdge.junctionPoints.find( (junct) => {
-                        return _.isEqual(junct, bend);
-                    }) !== undefined;
-                });
-                assert.notStrictEqual(newTargetIndex, -1);
-                s.endPoint = s.bendPoints[newTargetIndex];
-                s.bendPoints = s.bendPoints.slice(0, newTargetIndex);
-                if (s.bendPoints.length > 0) {
-                    return which_dir(s.endPoint, s.bendPoints[s.bendPoints.length - 1]);
-                }
-                return which_dir(s.endPoint, s.startPoint);
-            }
-        });
-        const dirSet = removeDups(dirs.filter((wd) => wd !== null).map((wd) => WireDirection[wd]));
-        if (dirSet.length === 2) {
-            junctEdge.junctionPoints = junctEdge.junctionPoints.slice(1);
         }
         dummyNum += 1;
     }
