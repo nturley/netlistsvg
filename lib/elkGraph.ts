@@ -35,10 +35,11 @@ export namespace ElkModel {
         labels?: Label[];
     }
 
-    export interface Segment {
+    export interface Section {
+        id: string;
         startPoint: WirePoint;
         endPoint: WirePoint;
-        bendPoints: WirePoint[];
+        bendPoints?: WirePoint[];
     }
 
     export interface Edge {
@@ -50,7 +51,7 @@ export namespace ElkModel {
         layoutOptions?: LayoutOptions;
         junctionPoints?: WirePoint[];
         bendPoints?: WirePoint[];
-        sections?: Segment[];
+        sections?: Section[];
     }
 
     export interface LayoutOptions {

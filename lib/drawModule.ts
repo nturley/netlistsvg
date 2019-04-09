@@ -18,7 +18,7 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
     });
     removeDummyEdges(g);
     const lines = _.flatMap(g.edges, (e: ElkModel.Edge) => {
-        return _.flatMap(e.sections, (s: ElkModel.Segment) => {
+        return _.flatMap(e.sections, (s: ElkModel.Section) => {
             let startPoint = s.startPoint;
             s.bendPoints = s.bendPoints || [];
             let bends: any[] = s.bendPoints.map((b) => {
@@ -83,7 +83,7 @@ function which_dir(start: ElkModel.WirePoint, end: ElkModel.WirePoint): WireDire
     throw new Error('unexpected direction');
 }
 
-function removeDummyEdges(g: ElkModel.Graph) {
+export function removeDummyEdges(g: ElkModel.Graph) {
     // go through each edge group for each dummy
     let dummyNum: number = 0;
     // loop until we can't find an edge group or we hit 10,000

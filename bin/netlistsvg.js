@@ -42,7 +42,7 @@ function parseFiles(skinPath, netlistPath, callback) {
 function main(netlistPath, outputPath, skinPath) {
     skinPath = skinPath || path.join(__dirname, '../lib/default.svg');
     outputPath = outputPath || 'out.svg';
-    var schemaPath = path.join(__dirname, '../lib/yosys.schema.json');
+    var schemaPath = path.join(__dirname, '../lib/yosys.schema.json5');
     parseFiles(skinPath, netlistPath, (skinData, netlistString) => {
         var netlistJson = json5.parse(netlistString);
         var valid = ajv.validate(json5.parse(fs.readFileSync(schemaPath)), netlistJson);

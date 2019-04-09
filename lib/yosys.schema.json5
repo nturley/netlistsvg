@@ -84,8 +84,8 @@
                   "oneOf":[{"type":"number"}, {"enum":["0","1"]}]
                 }
               },
-              "hide_name": {"enum":[0, 1]},
-            },
+              "hide_name": {"enum":[0, 1]}
+            }
           }
         },
         // there must either be ports or cells attribute
