@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var elkGraph_1 = require("./elkGraph");
 var Skin_1 = require("./Skin");
 var _ = require("lodash");
 var onml = require("onml");
@@ -17,6 +18,8 @@ function drawModule(g, module) {
     });
     removeDummyEdges(g);
     var lines = _.flatMap(g.edges, function (e) {
+        var netId = elkGraph_1.ElkModel.wireNameLookup[e.id];
+        var netName = 'net_' + netId.slice(1, netId.length - 1);
         return _.flatMap(e.sections, function (s) {
             var startPoint = s.startPoint;
             s.bendPoints = s.bendPoints || [];
@@ -26,6 +29,7 @@ function drawModule(g, module) {
                         x2: b.x,
                         y1: startPoint.y,
                         y2: b.y,
+                        class: netName,
                     }];
                 startPoint = b;
                 return l;
@@ -37,6 +41,7 @@ function drawModule(g, module) {
                             cy: j.y,
                             r: 2,
                             style: 'fill:#000',
+                            class: netName,
                         }];
                 });
                 bends = bends.concat(circles);
@@ -46,6 +51,7 @@ function drawModule(g, module) {
                         x2: s.endPoint.x,
                         y1: startPoint.y,
                         y2: s.endPoint.y,
+                        class: netName,
                     }]];
             return bends.concat(line);
         });

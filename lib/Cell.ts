@@ -96,10 +96,10 @@ export default class Cell {
         this.outputPorts = outputPorts;
         this.attributes = attributes;
         inputPorts.forEach((ip) => {
-            ip.ParentNode = this;
+            ip.parentNode = this;
         });
         outputPorts.forEach((op) => {
-            op.ParentNode = this;
+            op.parentNode = this;
         });
     }
 
@@ -242,6 +242,7 @@ export default class Cell {
     public render(kChild: ElkModel.Cell): any[] {
         const template = this.getTemplate();
         const tempclone = clone(template);
+        tempclone[1].id = 'cell_' + this.key;
         setTextAttribute(tempclone, 'ref', this.key);
         setTextAttribute(tempclone, 'id', this.key);
         const attrValue = this.getValueAttribute();
@@ -297,6 +298,7 @@ export default class Cell {
                 portClone[portClone.length - 1][2] = port.Key;
                 portClone[1].transform = 'translate(' + inPorts[1][1]['s:x'] + ','
                     + (instartY + i * ingap) + ')';
+                portClone[1].id = port.parentNode.Key + '~' + port.Key;
                 tempclone.push(portClone);
             });
             this.outputPorts.forEach((port, i) => {
@@ -304,10 +306,13 @@ export default class Cell {
                 portClone[portClone.length - 1][2] = port.Key;
                 portClone[1].transform = 'translate(' + outPorts[1][1]['s:x'] + ','
                     + (outstartY + i * outgap) + ')';
+                portClone[1].id = port.parentNode.Key + '~' + port.Key;
                 tempclone.push(portClone);
             });
+            // first child of generic must be a text node.
             tempclone[2][2] = this.type;
         }
+        setClass(tempclone, '$cell_id', 'cell_' + this.key);
         return tempclone;
     }
 
@@ -343,6 +348,17 @@ function setTextAttribute(tempclone, attribute, value) {
         enter: (node) => {
             if (node.name === 'text' && node.attr['s:attribute'] === attribute) {
                 node.full[2] = value;
+            }
+        },
+    });
+}
+
+function setClass(tempclone, searchKey, className) {
+    onml.traverse(tempclone, {
+        enter: (node) => {
+            const currentClass: string = node.attr.class;
+            if (currentClass && currentClass.includes(searchKey)) {
+                node.attr.class = currentClass.replace(searchKey, className);
             }
         },
     });

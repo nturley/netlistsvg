@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var _ = require("lodash");
+var ElkModel;
+(function (ElkModel) {
+    ElkModel.wireNameLookup = {};
+})(ElkModel = exports.ElkModel || (exports.ElkModel = {}));
 function buildElkGraph(module) {
     var children = module.getNodes().map(function (n) {
         return n.buildElkChild();
@@ -37,6 +41,7 @@ function buildElkGraph(module) {
                     target: dummyId_1,
                     targetPort: dummyId_1 + '.p',
                 };
+                ElkModel.wireNameLookup[id] = driver.wire.netName;
                 return d;
             });
             return dummyEdges;
@@ -57,6 +62,7 @@ function buildElkGraph(module) {
                     target: sourceParentKey,
                     targetPort: sourceParentKey + '.' + rider.key,
                 };
+                ElkModel.wireNameLookup[id] = rider.wire.netName;
                 return edge;
             });
             return dummyEdges;
@@ -75,6 +81,7 @@ function buildElkGraph(module) {
                     target: lateralParentKey,
                     targetPort: lateralParentKey + '.' + lateral.key,
                 };
+                ElkModel.wireNameLookup[id] = lateral.wire.netName;
                 return edge;
             });
             return lateralEdges;
@@ -112,13 +119,15 @@ function route(sourcePorts, targetPorts, edgeIndex, edges) {
         return targetPorts.map(function (targetPort) {
             var targetParentKey = targetPort.parentNode.key;
             var targetKey = targetParentKey + '.' + targetPort.key;
+            var id = 'e' + edgeIndex;
             var edge = {
-                id: 'e' + edgeIndex,
+                id: id,
                 source: sourceParentKey,
                 sourcePort: sourceKey,
                 target: targetParentKey,
                 targetPort: targetKey,
             };
+            ElkModel.wireNameLookup[id] = targetPort.wire.netName;
             if (sourcePort.parentNode.type !== '$dff') {
                 edge.layoutOptions = { 'org.eclipse.elk.layered.priority.direction': 10 };
             }

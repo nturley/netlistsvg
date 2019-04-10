@@ -16,10 +16,10 @@ var Cell = /** @class */ (function () {
         this.outputPorts = outputPorts;
         this.attributes = attributes;
         inputPorts.forEach(function (ip) {
-            ip.ParentNode = _this;
+            ip.parentNode = _this;
         });
         outputPorts.forEach(function (op) {
-            op.ParentNode = _this;
+            op.parentNode = _this;
         });
     }
     /**
@@ -232,6 +232,7 @@ var Cell = /** @class */ (function () {
     Cell.prototype.render = function (kChild) {
         var template = this.getTemplate();
         var tempclone = clone(template);
+        tempclone[1].id = 'cell_' + this.key;
         setTextAttribute(tempclone, 'ref', this.key);
         setTextAttribute(tempclone, 'id', this.key);
         var attrValue = this.getValueAttribute();
@@ -290,6 +291,7 @@ var Cell = /** @class */ (function () {
                 portClone[portClone.length - 1][2] = port.Key;
                 portClone[1].transform = 'translate(' + inPorts_2[1][1]['s:x'] + ','
                     + (instartY_1 + i * ingap_1) + ')';
+                portClone[1].id = port.parentNode.Key + '~' + port.Key;
                 tempclone.push(portClone);
             });
             this.outputPorts.forEach(function (port, i) {
@@ -297,10 +299,13 @@ var Cell = /** @class */ (function () {
                 portClone[portClone.length - 1][2] = port.Key;
                 portClone[1].transform = 'translate(' + outPorts_2[1][1]['s:x'] + ','
                     + (outstartY_1 + i * outgap_1) + ')';
+                portClone[1].id = port.parentNode.Key + '~' + port.Key;
                 tempclone.push(portClone);
             });
+            // first child of generic must be a text node.
             tempclone[2][2] = this.type;
         }
+        setClass(tempclone, '$cell_id', 'cell_' + this.key);
         return tempclone;
     };
     Cell.prototype.getGenericHeight = function () {
@@ -334,6 +339,16 @@ function setTextAttribute(tempclone, attribute, value) {
         enter: function (node) {
             if (node.name === 'text' && node.attr['s:attribute'] === attribute) {
                 node.full[2] = value;
+            }
+        },
+    });
+}
+function setClass(tempclone, searchKey, className) {
+    onml.traverse(tempclone, {
+        enter: function (node) {
+            var currentClass = node.attr.class;
+            if (currentClass && currentClass.includes(searchKey)) {
+                node.attr.class = currentClass.replace(searchKey, className);
             }
         },
     });

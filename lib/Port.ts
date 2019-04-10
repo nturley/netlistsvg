@@ -5,17 +5,13 @@ import _ = require('lodash');
 import { ElkModel } from './elkGraph';
 
 export class Port {
+    public parentNode?: Cell;
     private key: string;
     private value: number[] | Yosys.Signals;
-    private parentNode?: Cell;
 
     constructor(key: string, value: number[] | Yosys.Signals) {
         this.key = key;
         this.value = value;
-    }
-
-    public set ParentNode(v: Cell) {
-        this.parentNode = v;
     }
 
     public get Key() {

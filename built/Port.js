@@ -7,13 +7,6 @@ var Port = /** @class */ (function () {
         this.key = key;
         this.value = value;
     }
-    Object.defineProperty(Port.prototype, "ParentNode", {
-        set: function (v) {
-            this.parentNode = v;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(Port.prototype, "Key", {
         get: function () {
             return this.key;

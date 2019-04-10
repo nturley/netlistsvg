@@ -18,6 +18,8 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
     });
     removeDummyEdges(g);
     const lines = _.flatMap(g.edges, (e: ElkModel.Edge) => {
+        const netId = ElkModel.wireNameLookup[e.id];
+        const netName = 'net_' + netId.slice(1, netId.length - 1);
         return _.flatMap(e.sections, (s: ElkModel.Section) => {
             let startPoint = s.startPoint;
             s.bendPoints = s.bendPoints || [];
@@ -27,6 +29,7 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
                     x2: b.x,
                     y1: startPoint.y,
                     y2: b.y,
+                    class: netName,
                 }];
                 startPoint = b;
                 return l;
@@ -38,6 +41,7 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
                         cy: j.y,
                         r: 2,
                         style: 'fill:#000',
+                        class: netName,
                     }]);
                 bends = bends.concat(circles);
             }
@@ -46,6 +50,7 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
                 x2: s.endPoint.x,
                 y1: startPoint.y,
                 y2: s.endPoint.y,
+                class: netName,
             }]];
             return bends.concat(line);
         });

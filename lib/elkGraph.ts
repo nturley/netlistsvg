@@ -2,6 +2,11 @@ import { FlatModule } from './FlatModule';
 import _ = require('lodash');
 
 export namespace ElkModel {
+    interface WireNameLookup {
+        [edgeId: string]: string;
+    }
+    export let wireNameLookup: WireNameLookup = {};
+
     export interface WirePoint {
         x: number;
         y: number;
@@ -101,8 +106,10 @@ export function buildElkGraph(module: FlatModule): ElkModel.Graph {
                     target: dummyId,
                     targetPort: dummyId + '.p',
                 };
+                ElkModel.wireNameLookup[id] = driver.wire.netName;
                 return d;
             });
+
             return dummyEdges;
             // at least one rider and no drivers
         } else if (w.riders.length > 1 && w.drivers.length === 0) {
@@ -120,6 +127,7 @@ export function buildElkGraph(module: FlatModule): ElkModel.Graph {
                     target: sourceParentKey,
                     targetPort: sourceParentKey + '.' + rider.key,
                 };
+                ElkModel.wireNameLookup[id] = rider.wire.netName;
                 return edge;
             });
             return dummyEdges;
@@ -137,6 +145,7 @@ export function buildElkGraph(module: FlatModule): ElkModel.Graph {
                     target: lateralParentKey,
                     targetPort: lateralParentKey + '.' + lateral.key,
                 };
+                ElkModel.wireNameLookup[id] = lateral.wire.netName;
                 return edge;
             });
             return lateralEdges;
@@ -175,13 +184,15 @@ function route(sourcePorts, targetPorts, edgeIndex: number, edges: ElkModel.Edge
         return targetPorts.map((targetPort) => {
             const targetParentKey: string = targetPort.parentNode.key;
             const targetKey: string = targetParentKey + '.' + targetPort.key;
+            const id: string = 'e' + edgeIndex;
             const edge: ElkModel.Edge = {
-                id: 'e' + edgeIndex,
+                id,
                 source: sourceParentKey,
                 sourcePort: sourceKey,
                 target: targetParentKey,
                 targetPort: targetKey,
             };
+            ElkModel.wireNameLookup[id] = targetPort.wire.netName;
             if (sourcePort.parentNode.type !== '$dff') {
                 edge.layoutOptions = { 'org.eclipse.elk.layered.priority.direction': 10 };
             }
