@@ -298,7 +298,7 @@ export default class Cell {
                 portClone[portClone.length - 1][2] = port.Key;
                 portClone[1].transform = 'translate(' + inPorts[1][1]['s:x'] + ','
                     + (instartY + i * ingap) + ')';
-                portClone[1].id = port.parentNode.Key + '~' + port.Key;
+                portClone[1].id = 'port_' + port.parentNode.Key + '~' + port.Key;
                 tempclone.push(portClone);
             });
             this.outputPorts.forEach((port, i) => {
@@ -306,7 +306,7 @@ export default class Cell {
                 portClone[portClone.length - 1][2] = port.Key;
                 portClone[1].transform = 'translate(' + outPorts[1][1]['s:x'] + ','
                     + (outstartY + i * outgap) + ')';
-                portClone[1].id = port.parentNode.Key + '~' + port.Key;
+                portClone[1].id = 'port_' + port.parentNode.Key + '~' + port.Key;
                 tempclone.push(portClone);
             });
             // first child of generic must be a text node.

@@ -291,7 +291,7 @@ var Cell = /** @class */ (function () {
                 portClone[portClone.length - 1][2] = port.Key;
                 portClone[1].transform = 'translate(' + inPorts_2[1][1]['s:x'] + ','
                     + (instartY_1 + i * ingap_1) + ')';
-                portClone[1].id = port.parentNode.Key + '~' + port.Key;
+                portClone[1].id = 'port_' + port.parentNode.Key + '~' + port.Key;
                 tempclone.push(portClone);
             });
             this.outputPorts.forEach(function (port, i) {
@@ -299,7 +299,7 @@ var Cell = /** @class */ (function () {
                 portClone[portClone.length - 1][2] = port.Key;
                 portClone[1].transform = 'translate(' + outPorts_2[1][1]['s:x'] + ','
                     + (outstartY_1 + i * outgap_1) + ')';
-                portClone[1].id = port.parentNode.Key + '~' + port.Key;
+                portClone[1].id = 'port_' + port.parentNode.Key + '~' + port.Key;
                 tempclone.push(portClone);
             });
             // first child of generic must be a text node.
