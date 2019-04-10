@@ -137,6 +137,43 @@ export function removeDummyEdges(g: ElkModel.Graph) {
                 }
             }
         }
+        // delete junction point if necessary
+        const directions = new Set(_.flatMap(edgeGroup, (edge: ElkModel.Edge) => {
+            const section = edge.sections[0];
+            if (dummyIsSource) {
+                // get first bend or endPoint
+                if (section.bendPoints) {
+                    return [section.bendPoints[0]];
+                }
+                return section.endPoint;
+            } else {
+                if (section.bendPoints) {
+                    return [_.last(section.bendPoints)];
+                }
+                return section.startPoint;
+            }
+        }).map( (pt) => {
+            if (pt.x > newEnd.x) {
+                return WireDirection.Right;
+            }
+            if (pt.x < newEnd.x) {
+                return WireDirection.Left;
+            }
+            if (pt.y > newEnd.y) {
+                return WireDirection.Down;
+            }
+            return WireDirection.Up;
+        }));
+        if (directions.size < 3) {
+            // remove junctions at newEnd
+            edgeGroup.forEach((edge) => {
+                if (edge.junctionPoints) {
+                    edge.junctionPoints = edge.junctionPoints.filter((junct) => {
+                        return !_.isEqual(junct, newEnd);
+                    });
+                }
+            });
+        }
         dummyNum += 1;
     }
 }
