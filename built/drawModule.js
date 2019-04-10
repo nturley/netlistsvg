@@ -107,7 +107,7 @@ function removeDummyEdges(g) {
         if (edgeGroup.length === 0) {
             return "break";
         }
-        var dummyIsSource = void 0;
+        var dummyIsSource;
         var dummyLoc = void 0;
         if (edgeGroup[0].source === dummyId) {
             dummyIsSource = true;
@@ -133,6 +133,44 @@ function removeDummyEdges(g) {
                     section.bendPoints.pop();
                 }
             }
+        }
+        // delete junction point if necessary
+        var directions = new Set(_.flatMap(edgeGroup, function (edge) {
+            var section = edge.sections[0];
+            if (dummyIsSource) {
+                // get first bend or endPoint
+                if (section.bendPoints) {
+                    return [section.bendPoints[0]];
+                }
+                return section.endPoint;
+            }
+            else {
+                if (section.bendPoints) {
+                    return [_.last(section.bendPoints)];
+                }
+                return section.startPoint;
+            }
+        }).map(function (pt) {
+            if (pt.x > newEnd.x) {
+                return WireDirection.Right;
+            }
+            if (pt.x < newEnd.x) {
+                return WireDirection.Left;
+            }
+            if (pt.y > newEnd.y) {
+                return WireDirection.Down;
+            }
+            return WireDirection.Up;
+        }));
+        if (directions.size < 3) {
+            // remove junctions at newEnd
+            edgeGroup.forEach(function (edge) {
+                if (edge.junctionPoints) {
+                    edge.junctionPoints = edge.junctionPoints.filter(function (junct) {
+                        return !_.isEqual(junct, newEnd);
+                    });
+                }
+            });
         }
         dummyNum += 1;
     };
