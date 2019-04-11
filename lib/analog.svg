@@ -181,7 +181,7 @@ text {
 
 <g s:type="diode_schottky_h" s:width="50" s:height="20" transform="translate(60,250)">
   <s:alias val="d_sk_h"/>
-  <text class="nodelabel" x="25" y="-5" s:attribute="ref" class="$cell_id">X1</text>
+  <text class="nodelabel $cell_id" x="25" y="-5" s:attribute="ref">X1</text>
   <path d="M15,0 V20 L35,10 Z M35,0 V20" class="symbol $cell_id"/>
   <path d="M0,10 H15 M35,10 H50" class="connect $cell_id"/>
   <!-- schottky -->
