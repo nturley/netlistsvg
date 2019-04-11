@@ -1,7 +1,7 @@
 node_modules
 out.svg
 test/*.json
-test/*.svg
+test/**/*.svg
 examples/*.json
 examples/**/*.svg
 examples/**/*.png

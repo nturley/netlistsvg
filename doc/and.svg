@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:s="https://github.com/nturley/netlistsvg" width="283" height="371">
+  <style>svg {
+    stroke: #000;
+    fill: none;
+  }
+  text {
+    fill: #000;
+    stroke: none;
+    font-size: 10px;
+    font-weight: bold;
+    font-family: "Courier New", monospace;
+  }
+  .nodelabel {
+    text-anchor: middle;
+  }
+  .inputPortLabel {
+    text-anchor: end;
+  }
+  .splitjoinBody {
+    fill: #000;
+  }
+  .symbol {
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    stroke-width: 2;
+  }
+  .detail {
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    fill: #000;
+  }</style>
+  <g s:type="resistor_v" s:width="10" s:height="50" transform="translate(50,47)" id="cell_r1">
+    <s:alias val="r_v"/>
+    <text x="15" y="25" s:attribute="ref" class="cell_r1">r1</text>
+    <path d="M0,10 V40 H10 V10 Z" class="symbol cell_r1"/>
+    <path d="M5,0 V10 M5,40 V50" class="connect cell_r1"/>
+    <g s:x="5" s:y="0" s:pid="A" s:position="top"/>
+    <g s:x="5" s:y="50" s:pid="B" s:position="bottom"/>
+  </g>
+  <g s:type="resistor_v" s:width="10" s:height="50" transform="translate(103,47)" id="cell_r2">
+    <s:alias val="r_v"/>
+    <text x="15" y="25" s:attribute="ref" class="cell_r2">r2</text>
+    <path d="M0,10 V40 H10 V10 Z" class="symbol cell_r2"/>
+    <path d="M5,0 V10 M5,40 V50" class="connect cell_r2"/>
+    <g s:x="5" s:y="0" s:pid="A" s:position="top"/>
+    <g s:x="5" s:y="50" s:pid="B" s:position="bottom"/>
+  </g>
+  <g s:type="transistor_pnp" s:width="32" s:height="32" transform="translate(136,91)" id="cell_q1">
+    <s:alias val="q_pnp"/>
+    <text x="35" y="20" s:attribute="ref" class="cell_q1">q1</text>
+    <circle r="16" cx="16" cy="16" class="symbol cell_q1"/>
+    <path d="M0,16 H12 M12,6 V26" class="detail cell_q1"/>
+    <path d="m12,10 11,-8" class="detail cell_q1"/>
+    <path d="m12,21 11,8" class="detail cell_q1"/>
+    <path d="m14,9 6,-1 -3,-5 z" style="fill:#000000" class="cell_q1"/>
+    <g s:x="22" s:y="2" s:pid="C" s:position="top"/>
+    <g s:x="0" s:y="16" s:pid="B" s:position="left"/>
+    <g s:x="23" s:y="29" s:pid="E" s:position="bottom"/>
+  </g>
+  <g s:type="resistor_v" s:width="10" s:height="50" transform="translate(109,143)" id="cell_r3">
+    <s:alias val="r_v"/>
+    <text x="15" y="25" s:attribute="ref" class="cell_r3">r3</text>
+    <path d="M0,10 V40 H10 V10 Z" class="symbol cell_r3"/>
+    <path d="M5,0 V10 M5,40 V50" class="connect cell_r3"/>
+    <g s:x="5" s:y="0" s:pid="A" s:position="top"/>
+    <g s:x="5" s:y="50" s:pid="B" s:position="bottom"/>
+  </g>
+  <g s:type="resistor_v" s:width="10" s:height="50" transform="translate(154,143)" id="cell_r4">
+    <s:alias val="r_v"/>
+    <text x="15" y="25" s:attribute="ref" class="cell_r4">r4</text>
+    <path d="M0,10 V40 H10 V10 Z" class="symbol cell_r4"/>
+    <path d="M5,0 V10 M5,40 V50" class="connect cell_r4"/>
+    <g s:x="5" s:y="0" s:pid="A" s:position="top"/>
+    <g s:x="5" s:y="50" s:pid="B" s:position="bottom"/>
+  </g>
+  <g s:type="resistor_v" s:width="10" s:height="50" transform="translate(205,259)" id="cell_r5">
+    <s:alias val="r_v"/>
+    <text x="15" y="25" s:attribute="ref" class="cell_r5">r5</text>
+    <path d="M0,10 V40 H10 V10 Z" class="symbol cell_r5"/>
+    <path d="M5,0 V10 M5,40 V50" class="connect cell_r5"/>
+    <g s:x="5" s:y="0" s:pid="A" s:position="top"/>
+    <g s:x="5" s:y="50" s:pid="B" s:position="bottom"/>
+  </g>
+  <g s:type="transistor_pnp" s:width="32" s:height="32" transform="translate(187,187)" id="cell_q2">
+    <s:alias val="q_pnp"/>
+    <text x="35" y="20" s:attribute="ref" class="cell_q2">q2</text>
+    <circle r="16" cx="16" cy="16" class="symbol cell_q2"/>
+    <path d="M0,16 H12 M12,6 V26" class="detail cell_q2"/>
+    <path d="m12,10 11,-8" class="detail cell_q2"/>
+    <path d="m12,21 11,8" class="detail cell_q2"/>
+    <path d="m14,9 6,-1 -3,-5 z" style="fill:#000000" class="cell_q2"/>
+    <g s:x="22" s:y="2" s:pid="C" s:position="top"/>
+    <g s:x="0" s:y="16" s:pid="B" s:position="left"/>
+    <g s:x="23" s:y="29" s:pid="E" s:position="bottom"/>
+  </g>
+  <g s:type="vcc" s:width="20" s:height="30" transform="translate(148,56)" id="cell_vcc">
+    <s:alias val="vcc"/>
+    <text x="10" y="-4" class="nodelabel cell_vcc" s:attribute="name">VCC</text>
+    <path d="M0,0 H20 L10,15 Z M10,15 V30" class="cell_vcc"/>
+    <g s:x="10" s:y="30" s:pid="A" s:position="bottom"/>
+  </g>
+  <g s:type="vcc" s:width="20" s:height="30" transform="translate(199,152)" id="cell_vcc2">
+    <s:alias val="vcc"/>
+    <text x="10" y="-4" class="nodelabel cell_vcc2" s:attribute="name">VCC</text>
+    <path d="M0,0 H20 L10,15 Z M10,15 V30" class="cell_vcc2"/>
+    <g s:x="10" s:y="30" s:pid="A" s:position="bottom"/>
+  </g>
+  <g s:type="gnd" s:width="20" s:height="30" transform="translate(104,213)" id="cell_gnd">
+    <s:alias val="gnd"/>
+    <path d="M0,0 H20 M3,5 H17 M7,10 H13 M10,0 V-15" class="cell_gnd"/>
+    <g s:x="10" s:y="-15" s:pid="A" s:position="top"/>
+  </g>
+  <g s:type="gnd" s:width="20" s:height="30" transform="translate(200,329)" id="cell_gnd2">
+    <s:alias val="gnd"/>
+    <path d="M0,0 H20 M3,5 H17 M7,10 H13 M10,0 V-15" class="cell_gnd2"/>
+    <g s:x="10" s:y="-15" s:pid="A" s:position="top"/>
+  </g>
+  <g s:type="inputExt" s:width="30" s:height="20" transform="translate(12,22)" id="cell_A">
+    <text x="15" y="-4" class="nodelabel cell_A" s:attribute="ref">A</text>
+    <s:alias val="$_inputExt_"/>
+    <path d="M0,0 V20 H15 L30,10 15,0 Z" class="cell_A"/>
+    <g s:x="30" s:y="10" s:pid="Y" s:position="right"/>
+  </g>
+  <g s:type="inputExt" s:width="30" s:height="20" transform="translate(65,22)" id="cell_B">
+    <text x="15" y="-4" class="nodelabel cell_B" s:attribute="ref">B</text>
+    <s:alias val="$_inputExt_"/>
+    <path d="M0,0 V20 H15 L30,10 15,0 Z" class="cell_B"/>
+    <g s:x="30" s:y="10" s:pid="Y" s:position="right"/>
+  </g>
+  <g s:type="outputExt" s:width="30" s:height="20" transform="translate(220,234)" id="cell_A AND B">
+    <text x="15" y="-4" class="nodelabel cell_A AND B" s:attribute="ref">A AND B</text>
+    <s:alias val="$_outputExt_"/>
+    <path d="M30,0 V20 H15 L0,10 15,0 Z" class="cell_A AND B"/>
+    <g s:x="0" s:y="10" s:pid="A" s:position="left"/>
+  </g>
+  <line x1="42" x2="55" y1="32" y2="32" class="net_2"/>
+  <line x1="55" x2="55" y1="32" y2="47" class="net_2"/>
+  <line x1="95" x2="108" y1="32" y2="32" class="net_3"/>
+  <line x1="108" x2="108" y1="32" y2="47" class="net_3"/>
+  <line x1="158" x2="158" y1="86" y2="93" class="net_6"/>
+  <line x1="159" x2="159" y1="120" y2="133" class="net_7"/>
+  <line x1="159" x2="114" y1="133" y2="133" class="net_7"/>
+  <circle cx="159" cy="133" r="2" style="fill:#000" class="net_7"/>
+  <line x1="114" x2="114" y1="133" y2="143" class="net_7"/>
+  <line x1="159" x2="159" y1="120" y2="143" class="net_7"/>
+  <line x1="210" x2="210" y1="216" y2="244" class="net_4"/>
+  <circle cx="210" cy="244" r="2" style="fill:#000" class="net_4"/>
+  <line x1="210" x2="220" y1="244" y2="244" class="net_4"/>
+  <line x1="220" x2="210" y1="244" y2="244" class="net_4"/>
+  <circle cx="210" cy="244" r="2" style="fill:#000" class="net_4"/>
+  <line x1="210" x2="210" y1="244" y2="259" class="net_4"/>
+  <line x1="209" x2="209" y1="182" y2="189" class="net_10"/>
+  <line x1="114" x2="114" y1="193" y2="198" class="net_8"/>
+  <line x1="210" x2="210" y1="309" y2="314" class="net_12"/>
+  <line x1="55" x2="55" y1="97" y2="107" class="net_5"/>
+  <line x1="55" x2="108" y1="107" y2="107" class="net_5"/>
+  <line x1="108" x2="108" y1="107" y2="107" class="net_5"/>
+  <circle cx="108" cy="107" r="2" style="fill:#000" class="net_5"/>
+  <line x1="108" x2="136" y1="107" y2="107" class="net_5"/>
+  <line x1="108" x2="108" y1="97" y2="107" class="net_5"/>
+  <line x1="108" x2="136" y1="107" y2="107" class="net_5"/>
+  <line x1="159" x2="159" y1="193" y2="203" class="net_9"/>
+  <line x1="159" x2="187" y1="203" y2="203" class="net_9"/>
+</svg>

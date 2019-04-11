@@ -13,7 +13,7 @@ import Skin from '../lib/Skin';
  * @param testFile the name of the test case, don't include path or extension
  */
 function createFlatModule(testFile: string): FlatModule {
-    const testPath = path.join(__dirname, testFile + '.json');
+    const testPath = path.join(__dirname,'digital', testFile + '.json');
     const defaultSkin = path.join(__dirname, '../lib/default.svg');
     const testStr = fs.readFileSync(testPath).toString();
     const netlist: Yosys.Netlist = json5.parse(testStr);
