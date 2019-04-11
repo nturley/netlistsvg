@@ -227,7 +227,8 @@ Here's an digital netlist produced by Yosys along with the diagram that netlists
 }
 ```
 </details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/d01285946e05ee5ce99dc5d0f8025be58b5936a3/doc/up3down5.svg" />
+
+![example](https://raw.githubusercontent.com/nturley/netlistsvg/master/doc/up3down5.svg?sanitize=true)
 
 You can also write out the JSON by hand, of course. We support [JSON5](https://json5.org) syntax.
 
@@ -326,14 +327,17 @@ You can also write out the JSON by hand, of course. We support [JSON5](https://j
 }
 ```
 </details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/d01285946e05ee5ce99dc5d0f8025be58b5936a3/doc/generics.svg" >
+
+![example](https://raw.githubusercontent.com/nturley/netlistsvg/master/doc/generics.svg?sanitize=true)
 
 ## Skin File
-It pulls the node icons and configuration options from a SVG skin file. Like this one:
+It pulls the node icons and configuration options from a SVG skin file. This our default digital skin file.
 
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/369a0baa31e568995d4cc7ce825bbe50646616c8/lib/default.svg" width="700" height="250">
+<img src="https://raw.githubusercontent.com/nturley/netlistsvg/master/lib/default.svg?sanitize=true" width="700" height="250">
 
-There is a digital skin that is used by default and we also have an analog skin that can be used.
+This is our analog skin file.
+
+<img src="https://raw.githubusercontent.com/nturley/netlistsvg/master/lib/analog.svg?sanitize=true" width="700" height="250">
 
 A skin file can use style tags or inline CSS to style the elements. That will be copied onto the output file. A skin file also defines a library of components to use. Each component has an alias list. It will use that component as a template for any cell with that type that it encounters. Each component defines the position and id of each of its ports so we know where to attach the wires to.
 
@@ -353,7 +357,7 @@ For example, here is a mux definition. It has two aliases: "$pmux" and "$mux". I
 </g>
 ```
 
-In addition to the library of components that are matched to cells, a skin file defines some special nodes. Input/Output ports, constants, Splits/Joins, and the generic node. Splits/Joins and the generic node are particularly tricky because the height and number of ports need to be adjusted depending on the cell. Adjustments to the splits/joins and generic node templates might end up breaking something.
+In addition to the library of components that are matched to cells, a skin file defines some special nodes. Input/Output ports, constants, Splits/Joins, and the generic node. Splits/Joins and the generic nodes are resized and ports are added or removed to adjust to the cell.
 
 The elkjs layout properties are also defined in the skin file.
 
