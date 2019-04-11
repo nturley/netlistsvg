@@ -1,11 +1,15 @@
-[![Build Status](https://travis-ci.org/nturley/netlistsvg.svg?branch=master)](https://travis-ci.org/nturley/netlistsvg)
+[![Linux Build Status](https://travis-ci.org/nturley/netlistsvg.svg?branch=master)](https://travis-ci.org/nturley/netlistsvg)
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/heijuq5nhw9m7rib/branch/master?svg=true)](https://ci.appveyor.com/project/nturley/netlistsvg/branch/master)
 [![Gitter chat](https://badges.gitter.im/nturley/netlistsvg.png)](https://gitter.im/netlistsvg)
 [![npm version](https://badge.fury.io/js/netlistsvg.svg)](https://badge.fury.io/js/netlistsvg)
+![npm](https://img.shields.io/npm/dm/netlistsvg.svg)
+
 # netlistsvg
-draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSON netlist. It uses [elkjs](https://github.com/OpenKieler/elkjs) for layout.
+draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSON netlist. This can be generated [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html). It uses [elkjs](https://github.com/OpenKieler/elkjs) for layout.
 
 You can see an online demo [here](https://nturley.github.io/netlistsvg)
 
+Here's an digital netlist produced by Yosys along with the diagram that netlistsvg created from it.
 <details>
   <summary>JSON Source</summary>
 
@@ -225,7 +229,7 @@ You can see an online demo [here](https://nturley.github.io/netlistsvg)
 </details>
 <img src="https://cdn.rawgit.com/nturley/netlistsvg/d01285946e05ee5ce99dc5d0f8025be58b5936a3/doc/up3down5.svg" />
 
-The JSON doesn't need to be produced by Yosys, of course. We can process arbitrary block diagrams.
+You can also write out the JSON by hand, of course. We support [JSON5](https://json5.org) syntax.
 
 <details>
   <summary>JSON Source</summary>
@@ -360,57 +364,12 @@ The elkjs layout properties are also defined in the skin file.
       org.eclipse.elk.direction="DOWN"
     />
 ```
-Any properties specified here will get passed along to the layout engine. Node and edge properties aren't configurable (yet). Right now I'm setting the priority of $dff.Q to be lower than everything else so that feedback edges on flip flops will go from right to left.
-
-I'm also setting the ports to be fixed position right now, until I figure out a plan for swappable ports.
-
-## Split/Join Wires
-It does it's best to be smart about how to split and join buses. I spent a lot of time thinking about it and hacked something together using javascript strings (because I was too lazy to write my own library for processing sequences). At some point I will rewrite it with a sane implementation that doesn't use strings. I think I'm happy with the core algorithm, just the implementation is wonky.
-
-<details>
-  <summary>JSON Source</summary>
-
-```json
-{
-  "modules": {
-    "simple": {
-      "ports": {
-        "inthing": {
-          "direction": "input",
-          "bits": [ 2, 3, 4, 5 ]
-        },
-        "outthing": {
-          "direction": "output",
-          "bits": [ 2, 3 ]
-        },
-        "outthing2": {
-          "direction": "output",
-          "bits": [ 2, 3, 5 ]
-        },
-        "outthing3": {
-          "direction": "output",
-          "bits": [ 2, 3, 5 ]
-        },
-        "outthing4": {
-          "direction": "output",
-          "bits": [ 2 ]
-        }
-      },
-      "cells": {}
-    }
-  }
-}
-```
-</details>
-<img src="https://cdn.rawgit.com/nturley/netlistsvg/d01285946e05ee5ce99dc5d0f8025be58b5936a3/doc/ports_splitjoin.svg" >
-
-* There should only exist one wire for each unique sequence of signals
-* Always prefer using an existing signal over adding a new split or join
-
-ElkJS handles all of the wire junctions. Sometimes it does some odd things.
+Any properties specified here will get passed along to the layout engine. Node and edge properties aren't configurable (yet).
 
 ## Input JSON
-This is designed to handle Yosys netlist format but we ignore most of it. This is what we are looking at. Currently, we only draw the first module in the modules object.
+Yosys JSON includes more information than we need. We only render one module (either the first or the module with an attribute "top"). If the cell name matches one of the aliases of a template from the skin, then it will use it as a template for the SVG file. Port directions are optional for cells that are defined in the skin (not generic cells).
+
+So it should look something like this.
 ```json
 {
   "modules": {
@@ -441,14 +400,10 @@ This is designed to handle Yosys netlist format but we ignore most of it. This i
 ```
 
 ## ElkJS
-I'm super impressed with this. Layout is a non-trivial problem and this tool is amazing. ELK is written in Java and transpiled to javascript.
-
-This tool is really powerful and I'm still learning the ins and outs of how to use it. ELK is capable of port positioning for instance. This means that potentially I could flag certain ports as being able to be swapped or repositioned and ELK could reorder them to reduce crossings. That's obviously a win for labeled ports on the generic, and split/join, but also a win for cells whose operation is commutative.
-
 ELK is using a layered approach (Sugiyama, Ganser), similar to dot in the Graphviz package. You can read about their algorithm here: https://rtsys.informatik.uni-kiel.de/%7Ebiblio/downloads/papers/jvlc13.pdf
 
 # Status
-Still early stages. But it's usable. Skin definition format is still changing.
+We are getting close to the 1.0 release. At that point, the skin file format will be considered specified and breaking changes will only happen on major version bumps.
 
 # Installation/Usage Instructions
 
@@ -463,7 +418,7 @@ netlistsvg input_json_file [-o output_svg_file] [--skin skin_file]
 ```
 The default value for the output file is out.svg.
 
-Should work on Linux, OSX, and Windows. Running the build scripts (examples makefiles and the web demo) is easiest on Linux and OSX.
+Should work on Linux, OSX, and Windows. Running the build scripts (makefiles and the web demo) is easiest on Linux and OSX.
 
 ## Generating `input_json_file` with Yosys
 
