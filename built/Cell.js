@@ -220,6 +220,15 @@ var Cell = /** @class */ (function () {
             var attrName = label.id.split('.')[2];
             setTextAttribute(tempclone, attrName, label.text);
         }
+        for (var i = 2; i < tempclone.length; i++) {
+            var node = tempclone[i];
+            if (node[0] === 'text' && node[1]['s:attribute']) {
+                var attrib = node[1]['s:attribute'];
+                if (!(attrib in this.attributes)) {
+                    node[2] = '';
+                }
+            }
+        }
         tempclone[1].id = 'cell_' + this.key;
         tempclone[1].transform = 'translate(' + cell.x + ',' + cell.y + ')';
         if (this.type === '$_split_') {
