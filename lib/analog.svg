@@ -47,11 +47,17 @@ text {
 <!-- power -->
 <g s:type="vcc" s:width="20" s:height="30" transform="translate(5,20)">
   <s:alias val="vcc" />
-  <s:alias val="vcc" />
   <text x="10" y="-4" class="nodelabel $cell_id" s:attribute="name">name</text>
   <path d="M0,0 H20 L10,15 Z M10,15 V30" class="$cell_id"/>
   <g s:x="10" s:y="30" s:pid="A" s:position="bottom"/>
 </g>
+
+<g s:type="vee" s:width="20" s:height="30" transform="translate(40,35)">
+	  <s:alias val="vee" />
+	  <text x="10" y="10" class="nodelabel $cell_id" s:attribute="name">name</text>
+	  <path d="M0,0 H20 L10,-15 Z M10,-15 V-30" class="$cell_id"/>
+	  <g s:x="10" s:y="-30" s:pid="A" s:position="top"/>
+	</g>
 
 <g s:type="gnd" s:width="20" s:height="30" transform="translate(80,35)">
   <s:alias val="gnd"/>
