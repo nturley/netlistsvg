@@ -9,6 +9,23 @@ draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSO
 
 You can see an online demo [here](https://nturley.github.io/netlistsvg)
 
+# Installation/Usage Instructions
+
+Install nodejs if isn't already installed
+```
+npm install -g netlistsvg
+```
+
+You can execute netlistsvg like this.
+```
+netlistsvg input_json_file [-o output_svg_file] [--skin skin_file]
+```
+The default value for the output file is out.svg.
+
+Should work on Linux, OSX, and Windows. Running the build scripts (makefiles and the web demo) is easiest on Linux and OSX.
+
+# Examples
+
 Here's an digital netlist produced by Yosys along with the diagram that netlistsvg created from it.
 <details>
   <summary>JSON Source</summary>
@@ -232,93 +249,146 @@ Here's an digital netlist produced by Yosys along with the diagram that netlists
 
 You can also write out the JSON by hand, of course. We support [JSON5](https://json5.org) syntax.
 
+Here's an analog example.
+
 <details>
   <summary>JSON Source</summary>
 
 ```json
 {
   "modules": {
-    "generics": {
+    "resistor_divider": {
       "ports": {
-        "clk100": {
+        "A": {
           "direction": "input",
-          "bits": [ 2 ]
+          "bits": [2]
         },
-        "clk40": {
-          "direction": "output",
-          "bits": [ 3 ]
+        "B": {
+          "direction": "input",
+          "bits": [3]
         },
-        "clk125": {
+        "A AND B": {
           "direction": "output",
-          "bits": [ 5 ]
+          "bits": [4]
         }
       },
-      "cells" : {
-        "PLL": {
-          "type": "PLL",
-          "port_directions": {
-            "clkin": "input",
-            "clk40": "output",
-            "clk200": "output",
-            "clk125": "output",
-            "locked": "output"
-          },
+      "cells": {
+        "R1": {
+          "type": "r_v",
           "connections": {
-            "clkin": [ 2 ],
-            "clk40": [3],
-            "clk200": [6],
-            "clk125": [5],
-            "locked": [8]
+            "A": [2],
+            "B": [5]
+          },
+          "attributes": {
+            "value":"10k"
           }
         },
-        "MIG": {
-          "type": "MIG",
-          "port_directions": {
-            "clk_ref": "input",
-            "clk_sys": "input",
-            "reset": "input"
-          },
+        "R2": {
+          "type": "r_v",
           "connections": {
-            "clk_ref": [6],
-            "clk_sys": [2],
-            "reset": [4]
+            "A": [3],
+            "B": [5]
+          },
+          "attributes": {
+            "value":"10k"
           }
         },
-        "counter": {
-          "type": "counter",
+        "Q1": {
+          "type": "q_pnp",
           "port_directions": {
-            "clk": "input",
-            "start": "input",
-            "elapsed": "output"
+            "C": "input",
+            "B": "input",
+            "E": "output"
           },
           "connections": {
-            "clk": [2],
-            "start": [8],
-            "elapsed": [4]
+            "C": [6],
+            "B": [5],
+            "E": [7]
           }
         },
-        "sync": {
-          "type": "sync",
-          "port_directions": {
-            "clk": "input",
-            "in": "input",
-            "out": "output"
-          },
+        "R3": {
+          "type": "r_v",
           "connections": {
-            "clk": [3],
-            "in": [4],
-            "out": [7]
+            "A": [7],
+            "B": [8]
+          },
+          "attributes": {
+            "value":"10k"
           }
         },
-        "businterface": {
-          "type": "businterface",
+        "R4": {
+          "type": "r_v",
+          "connections": {
+            "A": [7],
+            "B": [9]
+          },
+          "attributes": {
+            "value":"10k"
+          }
+        },
+        "R5": {
+          "type": "r_v",
+          "connections": {
+            "A": [4],
+            "B": [12]
+          },
+          "attributes": {
+            "value":"10k"
+          }
+        },
+        "Q2": {
+          "type": "q_pnp",
           "port_directions": {
-            "clk": "input",
-            "reset": "input"
+            "C": "input",
+            "B": "input",
+            "E": "output"
           },
           "connections": {
-            "clk": [3],
-            "reset": [7]
+            "C": [10],
+            "B": [9],
+            "E": [4]
+          }
+        },
+        "vcc": {
+          "type": "vcc",
+          "connections": {
+            "A": [6]
+          },
+          "attributes": {
+            "name":"VCC"
+          }
+        },
+        "vcc2": {
+          "type": "vcc",
+          "connections": {
+            "A": [10]
+          },
+          "attributes": {
+            "name":"VCC"
+          }
+        },
+        "gnd": {
+          "type": "gnd",
+          "port_directions": {
+            "A": "input"
+          },
+          "connections": {
+            "A": [8]
+          },
+          "attributes": {
+            "name":"DGND"
+          }
+        },
+        "gnd2": {
+          "type": "gnd",
+          "port_directions": {
+            "A": "input"
+          },
+          "connections": {
+            "A": [12]
+          },
+          "attributes": {
+            "name":"DGND"
           }
         }
       }
@@ -328,7 +398,7 @@ You can also write out the JSON by hand, of course. We support [JSON5](https://j
 ```
 </details>
 
-![example](https://raw.githubusercontent.com/nturley/netlistsvg/master/doc/generics.svg?sanitize=true)
+![example](https://raw.githubusercontent.com/nturley/netlistsvg/master/doc/and.svg?sanitize=true)
 
 ## Skin File
 It pulls the node icons and configuration options from a SVG skin file. This our default digital skin file.
@@ -408,21 +478,6 @@ ELK is using a layered approach (Sugiyama, Ganser), similar to dot in the Graphv
 
 # Status
 We are getting close to the 1.0 release. At that point, the skin file format will be considered specified and breaking changes will only happen on major version bumps.
-
-# Installation/Usage Instructions
-
-Install nodejs if isn't already installed
-```
-npm install -g netlistsvg
-```
-
-You can execute netlistsvg like this.
-```
-netlistsvg input_json_file [-o output_svg_file] [--skin skin_file]
-```
-The default value for the output file is out.svg.
-
-Should work on Linux, OSX, and Windows. Running the build scripts (makefiles and the web demo) is easiest on Linux and OSX.
 
 ## Generating `input_json_file` with Yosys
 
