@@ -31,9 +31,9 @@
                 },
                 "bits": {
                   "type": "array",
-                  // bits can be the string "0", "1", or a number.
+                  // bits can be the string "0", "1", "x", or a number.
                   "items": {
-                    "oneOf":[{"type":"number"}, {"enum":["0","1"]}]
+                    "oneOf":[{"type":"number"}, {"enum":["0","1","x"]}]
                   }
                 }
               }
@@ -55,7 +55,7 @@
                   "additionalProperties": {
                     "type":"array",
                     "items": {
-                      "oneOf":[{"type":"number"}, {"enum":["0","1"]}]
+                      "oneOf":[{"type":"number"}, {"enum":["0","1","x"]}]
                     }
                   }
                 },
@@ -79,9 +79,9 @@
             "properties":{
               "bits": {
                 "type": "array",
-                // bits can be the string "0", "1", or a number.
+                // bits can be the string "0", "1", "x", or a number.
                 "items": {
-                  "oneOf":[{"type":"number"}, {"enum":["0","1"]}]
+                  "oneOf":[{"type":"number"}, {"enum":["0","1","x"]}]
                 }
               },
               "hide_name": {"enum":[0, 1]}

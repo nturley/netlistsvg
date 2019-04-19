@@ -94,7 +94,7 @@ export default class Cell {
         this.type = type;
         this.inputPorts = inputPorts;
         this.outputPorts = outputPorts;
-        this.attributes = attributes;
+        this.attributes = attributes || {};
         inputPorts.forEach((ip) => {
             ip.parentNode = this;
         });
@@ -195,17 +195,9 @@ export default class Cell {
                 height: Number(this.getGenericHeight()),
                 ports: inPorts.concat(outPorts),
                 layoutOptions: { 'de.cau.cs.kieler.portConstraints': 'FIXED_POS' },
+                labels: [],
             };
-            if (type === 'generic') {
-                cell.labels = [{
-                    id: this.key + '.label',
-                    text: this.type,
-                    x: Number(template[2][1].x),
-                    y: Number(template[2][1].y) - 6,
-                    height: 11,
-                    width: (6 * this.type.length),
-                }];
-            }
+            this.addLabels(template, cell);
             return cell;
         }
         const ports: ElkModel.Port[] = Skin.getPortsWithPrefix(template, '').map((tp) => {
@@ -224,36 +216,22 @@ export default class Cell {
             height: Number(template[1]['s:height']),
             ports,
             layoutOptions: { 'de.cau.cs.kieler.portConstraints': 'FIXED_POS' },
+            labels: [],
         };
-        if (type === 'inputExt' ||
-            type === 'outputExt') {
-            ret.labels = [{
-                id: this.key + '.label',
-                text: this.key,
-                x: Number(template[2][1].x) + nodeWidth / 2 - 3 * this.key.length,
-                y: Number(template[2][1].y) - 6,
-                height: 11,
-                width: (6 * this.key.length),
-            }];
-        }
+        this.addLabels(template, ret);
         return ret;
     }
 
-    public render(kChild: ElkModel.Cell): any[] {
+    public render(cell: ElkModel.Cell): any[] {
         const template = this.getTemplate();
         const tempclone = clone(template);
-        tempclone[1].id = 'cell_' + this.key;
-        setTextAttribute(tempclone, 'ref', this.key);
-        setTextAttribute(tempclone, 'id', this.key);
-        const attrValue = this.getValueAttribute();
-        if (attrValue) {
-            setTextAttribute(tempclone, 'name', attrValue);
+        for (const label of cell.labels) {
+            const attrName = label.id.split('.')[2];
+            setTextAttribute(tempclone, attrName, label.text);
         }
-        tempclone[1].transform = 'translate(' + kChild.x + ',' + kChild.y + ')';
-        if (this.type === '$_constant_' && this.key.length > 3) {
-            const num: number = parseInt(this.key, 2);
-            setTextAttribute(tempclone, 'ref', '0x' + num.toString(16));
-        } else if (this.type === '$_split_') {
+        tempclone[1].id = 'cell_' + this.key;
+        tempclone[1].transform = 'translate(' + cell.x + ',' + cell.y + ')';
+        if (this.type === '$_split_') {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
             const outPorts = Skin.getPortsWithPrefix(template, 'out');
             const gap: number = Number(outPorts[1][1]['s:y']) - Number(outPorts[0][1]['s:y']);
@@ -314,6 +292,38 @@ export default class Cell {
         }
         setClass(tempclone, '$cell_id', 'cell_' + this.key);
         return tempclone;
+    }
+
+    private addLabels(template, cell: ElkModel.Cell) {
+        onml.traverse(template, {
+            enter: (node) => {
+                if (node.name === 'text' && node.attr['s:attribute']) {
+                    const attrName = node.attr['s:attribute'];
+                    let newString;
+                    if (attrName === 'ref' || attrName === 'id') {
+                        if (this.type === '$_constant_' && this.key.length > 3) {
+                            const num: number = parseInt(this.key, 2);
+                            newString = '0x' + num.toString(16);
+                        } else {
+                            newString = this.key;
+                        }
+                        this.attributes[attrName] = this.key;
+                    } else if (attrName in this.attributes) {
+                        newString = this.attributes[attrName];
+                    } else {
+                        return;
+                    }
+                    cell.labels.push({
+                        id: this.key + '.label.' + attrName,
+                        text: newString,
+                        x: node.attr.x,
+                        y: node.attr.y - 6,
+                        height: 11,
+                        width: (6 * newString.length),
+                    });
+                }
+            },
+        });
     }
 
     private getGenericHeight() {

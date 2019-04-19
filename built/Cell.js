@@ -14,7 +14,7 @@ var Cell = /** @class */ (function () {
         this.type = type;
         this.inputPorts = inputPorts;
         this.outputPorts = outputPorts;
-        this.attributes = attributes;
+        this.attributes = attributes || {};
         inputPorts.forEach(function (ip) {
             ip.parentNode = _this;
         });
@@ -186,17 +186,9 @@ var Cell = /** @class */ (function () {
                 height: Number(this.getGenericHeight()),
                 ports: inPorts.concat(outPorts),
                 layoutOptions: { 'de.cau.cs.kieler.portConstraints': 'FIXED_POS' },
+                labels: [],
             };
-            if (type === 'generic') {
-                cell.labels = [{
-                        id: this.key + '.label',
-                        text: this.type,
-                        x: Number(template[2][1].x),
-                        y: Number(template[2][1].y) - 6,
-                        height: 11,
-                        width: (6 * this.type.length),
-                    }];
-            }
+            this.addLabels(template, cell);
             return cell;
         }
         var ports = Skin_1.default.getPortsWithPrefix(template, '').map(function (tp) {
@@ -215,36 +207,22 @@ var Cell = /** @class */ (function () {
             height: Number(template[1]['s:height']),
             ports: ports,
             layoutOptions: { 'de.cau.cs.kieler.portConstraints': 'FIXED_POS' },
+            labels: [],
         };
-        if (type === 'inputExt' ||
-            type === 'outputExt') {
-            ret.labels = [{
-                    id: this.key + '.label',
-                    text: this.key,
-                    x: Number(template[2][1].x) + nodeWidth / 2 - 3 * this.key.length,
-                    y: Number(template[2][1].y) - 6,
-                    height: 11,
-                    width: (6 * this.key.length),
-                }];
-        }
+        this.addLabels(template, ret);
         return ret;
     };
-    Cell.prototype.render = function (kChild) {
+    Cell.prototype.render = function (cell) {
         var template = this.getTemplate();
         var tempclone = clone(template);
+        for (var _i = 0, _a = cell.labels; _i < _a.length; _i++) {
+            var label = _a[_i];
+            var attrName = label.id.split('.')[2];
+            setTextAttribute(tempclone, attrName, label.text);
+        }
         tempclone[1].id = 'cell_' + this.key;
-        setTextAttribute(tempclone, 'ref', this.key);
-        setTextAttribute(tempclone, 'id', this.key);
-        var attrValue = this.getValueAttribute();
-        if (attrValue) {
-            setTextAttribute(tempclone, 'name', attrValue);
-        }
-        tempclone[1].transform = 'translate(' + kChild.x + ',' + kChild.y + ')';
-        if (this.type === '$_constant_' && this.key.length > 3) {
-            var num = parseInt(this.key, 2);
-            setTextAttribute(tempclone, 'ref', '0x' + num.toString(16));
-        }
-        else if (this.type === '$_split_') {
+        tempclone[1].transform = 'translate(' + cell.x + ',' + cell.y + ')';
+        if (this.type === '$_split_') {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
             var outPorts_1 = Skin_1.default.getPortsWithPrefix(template, 'out');
             var gap_1 = Number(outPorts_1[1][1]['s:y']) - Number(outPorts_1[0][1]['s:y']);
@@ -307,6 +285,41 @@ var Cell = /** @class */ (function () {
         }
         setClass(tempclone, '$cell_id', 'cell_' + this.key);
         return tempclone;
+    };
+    Cell.prototype.addLabels = function (template, cell) {
+        var _this = this;
+        onml.traverse(template, {
+            enter: function (node) {
+                if (node.name === 'text' && node.attr['s:attribute']) {
+                    var attrName = node.attr['s:attribute'];
+                    var newString = void 0;
+                    if (attrName === 'ref' || attrName === 'id') {
+                        if (_this.type === '$_constant_' && _this.key.length > 3) {
+                            var num = parseInt(_this.key, 2);
+                            newString = '0x' + num.toString(16);
+                        }
+                        else {
+                            newString = _this.key;
+                        }
+                        _this.attributes[attrName] = _this.key;
+                    }
+                    else if (attrName in _this.attributes) {
+                        newString = _this.attributes[attrName];
+                    }
+                    else {
+                        return;
+                    }
+                    cell.labels.push({
+                        id: _this.key + '.label.' + attrName,
+                        text: newString,
+                        x: node.attr.x,
+                        y: node.attr.y - 6,
+                        height: 11,
+                        width: (6 * newString.length),
+                    });
+                }
+            },
+        });
     };
     Cell.prototype.getGenericHeight = function () {
         var template = this.getTemplate();
