@@ -1,6 +1,12 @@
 
 namespace Yosys {
-    export type Signals = Array<number | string>;
+    enum ConstantVal {
+        Zero = '0',
+        One = '1',
+        X = 'x',
+    }
+
+    export type Signals = Array<number | ConstantVal>;
 
     interface ModuleMap {
         [moduleName: string]: Module;
@@ -12,6 +18,10 @@ namespace Yosys {
 
     interface ModuleAttributes {
         top?: number;
+        [attrName: string]: any;
+    }
+
+    interface NetAttributes {
         [attrName: string]: any;
     }
 
@@ -47,12 +57,14 @@ namespace Yosys {
         port_directions: PortDirMap;
         connections: PortConnectionMap;
         attributes?: CellAttributes;
+        hide_name?: HideName;
+        parameters?: { [key: string]: any };
     }
 
     export function getInputPortPids(cell: Cell): string[] {
         if (cell.port_directions) {
             return Object.keys(cell.port_directions).filter((k) => {
-                return cell.port_directions[k] === 'input';
+                return cell.port_directions[k] === Direction.Input;
             });
         }
         return [];
@@ -61,7 +73,7 @@ namespace Yosys {
     export function getOutputPortPids(cell: Cell): string[] {
         if (cell.port_directions) {
             return Object.keys(cell.port_directions).filter((k) => {
-                return cell.port_directions[k] === 'output';
+                return cell.port_directions[k] === Direction.Output;
             });
         }
         return [];
@@ -71,9 +83,25 @@ namespace Yosys {
         [cellName: string]: Cell;
     }
 
+    enum HideName {
+        Hide,
+        NoHide,
+    }
+
+    interface Net {
+        bits: Signals;
+        hide_name: HideName;
+        attributes: NetAttributes;
+    }
+
+    interface NetNameMap {
+        [netName: string]: Net;
+    }
+
     export interface Module {
         ports: ExtPortMap;
         cells: CellMap;
+        netNames: NetNameMap;
         attributes?: ModuleAttributes;
     }
 }

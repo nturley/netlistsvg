@@ -76,15 +76,25 @@
           // not yet used by netlistsvg
           "netnames": {
             "type": "object",
-            "properties":{
-              "bits": {
-                "type": "array",
-                // bits can be the string "0", "1", "x", or a number.
-                "items": {
-                  "oneOf":[{"type":"number"}, {"enum":["0","1","x"]}]
-                }
-              },
-              "hide_name": {"enum":[0, 1]}
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "bits": {
+                  "type": "array",
+                  // bits can be the string "0", "1", "x", or a number.
+                  "items": {
+                    "oneOf": [{"type": "number"}, {"enum": ["0", "1", "x"]}]
+                  }
+                },
+                "hide_name": {"enum": [0, 1]},
+                "attributes": {"type": "object"}
+              }
+            }
+          },
+          "attributes": {
+            "type": "object",
+            "properties": {
+              "top": {"enum": [0, 1]}
             }
           }
         },
