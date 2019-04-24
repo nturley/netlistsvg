@@ -27,8 +27,11 @@
     "netlistsvg": "./bin/netlistsvg.js"
   },
   "scripts": {
-    "test": "tsc && node --trace-warnings test/test-all.js && tslint --project . && eslint bin/**/*.js && eslint --global=document demo/**/*.js && jest",
-    "build-demo": "cp demo/index.html . && cp node_modules/elkjs/lib/elk.bundled.js . && browserify demo/demo.js > bundle.js"
+    "test-examples": "tsc && node --trace-warnings test/test-all.js",
+    "lint": "tslint --project . && eslint bin/**/*.js && eslint --global=document demo/**/*.js",
+    "test": "npm run -s test-examples && npm run -s lint && jest",
+    "build-demo": "cp demo/index.html . && cp node_modules/elkjs/lib/elk.bundled.js . && browserify demo/demo.js > bundle.js",
+    "build-module": "browserify -t brfs -s netlistsvg jsmodule/index.js > module.js"
   },
   "keywords": [
     "svg",
@@ -48,7 +51,8 @@
     "superagent": "^3.8.2",
     "ts-jest": "^24.0.0",
     "tslint": "^5.14.0",
-    "typescript": "^3.3.4000"
+    "typescript": "^3.3.4000",
+    "brfs": "^2.0.2"
   },
   "browserify-shim": {
     "elkjs": "global:ELK"
