@@ -75,13 +75,10 @@ var Cell = /** @class */ (function () {
      */
     Cell.fromSplitInfo = function (source, targets) {
         // turn string into array of signal names
-        var signals = source.slice(1, -1).split(',');
+        var sigStrs = source.slice(1, -1).split(',');
         // convert the signals into actual numbers
         // after running constant pass, all signals should be numbers
-        for (var _i = 0, _a = Object.keys(signals); _i < _a.length; _i++) {
-            var i = _a[_i];
-            signals[i] = Number(signals[i]);
-        }
+        var signals = sigStrs.map(function (s) { return Number(s); });
         var inPorts = [new Port_1.Port('A', signals)];
         var splitOutPorts = targets.map(function (name) {
             var sigs = getBits(signals, name);

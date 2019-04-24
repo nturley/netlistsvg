@@ -65,12 +65,10 @@ export default class Cell {
      */
     public static fromSplitInfo(source: string, targets: string[]): Cell {
         // turn string into array of signal names
-        const signals: Yosys.Signals = source.slice(1, -1).split(',');
+        const sigStrs: string[] = source.slice(1, -1).split(',');
         // convert the signals into actual numbers
         // after running constant pass, all signals should be numbers
-        for (const i of Object.keys(signals)) {
-            signals[i] = Number(signals[i]);
-        }
+        const signals: Yosys.Signals = sigStrs.map((s) => Number(s));
         const inPorts: Port[] = [new Port('A', signals)];
         const splitOutPorts: Port[] = targets.map((name) => {
             const sigs: Yosys.Signals = getBits(signals, name);
