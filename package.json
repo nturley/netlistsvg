@@ -1,6 +1,6 @@
 {
   "name": "netlistsvg",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "rendering a schematic from a netlist",
   "main": "built/index.js",
   "author": "Neil Turley",
