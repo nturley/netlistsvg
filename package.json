@@ -31,7 +31,7 @@
     "lint": "tslint --project . && eslint bin/**/*.js && eslint --global=document demo/**/*.js",
     "test": "npm run -s test-examples && npm run -s lint && jest",
     "build-demo": "cp demo/index.html . && cp node_modules/elkjs/lib/elk.bundled.js . && browserify demo/demo.js > bundle.js",
-    "build-module": "browserify -t brfs -s netlistsvg jsmodule/index.js > module.js"
+    "build-module": "browserify -t brfs -s netlistsvg jsmodule/index.js > built/netlistsvg.bundle.js"
   },
   "keywords": [
     "svg",
