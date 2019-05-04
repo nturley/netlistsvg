@@ -169,7 +169,7 @@ var Cell = /** @class */ (function () {
         var layoutAttrs = { 'org.eclipse.elk.portConstraints': 'FIXED_POS' };
         var fixedPosX = null;
         var fixedPosY = null;
-        for (var attr in Object.keys(this.attributes)) {
+        for (var attr in this.attributes) {
             if (attr.startsWith('org.eclipse.elk')) {
                 if (attr === 'org.eclipse.elk.x') {
                     fixedPosX = this.attributes[attr];

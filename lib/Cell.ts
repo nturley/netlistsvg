@@ -181,7 +181,7 @@ export default class Cell {
         const layoutAttrs = { 'org.eclipse.elk.portConstraints': 'FIXED_POS' };
         let fixedPosX = null;
         let fixedPosY = null;
-        for (const attr in Object.keys(this.attributes)) {
+        for (const attr in this.attributes) {
             if (attr.startsWith('org.eclipse.elk')) {
                 if (attr === 'org.eclipse.elk.x') {
                     fixedPosX = this.attributes[attr];
