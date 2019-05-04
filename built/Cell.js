@@ -166,6 +166,22 @@ var Cell = /** @class */ (function () {
         var _this = this;
         var template = this.getTemplate();
         var type = template[1]['s:type'];
+        var layoutAttrs = { 'org.eclipse.elk.portConstraints': 'FIXED_POS' };
+        var fixedPosX = null;
+        var fixedPosY = null;
+        for (var attr in Object.keys(this.attributes)) {
+            if (attr.startsWith('org.eclipse.elk')) {
+                if (attr === 'org.eclipse.elk.x') {
+                    fixedPosX = this.attributes[attr];
+                    continue;
+                }
+                if (attr === 'org.eclipse.elk.y') {
+                    fixedPosY = this.attributes[attr];
+                    continue;
+                }
+                layoutAttrs[attr] = this.attributes[attr];
+            }
+        }
         if (type === 'join' ||
             type === 'split' ||
             type === 'generic') {
@@ -182,9 +198,15 @@ var Cell = /** @class */ (function () {
                 width: Number(template[1]['s:width']),
                 height: Number(this.getGenericHeight()),
                 ports: inPorts.concat(outPorts),
-                layoutOptions: { 'de.cau.cs.kieler.portConstraints': 'FIXED_POS' },
+                layoutOptions: layoutAttrs,
                 labels: [],
             };
+            if (fixedPosX) {
+                cell.x = fixedPosX;
+            }
+            if (fixedPosY) {
+                cell.y = fixedPosY;
+            }
             this.addLabels(template, cell);
             return cell;
         }
@@ -203,9 +225,15 @@ var Cell = /** @class */ (function () {
             width: nodeWidth,
             height: Number(template[1]['s:height']),
             ports: ports,
-            layoutOptions: { 'de.cau.cs.kieler.portConstraints': 'FIXED_POS' },
+            layoutOptions: layoutAttrs,
             labels: [],
         };
+        if (fixedPosX) {
+            ret.x = fixedPosX;
+        }
+        if (fixedPosY) {
+            ret.y = fixedPosY;
+        }
         this.addLabels(template, ret);
         return ret;
     };
