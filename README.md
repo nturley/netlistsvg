@@ -11,6 +11,7 @@ You can see an online demo [here](https://nturley.github.io/netlistsvg)
 
 # Installation/Usage Instructions
 
+## Command Line Interface
 Install nodejs if isn't already installed
 ```
 npm install -g netlistsvg
@@ -23,6 +24,40 @@ netlistsvg input_json_file [-o output_svg_file] [--skin skin_file]
 The default value for the output file is out.svg.
 
 Should work on Linux, OSX, and Windows. Running the build scripts (makefiles and the web demo) is easiest on Linux and OSX.
+
+## Web bundle
+
+I have a web bundle hosted on github pages here: https://nturley.github.io/netlistsvg/built/netlistsvg.bundle.js
+It doesn't wrap ELKjs, so you'll need to include it separately. ELK creates a global variable, so you'll need to include ELKjs before netlistsvg.
+
+In HTML it would look something like this
+```html
+<script type="text/javascript" src="https://nturley.github.io/netlistsvg/elk.bundled.js"></script>
+<script type="text/javascript" src="https://nturley.github.io/netlistsvg/built/netlistsvg.bundle.js"></script>
+```
+
+On ObservableHQ, you can require it like this.
+
+```javascript
+netlistsvg = {
+  var ELK = await require('https://nturley.github.io/netlistsvg/elk.bundled.js')
+  window.ELK = ELK
+  return require('https://nturley.github.io/netlistsvg/built/netlistsvg.bundle.js')
+}
+```
+
+You may want to download and host your own copy.
+
+The web bundle includes both the analog and digital skin and an example netlist for each. Using a promise would look like this.
+```javascript
+await netlistsvg.render(netlistsvg.digitalSkin, netlistsvg.exampleDigital);
+```
+Or to log the result to console using the callback API:
+```javascript
+netlistsvg.render(netlistsvg.digitalSkin, netlistsvg.exampleDigital, (err, result) => console.log(result));
+```
+
+To turn Verilog into YosysJSON in the browser, you can use [YosysJS](http://www.clifford.at/yosys/yosysjs.html)
 
 # Examples
 
