@@ -13,12 +13,10 @@ const elk = new ELK();
 
 type ICallback = (error: Error, result?: string) => void;
 
-export function render(skinData: string, yosysNetlist: Yosys.Netlist, done?: ICallback) {
+function createFlatModule(skinData: string, yosysNetlist: Yosys.Netlist): FlatModule {
     Skin.skin = onml.p(skinData);
     const layoutProps = Skin.getProperties();
-
     const flatModule = new FlatModule(yosysNetlist);
-
     // this can be skipped if there are no 0's or 1's
     if (layoutProps.constants !== false) {
         flatModule.addConstants();
@@ -28,8 +26,29 @@ export function render(skinData: string, yosysNetlist: Yosys.Netlist, done?: ICa
         flatModule.addSplitsJoins();
     }
     flatModule.createWires();
-    const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
+    return flatModule;
+}
 
+export function dumpLayout(skinData: string, yosysNetlist: Yosys.Netlist, prelayout: boolean, done: ICallback) {
+    const flatModule = createFlatModule(skinData, yosysNetlist);
+    const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
+    if (prelayout) {
+        done(null, JSON.stringify(kgraph, null, 2));
+        return;
+    }
+    const layoutProps = Skin.getProperties();
+    const promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine });
+    promise.then((graph: ElkModel.Graph) => {
+        done(null, JSON.stringify(graph, null, 2));
+    }).catch((reason) => {
+        throw Error(reason);
+    });
+}
+
+export function render(skinData: string, yosysNetlist: Yosys.Netlist, done?: ICallback, elkData?: ElkModel.Graph) {
+    const flatModule = createFlatModule(skinData, yosysNetlist);
+    const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
+    const layoutProps = Skin.getProperties();
     const promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine })
         .then((g) => drawModule(g, flatModule))
         // tslint:disable-next-line:no-console

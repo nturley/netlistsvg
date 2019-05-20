@@ -122,10 +122,8 @@ function route(sourcePorts, targetPorts, edgeIndex, edges) {
             var id = 'e' + edgeIndex;
             var edge = {
                 id: id,
-                source: sourceParentKey,
-                sourcePort: sourceKey,
-                target: targetParentKey,
-                targetPort: targetKey,
+                sources: [sourceKey],
+                targets: [targetKey],
             };
             ElkModel.wireNameLookup[id] = targetPort.wire.netName;
             if (sourcePort.parentNode.type !== '$dff') {

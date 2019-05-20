@@ -24,7 +24,10 @@
     "url": "git+https://github.com/nturley/netlistsvg.git"
   },
   "bin": {
-    "netlistsvg": "./bin/netlistsvg.js"
+    "netlistsvg": "./bin/netlistsvg.js",
+    "netlistsvg-dumplayout": "./bin/exportlayout.js",
+    "netlistsvg-importlayout": "./bin/importlayout.js"
+
   },
   "scripts": {
     "test-examples": "tsc && node --trace-warnings test/test-all.js",

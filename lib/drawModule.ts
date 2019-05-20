@@ -112,7 +112,7 @@ export function removeDummyEdges(g: ElkModel.Graph) {
     while (dummyNum < 10000) {
         const dummyId: string = '$d_' + String(dummyNum);
         // find all edges connected to this dummy
-        const edgeGroup = _.filter(g.edges, (e) => {
+        const edgeGroup = _.filter(g.edges, (e: ElkModel.Edge) => {
             return e.source === dummyId || e.target === dummyId;
         });
         if (edgeGroup.length === 0) {
@@ -120,16 +120,18 @@ export function removeDummyEdges(g: ElkModel.Graph) {
         }
         let dummyIsSource: boolean;
         let dummyLoc: ElkModel.WirePoint;
-        if (edgeGroup[0].source === dummyId) {
+        const firstEdge: ElkModel.Edge = edgeGroup[0] as ElkModel.Edge;
+        if (firstEdge.source === dummyId) {
             dummyIsSource = true;
-            dummyLoc = edgeGroup[0].sections[0].startPoint;
+            dummyLoc = firstEdge.sections[0].startPoint;
         } else {
             dummyIsSource = false;
-            dummyLoc = edgeGroup[0].sections[0].endPoint;
+            dummyLoc = firstEdge.sections[0].endPoint;
         }
-        const newEnd: ElkModel.WirePoint = findBendNearDummy(edgeGroup, dummyIsSource, dummyLoc);
+        const newEnd: ElkModel.WirePoint = findBendNearDummy(edgeGroup as ElkModel.Edge[], dummyIsSource, dummyLoc);
         for (const edge of edgeGroup) {
-            const section = edge.sections[0];
+            const e: ElkModel.Edge = edge as ElkModel.Edge;
+            const section = e.sections[0];
             if (dummyIsSource) {
                 section.startPoint = newEnd;
                 if (section.bendPoints) {
@@ -171,7 +173,7 @@ export function removeDummyEdges(g: ElkModel.Graph) {
         }));
         if (directions.size < 3) {
             // remove junctions at newEnd
-            edgeGroup.forEach((edge) => {
+            edgeGroup.forEach((edge: ElkModel.Edge) => {
                 if (edge.junctionPoints) {
                     edge.junctionPoints = edge.junctionPoints.filter((junct) => {
                         return !_.isEqual(junct, newEnd);

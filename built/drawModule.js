@@ -115,18 +115,20 @@ function removeDummyEdges(g) {
         }
         var dummyIsSource;
         var dummyLoc = void 0;
-        if (edgeGroup[0].source === dummyId) {
+        var firstEdge = edgeGroup[0];
+        if (firstEdge.source === dummyId) {
             dummyIsSource = true;
-            dummyLoc = edgeGroup[0].sections[0].startPoint;
+            dummyLoc = firstEdge.sections[0].startPoint;
         }
         else {
             dummyIsSource = false;
-            dummyLoc = edgeGroup[0].sections[0].endPoint;
+            dummyLoc = firstEdge.sections[0].endPoint;
         }
         var newEnd = findBendNearDummy(edgeGroup, dummyIsSource, dummyLoc);
         for (var _i = 0, edgeGroup_1 = edgeGroup; _i < edgeGroup_1.length; _i++) {
             var edge = edgeGroup_1[_i];
-            var section = edge.sections[0];
+            var e = edge;
+            var section = e.sections[0];
             if (dummyIsSource) {
                 section.startPoint = newEnd;
                 if (section.bendPoints) {
