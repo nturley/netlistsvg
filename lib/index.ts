@@ -49,10 +49,21 @@ export function render(skinData: string, yosysNetlist: Yosys.Netlist, done?: ICa
     const flatModule = createFlatModule(skinData, yosysNetlist);
     const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
     const layoutProps = Skin.getProperties();
-    const promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine })
-        .then((g) => drawModule(g, flatModule))
-        // tslint:disable-next-line:no-console
-        .catch((e) => { console.error(e); });
+
+    let promise;
+    // if we already have a layout then use it
+    if (elkData) {
+        promise = new Promise((resolve) => {
+            drawModule(elkData, flatModule);
+            resolve();
+        });
+    } else {
+        // otherwise use ELK to generate the layout
+        promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine })
+            .then((g) => drawModule(g, flatModule))
+            // tslint:disable-next-line:no-console
+            .catch((e) => { console.error(e); });
+    }
 
     // support legacy callback style
     if (typeof done === 'function') {

@@ -25,9 +25,7 @@
   },
   "bin": {
     "netlistsvg": "./bin/netlistsvg.js",
-    "netlistsvg-dumplayout": "./bin/exportlayout.js",
-    "netlistsvg-importlayout": "./bin/importlayout.js"
-
+    "netlistsvg-dumplayout": "./bin/exportLayout.js"
   },
   "scripts": {
     "test-examples": "tsc && node --trace-warnings test/test-all.js",

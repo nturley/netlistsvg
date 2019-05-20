@@ -42,10 +42,21 @@ function render(skinData, yosysNetlist, done, elkData) {
     var flatModule = createFlatModule(skinData, yosysNetlist);
     var kgraph = elkGraph_1.buildElkGraph(flatModule);
     var layoutProps = Skin_1.default.getProperties();
-    var promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine })
-        .then(function (g) { return drawModule_1.default(g, flatModule); })
-        // tslint:disable-next-line:no-console
-        .catch(function (e) { console.error(e); });
+    var promise;
+    // if we already have a layout then use it
+    if (elkData) {
+        promise = new Promise(function (resolve) {
+            drawModule_1.default(elkData, flatModule);
+            resolve();
+        });
+    }
+    else {
+        // otherwise use ELK to generate the layout
+        promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine })
+            .then(function (g) { return drawModule_1.default(g, flatModule); })
+            // tslint:disable-next-line:no-console
+            .catch(function (e) { console.error(e); });
+    }
     // support legacy callback style
     if (typeof done === 'function') {
         promise.then(function (output) {
