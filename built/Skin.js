@@ -79,12 +79,29 @@ var Skin;
         return ret.full;
     }
     Skin.findSkinType = findSkinType;
+    function getLowPriorityAliases() {
+        var properties = Skin.skin.find(function (el) {
+            return el[0] === 's:properties';
+        });
+        // properties has no children
+        if (properties.length < 3) {
+            return [];
+        }
+        // find low priority aliases and return their values
+        var ret = properties[2].filter(function (el) {
+            return el[0] === 's:low_priority_alias';
+        }).map(function (el) {
+            return el[1].val;
+        });
+        return ret;
+    }
+    Skin.getLowPriorityAliases = getLowPriorityAliases;
     function getProperties() {
-        var properties = _.find(Skin.skin, function (el) {
+        var properties = Skin.skin.find(function (el) {
             return el[0] === 's:properties';
         });
         var vals = _.mapValues(properties[1], function (val) {
-            if (!isNaN(val)) {
+            if (!isNaN(Number(val))) {
                 return Number(val);
             }
             if (val === 'true') {
@@ -95,7 +112,7 @@ var Skin;
             }
             return val;
         });
-        var layoutEngine = _.find(properties, function (el) {
+        var layoutEngine = properties.find(function (el) {
             return el[0] === 's:layoutEngine';
         }) || {};
         vals.layoutEngine = layoutEngine[1];

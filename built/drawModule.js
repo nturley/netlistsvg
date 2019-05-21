@@ -56,13 +56,15 @@ function drawModule(g, module) {
             return bends.concat(line);
         });
     });
+    var svgAttrs = Skin_1.default.skin[1];
     var svg = Skin_1.default.skin.slice(0, 2);
-    svg[1].width = g.width;
-    svg[1].height = g.height;
+    svgAttrs.width = g.width.toString();
+    svgAttrs.height = g.height.toString();
     var styles = _.filter(Skin_1.default.skin, function (el) {
         return el[0] === 'style';
     });
-    var ret = svg.concat(styles).concat(nodes).concat(lines);
+    var elements = styles.concat(nodes).concat(lines);
+    var ret = ['svg', svgAttrs, elements];
     return onml.s(ret);
 }
 exports.default = drawModule;

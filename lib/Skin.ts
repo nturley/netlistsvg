@@ -1,8 +1,10 @@
 import onml = require('onml');
 import _ = require('lodash');
+import { ElkModel } from './elkGraph';
 
 export namespace Skin {
-    export let skin = null;
+
+    export let skin: onml.Element = null;
 
     export function getPortsWithPrefix(template: any[], prefix: string) {
         const ports = _.filter(template, (e) => {
@@ -79,12 +81,33 @@ export namespace Skin {
         return ret.full;
     }
 
-    export function getProperties() {
-        const properties: any[] = _.find(skin, (el) => {
+    export function getLowPriorityAliases(): string[] {
+        const properties = skin.find((el: onml.Element) => {
             return el[0] === 's:properties';
         });
-        const vals = _.mapValues(properties[1], (val) => {
-            if (!isNaN(val)) {
+        // properties has no children
+        if (properties.length < 3) {
+            return [];
+        }
+        // find low priority aliases and return their values
+        const ret = properties[2].filter((el: onml.Element) => {
+            return el[0] === 's:low_priority_alias';
+        }).map((el: onml.Element) => {
+            return el[1].val;
+        });
+        return ret;
+    }
+    interface SkinProperties {
+        [attr: string]: boolean | string | number | ElkModel.LayoutOptions;
+    }
+
+    export function getProperties(): SkinProperties {
+        const properties = skin.find((el: onml.Element) => {
+            return el[0] === 's:properties';
+        }) as onml.Element;
+
+        const vals = _.mapValues(properties[1], (val: string) => {
+            if (!isNaN(Number(val))) {
                 return Number(val);
             }
             if (val === 'true') {
@@ -95,7 +118,7 @@ export namespace Skin {
             }
             return val;
         });
-        const layoutEngine = _.find(properties, (el) => {
+        const layoutEngine = properties.find((el: onml.Element) => {
             return el[0] === 's:layoutEngine';
         }) || {};
         vals.layoutEngine = layoutEngine[1];

@@ -12,12 +12,12 @@ enum WireDirection {
 }
 
 export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
-    const nodes = module.getNodes().map((n: Cell) => {
+    const nodes: any[] = module.getNodes().map((n: Cell) => {
         const kchild: ElkModel.Cell = _.find(g.children, (c) => c.id === n.Key);
         return n.render(kchild);
     });
     removeDummyEdges(g);
-    const lines = _.flatMap(g.edges, (e: ElkModel.Edge) => {
+    const lines: any[] = _.flatMap(g.edges, (e: ElkModel.Edge) => {
         const netId = ElkModel.wireNameLookup[e.id];
         const netName = 'net_' + netId.slice(1, netId.length - 1);
         return _.flatMap(e.sections, (s: ElkModel.Section) => {
@@ -55,14 +55,16 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
             return bends.concat(line);
         });
     });
+    const svgAttrs: onml.Attributes = Skin.skin[1];
     const svg = Skin.skin.slice(0, 2);
-    svg[1].width = g.width;
-    svg[1].height = g.height;
+    svgAttrs.width = g.width.toString();
+    svgAttrs.height = g.height.toString();
 
-    const styles = _.filter(Skin.skin, (el) => {
+    const styles: any[] = _.filter(Skin.skin, (el) => {
         return el[0] === 'style';
     });
-    const ret = svg.concat(styles).concat(nodes).concat(lines);
+    const elements = styles.concat(nodes).concat(lines);
+    const ret: onml.Element = ['svg', svgAttrs, elements];
     return onml.s(ret);
 }
 

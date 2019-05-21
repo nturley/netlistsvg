@@ -196,7 +196,7 @@ function route(sourcePorts, targetPorts, edges: ElkModel.Edge[]) {
             const id: string = 'e' + ElkModel.edgeIndex;
             const edge: ElkModel.ExtendedEdge = {
                 id,
-                sources: [ sourceKey ],
+                sources: [sourceKey],
                 targets: [targetKey],
             };
             ElkModel.wireNameLookup[id] = targetPort.wire.netName;

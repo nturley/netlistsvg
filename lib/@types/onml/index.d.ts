@@ -1,8 +1,13 @@
 declare module 'onml' {
-    export function parse(dir: string): object;
-    export function p(dir: string): object;
-    export function stringify(o: object): string;
-    export function s(o: object): string;
-    export function traverse(o: object, callbacks: object);
-    export function t(o: object, callbacks: object);
+    // avoid the headache of recursive type
+    export interface Attributes {
+        [attrName: string]: string;
+    }
+    export type Element = [string, Attributes?, ...Array<any>[]];
+    export function parse(dir: string): Element;
+    export function p(dir: string): Element;
+    export function stringify(o: Element): string;
+    export function s(o: Element): string;
+    export function traverse(o: Element, callbacks: object);
+    export function t(o: Element, callbacks: object);
 }

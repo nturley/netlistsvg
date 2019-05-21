@@ -104,7 +104,7 @@ export class FlatModule {
                 ridersByNet,
                 driversByNet,
                 lateralsByNet,
-                layoutProps.genericsLaterals);
+                layoutProps.genericsLaterals as boolean);
         });
         // list of unique nets
         const nets = removeDups(_.keys(ridersByNet).concat(_.keys(driversByNet)).concat(_.keys(lateralsByNet)));
