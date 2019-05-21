@@ -23,15 +23,6 @@ var FlatModule = /** @class */ (function () {
         // populated by createWires
         this.wires = [];
     }
-    FlatModule.prototype.getNodes = function () {
-        return this.nodes;
-    };
-    FlatModule.prototype.getWires = function () {
-        return this.wires;
-    };
-    FlatModule.prototype.getName = function () {
-        return this.moduleName;
-    };
     // converts input ports with constant assignments to constant nodes
     FlatModule.prototype.addConstants = function () {
         // find the maximum signal number

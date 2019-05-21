@@ -8,12 +8,12 @@ var ElkModel;
     ElkModel.edgeIndex = 0;
 })(ElkModel = exports.ElkModel || (exports.ElkModel = {}));
 function buildElkGraph(module) {
-    var children = module.getNodes().map(function (n) {
+    var children = module.nodes.map(function (n) {
         return n.buildElkChild();
     });
     ElkModel.edgeIndex = 0;
     ElkModel.dummyNum = 0;
-    var edges = _.flatMap(module.getWires(), function (w) {
+    var edges = _.flatMap(module.wires, function (w) {
         // at least one driver and at least one rider and no laterals
         if (w.drivers.length > 0 && w.riders.length > 0 && w.laterals.length === 0) {
             var ret = [];
@@ -92,7 +92,7 @@ function buildElkGraph(module) {
         return [];
     });
     return {
-        id: module.getName(),
+        id: module.moduleName,
         children: children,
         edges: edges,
     };

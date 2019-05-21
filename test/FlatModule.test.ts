@@ -28,9 +28,9 @@ function createFlatModule(testFile: string): FlatModule {
 test('split join', () => {
     const flatModule = createFlatModule('ports_splitjoin');
     // there are 5 external ports
-    const numStartNodes = flatModule.getNodes().length;
+    const numStartNodes = flatModule.nodes.length;
     flatModule.addSplitsJoins();
-    const nodes = flatModule.getNodes();
+    const nodes = flatModule.nodes;
     // should have 3 more nodes, one split, two joins
     expect(nodes.length - numStartNodes).toEqual(3);
     const splits = nodes.filter( (node: Cell) => node.Type === '$_split_');
@@ -50,7 +50,7 @@ test('split join', () => {
 test('create wires', () => {
     const flatModule = createFlatModule('hyperedges');
     flatModule.createWires();
-    const wires = flatModule.getWires();
+    const wires = flatModule.wires;
     expect(wires.length).toEqual(3);
     expect(wires.find((wire) => wire.drivers.length === 3)).toBeDefined();
     expect(wires.find((wire) => wire.riders.length === 3)).toBeDefined();

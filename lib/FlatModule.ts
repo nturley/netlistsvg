@@ -18,9 +18,9 @@ export interface Wire {
 }
 
 export class FlatModule {
-    private moduleName: string;
-    private nodes: Cell[];
-    private wires: Wire[];
+    public moduleName: string;
+    public nodes: Cell[];
+    public wires: Wire[];
 
     constructor(netlist: Yosys.Netlist) {
         this.moduleName = null;
@@ -39,18 +39,6 @@ export class FlatModule {
         this.nodes = cells.concat(ports);
         // populated by createWires
         this.wires = [];
-    }
-
-    public getNodes(): Cell[] {
-        return this.nodes;
-    }
-
-    public getWires(): Wire[] {
-        return this.wires;
-    }
-
-    public getName(): string {
-        return this.moduleName;
     }
 
     // converts input ports with constant assignments to constant nodes

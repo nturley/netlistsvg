@@ -12,7 +12,7 @@ enum WireDirection {
 }
 
 export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
-    const nodes: any[] = module.getNodes().map((n: Cell) => {
+    const nodes: any[] = module.nodes.map((n: Cell) => {
         const kchild: ElkModel.Cell = _.find(g.children, (c) => c.id === n.Key);
         return n.render(kchild);
     });

@@ -82,12 +82,12 @@ export namespace ElkModel {
     }
 }
 export function buildElkGraph(module: FlatModule): ElkModel.Graph {
-    const children: ElkModel.Cell[] = module.getNodes().map((n) => {
+    const children: ElkModel.Cell[] = module.nodes.map((n) => {
         return n.buildElkChild();
     });
     ElkModel.edgeIndex = 0;
     ElkModel.dummyNum = 0;
-    const edges: ElkModel.Edge[] = _.flatMap(module.getWires(), (w) => {
+    const edges: ElkModel.Edge[] = _.flatMap(module.wires, (w) => {
         // at least one driver and at least one rider and no laterals
         if (w.drivers.length > 0 && w.riders.length > 0 && w.laterals.length === 0) {
             const ret: ElkModel.Edge[] = [];
@@ -163,7 +163,7 @@ export function buildElkGraph(module: FlatModule): ElkModel.Graph {
         return [];
     });
     return {
-        id: module.getName(),
+        id: module.moduleName,
         children,
         edges,
     };
