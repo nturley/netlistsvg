@@ -57,14 +57,18 @@ function drawModule(g, module) {
         });
     });
     var svgAttrs = Skin_1.default.skin[1];
-    var svg = Skin_1.default.skin.slice(0, 2);
     svgAttrs.width = g.width.toString();
     svgAttrs.height = g.height.toString();
-    var styles = _.filter(Skin_1.default.skin, function (el) {
-        return el[0] === 'style';
+    var styles = ['style', {}, ''];
+    onml.t(Skin_1.default.skin, {
+        enter: function (node) {
+            if (node.name === 'style') {
+                styles[2] += node.full[2];
+            }
+        },
     });
-    var elements = styles.concat(nodes).concat(lines);
-    var ret = ['svg', svgAttrs, elements];
+    var elements = [styles].concat(nodes, lines);
+    var ret = ['svg', svgAttrs].concat(elements);
     return onml.s(ret);
 }
 exports.default = drawModule;
