@@ -248,7 +248,7 @@ export default class Cell {
         return ret;
     }
 
-    public render(cell: ElkModel.Cell): any[] {
+    public render(cell: ElkModel.Cell): onml.Element {
         const template = this.getTemplate();
         const tempclone = clone(template);
         for (const label of cell.labels) {

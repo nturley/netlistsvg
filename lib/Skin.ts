@@ -82,18 +82,13 @@ export namespace Skin {
     }
 
     export function getLowPriorityAliases(): string[] {
-        const properties = skin.find((el: onml.Element) => {
-            return el[0] === 's:properties';
-        });
-        // properties has no children
-        if (properties.length < 3) {
-            return [];
-        }
-        // find low priority aliases and return their values
-        const ret = properties[2].filter((el: onml.Element) => {
-            return el[0] === 's:low_priority_alias';
-        }).map((el: onml.Element) => {
-            return el[1].val;
+        const ret = [];
+        onml.t(skin, {
+            enter: (node) => {
+                if (node.name === 's:low_priority_alias') {
+                    ret.push(node.attr.value);
+                }
+            },
         });
         return ret;
     }
@@ -102,26 +97,32 @@ export namespace Skin {
     }
 
     export function getProperties(): SkinProperties {
-        const properties = skin.find((el: onml.Element) => {
-            return el[0] === 's:properties';
-        }) as onml.Element;
-
-        const vals = _.mapValues(properties[1], (val: string) => {
-            if (!isNaN(Number(val))) {
-                return Number(val);
-            }
-            if (val === 'true') {
-                return true;
-            }
-            if (val === 'false') {
-                return false;
-            }
-            return val;
+        let vals;
+        onml.t(skin, {
+            enter: (node) => {
+                if (node.name === 's:properties') {
+                    vals = _.mapValues(node.attr, (val: string) => {
+                        if (!isNaN(Number(val))) {
+                            return Number(val);
+                        }
+                        if (val === 'true') {
+                            return true;
+                        }
+                        if (val === 'false') {
+                            return false;
+                        }
+                        return val;
+                    });
+                } else if (node.name === 's:layoutEngine') {
+                    vals.layoutEngine = node.attr;
+                }
+            },
         });
-        const layoutEngine = properties.find((el: onml.Element) => {
-            return el[0] === 's:layoutEngine';
-        }) || {};
-        vals.layoutEngine = layoutEngine[1];
+
+        if (!vals.layoutEngine) {
+            vals.layoutEngine = {};
+        }
+
         return vals;
     }
 }

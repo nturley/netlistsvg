@@ -80,42 +80,43 @@ var Skin;
     }
     Skin.findSkinType = findSkinType;
     function getLowPriorityAliases() {
-        var properties = Skin.skin.find(function (el) {
-            return el[0] === 's:properties';
-        });
-        // properties has no children
-        if (properties.length < 3) {
-            return [];
-        }
-        // find low priority aliases and return their values
-        var ret = properties[2].filter(function (el) {
-            return el[0] === 's:low_priority_alias';
-        }).map(function (el) {
-            return el[1].val;
+        var ret = [];
+        onml.t(Skin.skin, {
+            enter: function (node) {
+                if (node.name === 's:low_priority_alias') {
+                    ret.push(node.attr.value);
+                }
+            },
         });
         return ret;
     }
     Skin.getLowPriorityAliases = getLowPriorityAliases;
     function getProperties() {
-        var properties = Skin.skin.find(function (el) {
-            return el[0] === 's:properties';
+        var vals;
+        onml.t(Skin.skin, {
+            enter: function (node) {
+                if (node.name === 's:properties') {
+                    vals = _.mapValues(node.attr, function (val) {
+                        if (!isNaN(Number(val))) {
+                            return Number(val);
+                        }
+                        if (val === 'true') {
+                            return true;
+                        }
+                        if (val === 'false') {
+                            return false;
+                        }
+                        return val;
+                    });
+                }
+                else if (node.name === 's:layoutEngine') {
+                    vals.layoutEngine = node.attr;
+                }
+            },
         });
-        var vals = _.mapValues(properties[1], function (val) {
-            if (!isNaN(Number(val))) {
-                return Number(val);
-            }
-            if (val === 'true') {
-                return true;
-            }
-            if (val === 'false') {
-                return false;
-            }
-            return val;
-        });
-        var layoutEngine = properties.find(function (el) {
-            return el[0] === 's:layoutEngine';
-        }) || {};
-        vals.layoutEngine = layoutEngine[1];
+        if (!vals.layoutEngine) {
+            vals.layoutEngine = {};
+        }
         return vals;
     }
     Skin.getProperties = getProperties;
