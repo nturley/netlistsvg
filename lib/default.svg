@@ -60,6 +60,7 @@ text {
     <s:alias val="$nand"/>
     <s:alias val="$logic_nand"/>
     <s:alias val="$_NAND_"/>
+    <s:alias val="$_ANDNOT_"/>
 
     <path d="M0,0 L0,25 L15,25 A15 12.5 0 0 0 15,0 Z" class="$cell_id"/>
     <circle cx="34" cy="12.5" r="3" class="$cell_id"/>
@@ -86,6 +87,7 @@ text {
     <s:alias val="$nor"/>
     <s:alias val="$reduce_nor"/>
     <s:alias val="$_NOR_"/>
+    <s:alias val="$_ORNOT_"/>
 
     <path d="M0,25 L0,25 L15,25 A15 12.5 0 0 0 15,0 L0,0" class="$cell_id"/>
     <path d="M0,0 A30 25 0 0 1 0,25" class="$cell_id"/>
@@ -127,6 +129,7 @@ text {
   <g s:type="not" transform="translate(450,100)" s:width="30" s:height="20">
     <s:alias val="$_NOT_"/>
     <s:alias val="$not"/>
+    <s:alias val="$logic_not"/>
 
     <path d="M0,0 L0,20 L20,10 Z" class="$cell_id"/>
     <circle cx="23" cy="10" r="3" class="$cell_id"/>
@@ -169,15 +172,67 @@ text {
     <g s:x="25" s:y="12.5" s:pid="Y"/>
   </g>
 
-  <g s:type="dff" transform="translate(350,150)" s:width="30" s:height="40">
+  <g s:type="lt" transform="translate(350,150)" s:width="25" s:height="25">
+    <s:alias val="$lt"/>
+
+    <circle r="12.5" cx="12.5" cy="12.5" class="$cell_id"/>
+    <line x1="7.5" x2="17.5" y1="12.5" y2="7.5" class="$cell_id"/>
+    <line x1="7.5" x2="17.5" y1="12.5" y2="17.5" class="$cell_id"/>
+
+    <g s:x="3" s:y="5" s:pid="A"/>
+    <g s:x="3" s:y="20" s:pid="B"/>
+    <g s:x="25" s:y="12.5" s:pid="Y"/>
+  </g>
+
+  <g s:type="le" transform="translate(450,150)" s:width="25" s:height="25">
+    <s:alias val="$le"/>
+
+    <circle r="12.5" cx="12.5" cy="12.5" class="$cell_id"/>
+    <line x1="7.5" x2="17.5" y1="12.5" y2="7.5" class="$cell_id"/>
+    <line x1="7.5" x2="17.5" y1="12.5" y2="17.5" class="$cell_id"/>
+    <line x1="7.5" x2="17.5" y1="15" y2="20" class="$cell_id"/>
+
+    <g s:x="3" s:y="5" s:pid="A"/>
+    <g s:x="3" s:y="20" s:pid="B"/>
+    <g s:x="25" s:y="12.5" s:pid="Y"/>
+  </g>
+
+  <g s:type="ge" transform="translate(550,150)" s:width="25" s:height="25">
+    <s:alias val="$ge"/>
+
+    <circle r="12.5" cx="12.5" cy="12.5" class="$cell_id"/>
+    <line x1="7.5" x2="17.5" y1="7.5" y2="12.5" class="$cell_id"/>
+    <line x1="7.5" x2="17.5" y1="17.5" y2="12.5" class="$cell_id"/>
+    <line x1="7.5" x2="17.5" y1="20" y2="15" class="$cell_id"/>
+
+    <g s:x="3" s:y="5" s:pid="A"/>
+    <g s:x="3" s:y="20" s:pid="B"/>
+    <g s:x="25" s:y="12.5" s:pid="Y"/>
+  </g>
+
+  <g s:type="gt" transform="translate(650,150)" s:width="25" s:height="25">
+    <s:alias val="$gt"/>
+
+    <circle r="12.5" cx="12.5" cy="12.5" class="$cell_id"/>
+    <line x1="7.5" x2="17.5" y1="7.5" y2="12.5" class="$cell_id"/>
+    <line x1="7.5" x2="17.5" y1="17.5" y2="12.5" class="$cell_id"/>
+
+    <g s:x="3" s:y="5" s:pid="A"/>
+    <g s:x="3" s:y="20" s:pid="B"/>
+    <g s:x="25" s:y="12.5" s:pid="Y"/>
+  </g>
+
+  <g s:type="dff" transform="translate(750,150)" s:width="30" s:height="40">
     <s:alias val="$dff"/>
     <s:alias val="$_DFF_"/>
+    <s:alias val="$_DFF_P_"/>
 
     <rect width="30" height="40" x="0" y="0" class="$cell_id"/>
     <path d="M0,35 L5,30 L0,25" class="$cell_id"/>
 
     <g s:x="30" s:y="10" s:pid="Q"/>
     <g s:x="0" s:y="30" s:pid="CLK"/>
+    <g s:x="0" s:y="30" s:pid="C"/>
     <g s:x="0" s:y="10" s:pid="D"/>
   </g>
 
