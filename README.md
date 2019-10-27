@@ -438,7 +438,7 @@ Here's an analog example.
 ## Skin File
 It pulls the node icons and configuration options from a SVG skin file. This our default digital skin file.
 
-<img src="https://raw.githubusercontent.com/nturley/netlistsvg/master/lib/default.svg?sanitize=true" width="700" height="250">
+<img src="https://raw.githubusercontent.com/nturley/netlistsvg/master/lib/default.svg?sanitize=true" width="800" height="300">
 
 This is our analog skin file.
 
