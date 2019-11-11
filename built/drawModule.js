@@ -153,13 +153,13 @@ function removeDummyEdges(g) {
             var section = edge.sections[0];
             if (dummyIsSource) {
                 // get first bend or endPoint
-                if (section.bendPoints) {
+                if (section.bendPoints && section.bendPoints.length > 0) {
                     return [section.bendPoints[0]];
                 }
                 return section.endPoint;
             }
             else {
-                if (section.bendPoints) {
+                if (section.bendPoints && section.bendPoints.length > 0) {
                     return [_.last(section.bendPoints)];
                 }
                 return section.startPoint;
