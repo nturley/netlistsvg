@@ -18,27 +18,49 @@ export interface Wire {
 }
 
 export class FlatModule {
+    public static netlist: Yosys.Netlist;
+    public static skin: any;
+    public static layoutProps: {[x: string]: any};
+    public static modNames: string[];
+    public static fromNetlist(netlist: Yosys.Netlist, skin: any): FlatModule {
+        this.skin = skin;
+        this.layoutProps = skin.getProperties();
+        this.modNames = Object.keys(netlist.modules);
+        this.netlist = netlist;
+        let topName = null;
+        _.forEach(netlist.modules, (mod: Yosys.Module, name: string) => {
+            if (mod.attributes && mod.attributes.top === 1) {
+                topName = name;
+            }
+        });
+        // Otherwise default the first one in the file...
+        if (topName == null) {
+            topName = this.modNames[0];
+        }
+        const top = netlist.modules[topName];
+        return new FlatModule(top, topName);
+    }
+
+    public parent: FlatModule;
     public moduleName: string;
     public nodes: Cell[];
     public wires: Wire[];
 
-    constructor(netlist: Yosys.Netlist) {
-        this.moduleName = null;
-        _.forEach(netlist.modules, (mod: Yosys.Module, name: string) => {
-            if (mod.attributes && mod.attributes.top === 1) {
-                this.moduleName = name;
-            }
-        });
-        // Otherwise default the first one in the file...
-        if (this.moduleName == null) {
-            this.moduleName = Object.keys(netlist.modules)[0];
-        }
-        const top = netlist.modules[this.moduleName];
-        const ports = _.map(top.ports, Cell.fromPort);
-        const cells = _.map(top.cells, (c, key) => Cell.fromYosysCell(c, key));
+    constructor(mod: Yosys.Module, name: string, parent: FlatModule = null) {
+        this.parent = parent;
+        this.moduleName = name;
+        const ports = _.map(mod.ports, Cell.fromPort);
+        const cells = _.map(mod.cells, (c, key) => Cell.fromYosysCell(c, key));
         this.nodes = cells.concat(ports);
-        // populated by createWires
-        this.wires = [];
+        // this can be skipped if there are no 0's or 1's
+        if (FlatModule.layoutProps.constants !== false) {
+            this.addConstants();
+        }
+        // this can be skipped if there are no splits or joins
+        if (FlatModule.layoutProps.splitsAndJoins !== false) {
+            this.addSplitsJoins();
+        }
+        this.createWires();
     }
 
     // converts input ports with constant assignments to constant nodes

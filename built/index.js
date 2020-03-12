@@ -7,23 +7,10 @@ var Skin_1 = require("./Skin");
 var elkGraph_1 = require("./elkGraph");
 var drawModule_1 = require("./drawModule");
 var elk = new ELK();
-function createFlatModule(skinData, yosysNetlist) {
-    Skin_1.default.skin = onml.p(skinData);
-    var layoutProps = Skin_1.default.getProperties();
-    var flatModule = new FlatModule_1.FlatModule(yosysNetlist);
-    // this can be skipped if there are no 0's or 1's
-    if (layoutProps.constants !== false) {
-        flatModule.addConstants();
-    }
-    // this can be skipped if there are no splits or joins
-    if (layoutProps.splitsAndJoins !== false) {
-        flatModule.addSplitsJoins();
-    }
-    flatModule.createWires();
-    return flatModule;
-}
 function dumpLayout(skinData, yosysNetlist, prelayout, done) {
-    var flatModule = createFlatModule(skinData, yosysNetlist);
+    var skin = onml.p(skinData);
+    Skin_1.default.skin = skin;
+    var flatModule = FlatModule_1.FlatModule.fromNetlist(yosysNetlist, Skin_1.default);
     var kgraph = elkGraph_1.buildElkGraph(flatModule);
     if (prelayout) {
         done(null, JSON.stringify(kgraph, null, 2));
@@ -39,7 +26,9 @@ function dumpLayout(skinData, yosysNetlist, prelayout, done) {
 }
 exports.dumpLayout = dumpLayout;
 function render(skinData, yosysNetlist, done, elkData) {
-    var flatModule = createFlatModule(skinData, yosysNetlist);
+    var skin = onml.p(skinData);
+    Skin_1.default.skin = skin;
+    var flatModule = FlatModule_1.FlatModule.fromNetlist(yosysNetlist, Skin_1.default);
     var kgraph = elkGraph_1.buildElkGraph(flatModule);
     var layoutProps = Skin_1.default.getProperties();
     var promise;

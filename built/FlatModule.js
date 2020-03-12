@@ -4,25 +4,41 @@ var Skin_1 = require("./Skin");
 var Cell_1 = require("./Cell");
 var _ = require("lodash");
 var FlatModule = /** @class */ (function () {
-    function FlatModule(netlist) {
-        var _this = this;
-        this.moduleName = null;
+    function FlatModule(mod, name, parent) {
+        if (parent === void 0) { parent = null; }
+        this.parent = parent;
+        this.moduleName = name;
+        var ports = _.map(mod.ports, Cell_1.default.fromPort);
+        var cells = _.map(mod.cells, function (c, key) { return Cell_1.default.fromYosysCell(c, key); });
+        this.nodes = cells.concat(ports);
+        // this can be skipped if there are no 0's or 1's
+        if (FlatModule.layoutProps.constants !== false) {
+            this.addConstants();
+        }
+        // this can be skipped if there are no splits or joins
+        if (FlatModule.layoutProps.splitsAndJoins !== false) {
+            this.addSplitsJoins();
+        }
+        this.createWires();
+    }
+    FlatModule.fromNetlist = function (netlist, skin) {
+        this.skin = skin;
+        this.layoutProps = skin.getProperties();
+        this.modNames = Object.keys(netlist.modules);
+        this.netlist = netlist;
+        var topName = null;
         _.forEach(netlist.modules, function (mod, name) {
             if (mod.attributes && mod.attributes.top === 1) {
-                _this.moduleName = name;
+                topName = name;
             }
         });
         // Otherwise default the first one in the file...
-        if (this.moduleName == null) {
-            this.moduleName = Object.keys(netlist.modules)[0];
+        if (topName == null) {
+            topName = this.modNames[0];
         }
-        var top = netlist.modules[this.moduleName];
-        var ports = _.map(top.ports, Cell_1.default.fromPort);
-        var cells = _.map(top.cells, function (c, key) { return Cell_1.default.fromYosysCell(c, key); });
-        this.nodes = cells.concat(ports);
-        // populated by createWires
-        this.wires = [];
-    }
+        var top = netlist.modules[topName];
+        return new FlatModule(top, topName);
+    };
     // converts input ports with constant assignments to constant nodes
     FlatModule.prototype.addConstants = function () {
         // find the maximum signal number

@@ -19,7 +19,7 @@ function createFlatModule(testFile: string): FlatModule {
     const netlist: Yosys.Netlist = json5.parse(testStr);
     const skin = onml.parse(fs.readFileSync(defaultSkin).toString());
     Skin.skin = skin;
-    return new FlatModule(netlist);
+    return FlatModule.fromNetlist(netlist, Skin);
 }
 
 /**
@@ -32,7 +32,7 @@ test('split join', () => {
     flatModule.addSplitsJoins();
     const nodes = flatModule.nodes;
     // should have 3 more nodes, one split, two joins
-    expect(nodes.length - numStartNodes).toEqual(3);
+    expect(nodes.length - numStartNodes).toEqual(0);
     const splits = nodes.filter( (node: Cell) => node.Type === '$_split_');
     expect(splits.length).toEqual(1);
     const split = splits[0];
