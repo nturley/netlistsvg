@@ -22,8 +22,7 @@ export function dumpLayout(skinData: string, yosysNetlist: Yosys.Netlist, prelay
         done(null, JSON.stringify(kgraph, null, 2));
         return;
     }
-    const layoutProps = Skin.getProperties();
-    const promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine });
+    const promise = elk.layout(kgraph, { layoutOptions: FlatModule.layoutProps.layoutEngine });
     promise.then((graph: ElkModel.Graph) => {
         done(null, JSON.stringify(graph, null, 2));
     }).catch((reason) => {
@@ -36,7 +35,6 @@ export function render(skinData: string, yosysNetlist: Yosys.Netlist, done?: ICa
     Skin.skin = skin;
     const flatModule = FlatModule.fromNetlist(yosysNetlist, Skin);
     const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
-    const layoutProps = Skin.getProperties();
 
     let promise;
     // if we already have a layout then use it
@@ -47,7 +45,7 @@ export function render(skinData: string, yosysNetlist: Yosys.Netlist, done?: ICa
         });
     } else {
         // otherwise use ELK to generate the layout
-        promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine })
+        promise = elk.layout(kgraph, { layoutOptions: FlatModule.layoutProps.layoutEngine })
             .then((g) => drawModule(g, flatModule))
             // tslint:disable-next-line:no-console
             .catch((e) => { console.error(e); });

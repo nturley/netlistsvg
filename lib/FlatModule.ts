@@ -49,8 +49,8 @@ export class FlatModule {
     constructor(mod: Yosys.Module, name: string, parent: FlatModule = null) {
         this.parent = parent;
         this.moduleName = name;
-        const ports = _.map(mod.ports, Cell.fromPort);
-        const cells = _.map(mod.cells, (c, key) => Cell.fromYosysCell(c, key));
+        const ports = _.map(mod.ports, (port, portName) => Cell.fromPort(port, portName, this));
+        const cells = _.map(mod.cells, (c, key) => Cell.fromYosysCell(c, key, this));
         this.nodes = cells.concat(ports);
         // this can be skipped if there are no 0's or 1's
         if (FlatModule.layoutProps.constants !== false) {
@@ -97,15 +97,14 @@ export class FlatModule {
         });
 
         this.nodes = this.nodes.concat(_.map(joins, (joinOutput, joinInputs) => {
-            return Cell.fromJoinInfo(joinInputs, joinOutput);
+            return Cell.fromJoinInfo(joinInputs, joinOutput, this);
         })).concat(_.map(splits, (splitOutputs, splitInput) => {
-            return Cell.fromSplitInfo(splitInput, splitOutputs);
+            return Cell.fromSplitInfo(splitInput, splitOutputs, this);
         }));
     }
 
     // search through all the ports to find all of the wires
     public createWires() {
-        const layoutProps = Skin.getProperties();
         const ridersByNet: NameToPorts = {};
         const driversByNet: NameToPorts = {};
         const lateralsByNet: NameToPorts = {};
@@ -114,7 +113,7 @@ export class FlatModule {
                 ridersByNet,
                 driversByNet,
                 lateralsByNet,
-                layoutProps.genericsLaterals as boolean);
+                FlatModule.layoutProps.genericsLaterals as boolean);
         });
         // list of unique nets
         const nets = removeDups(_.keys(ridersByNet).concat(_.keys(driversByNet)).concat(_.keys(lateralsByNet)));

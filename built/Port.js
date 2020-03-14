@@ -23,7 +23,7 @@ var Port = /** @class */ (function () {
     Port.prototype.valString = function () {
         return ',' + this.value.join() + ',';
     };
-    Port.prototype.findConstants = function (sigsByConstantName, maxNum, constantCollector) {
+    Port.prototype.findConstants = function (sigsByConstantName, maxNum, constantCollector, parent) {
         var _this = this;
         var constNameCollector = '';
         var constNumCollector = [];
@@ -39,14 +39,14 @@ var Port = /** @class */ (function () {
                 // string of constants ended before end of p.value
             }
             else if (constNumCollector.length > 0) {
-                _this.assignConstant(constNameCollector, constNumCollector, portSigIndex, sigsByConstantName, constantCollector);
+                _this.assignConstant(constNameCollector, constNumCollector, portSigIndex, sigsByConstantName, constantCollector, parent);
                 // reset name and num collectors
                 constNameCollector = '';
                 constNumCollector = [];
             }
         });
         if (constNumCollector.length > 0) {
-            this.assignConstant(constNameCollector, constNumCollector, portSigs.length, sigsByConstantName, constantCollector);
+            this.assignConstant(constNameCollector, constNumCollector, portSigs.length, sigsByConstantName, constantCollector, parent);
         }
         return maxNum;
     };
@@ -105,7 +105,7 @@ var Port = /** @class */ (function () {
             return ret;
         }
     };
-    Port.prototype.assignConstant = function (nameCollector, constants, currIndex, signalsByConstantName, constantCollector) {
+    Port.prototype.assignConstant = function (nameCollector, constants, currIndex, signalsByConstantName, constantCollector, parent) {
         var _this = this;
         // we've been appending to nameCollector, so reverse to get const name
         var constName = nameCollector.split('').reverse().join('');
@@ -121,7 +121,7 @@ var Port = /** @class */ (function () {
             });
         }
         else {
-            constantCollector.push(Cell_1.default.fromConstantInfo(constName, constants));
+            constantCollector.push(Cell_1.default.fromConstantInfo(constName, constants, parent));
             signalsByConstantName[constName] = constants;
         }
     };
