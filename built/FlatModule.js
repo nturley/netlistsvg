@@ -9,7 +9,14 @@ var FlatModule = /** @class */ (function () {
         this.parent = parent;
         this.moduleName = name;
         var ports = _.map(mod.ports, function (port, portName) { return Cell_1.default.fromPort(port, portName, _this); });
-        var cells = _.map(mod.cells, function (c, key) { return Cell_1.default.fromYosysCell(c, key, _this); });
+        var cells = _.map(mod.cells, function (c, key) {
+            if (!_.includes(FlatModule.modNames, c.type)) {
+                return Cell_1.default.fromYosysCell(c, key, _this);
+            }
+            else {
+                return Cell_1.default.createSubModule(c, key, _this, FlatModule.netlist.modules[c.type]);
+            }
+        });
         this.nodes = cells.concat(ports);
         // this can be skipped if there are no 0's or 1's
         if (FlatModule.layoutProps.constants !== false) {

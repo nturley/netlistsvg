@@ -5,6 +5,7 @@ var YosysModel_1 = require("./YosysModel");
 var Skin_1 = require("./Skin");
 var Port_1 = require("./Port");
 var _ = require("lodash");
+var elkGraph_1 = require("./elkGraph");
 var clone = require("clone");
 var onml = require("onml");
 var Cell = /** @class */ (function () {
@@ -206,7 +207,7 @@ var Cell = /** @class */ (function () {
         }
         if (type === 'join' ||
             type === 'split' ||
-            type === 'generic') {
+            (type === 'generic' && this.subModule === null)) {
             var inTemplates_1 = Skin_1.default.getPortsWithPrefix(template, 'in');
             var outTemplates_1 = Skin_1.default.getPortsWithPrefix(template, 'out');
             var inPorts = this.inputPorts.map(function (ip, i) {
@@ -231,6 +232,42 @@ var Cell = /** @class */ (function () {
             }
             this.addLabels(template, cell);
             return cell;
+        }
+        if (type === 'generic' && this.subModule !== null) {
+            var inTemplates_2 = Skin_1.default.getPortsWithPrefix(template, 'in');
+            var outTemplates_2 = Skin_1.default.getPortsWithPrefix(template, 'out');
+            var inPorts = this.inputPorts.map(function (ip, i) {
+                return ip.getGenericElkPort(i, inTemplates_2, 'in');
+            });
+            var outPorts = this.outputPorts.map(function (op, i) {
+                return op.getGenericElkPort(i, outTemplates_2, 'out');
+            });
+            var elk = elkGraph_1.buildElkGraph(this.subModule);
+            var cell_1 = {
+                id: this.key,
+                layoutOptions: layoutAttrs,
+                labels: [],
+                ports: inPorts.concat(outPorts),
+                children: [],
+                edges: [],
+            };
+            // Bad practice, solution?
+            _.forEach(cell_1.ports, function (port) {
+                delete port.x;
+                delete port.y;
+            });
+            _.forEach(elk.children, function (child) {
+                var inc = true;
+                _.forEach(cell_1.ports, function (port) {
+                    if (_this.key + '.' + child.id === port.id) {
+                        inc = false;
+                    }
+                });
+                if (inc) {
+                    cell_1.children.push(child);
+                }
+            });
+            return cell_1;
         }
         var ports = Skin_1.default.getPortsWithPrefix(template, '').map(function (tp) {
             return {

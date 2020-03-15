@@ -3,7 +3,7 @@ import Yosys from './YosysModel';
 import Skin from './Skin';
 import {Port} from './Port';
 import _ = require('lodash');
-import { ElkModel } from './elkGraph';
+import { ElkModel, buildElkGraph } from './elkGraph';
 import clone = require('clone');
 import onml = require('onml');
 
@@ -221,7 +221,7 @@ export default class Cell {
         }
         if (type === 'join' ||
             type === 'split' ||
-            type === 'generic') {
+            (type === 'generic' && this.subModule === null)) {
             const inTemplates: any[] = Skin.getPortsWithPrefix(template, 'in');
             const outTemplates: any[] = Skin.getPortsWithPrefix(template, 'out');
             const inPorts = this.inputPorts.map((ip, i) =>
@@ -243,6 +243,40 @@ export default class Cell {
                 cell.y = fixedPosY;
             }
             this.addLabels(template, cell);
+            return cell;
+        }
+        if (type === 'generic' && this.subModule !== null) {
+            const inTemplates: any[] = Skin.getPortsWithPrefix(template, 'in');
+            const outTemplates: any[] = Skin.getPortsWithPrefix(template, 'out');
+            const inPorts = this.inputPorts.map((ip, i) =>
+                ip.getGenericElkPort(i, inTemplates, 'in'));
+            const outPorts = this.outputPorts.map((op, i) =>
+                op.getGenericElkPort(i, outTemplates, 'out'));
+            const elk = buildElkGraph(this.subModule);
+            const cell: ElkModel.Cell = {
+                id: this.key,
+                layoutOptions: layoutAttrs,
+                labels: [],
+                ports: inPorts.concat(outPorts),
+                children: [],
+                edges: [],
+            };
+            // Bad practice, solution?
+            _.forEach(cell.ports, (port) => {
+                delete port.x;
+                delete port.y;
+            });
+            _.forEach(elk.children, (child) => {
+                let inc: boolean = true;
+                _.forEach(cell.ports, (port) => {
+                    if (this.key + '.' + child.id === port.id) {
+                        inc = false;
+                    }
+                });
+                if (inc) {
+                    cell.children.push(child);
+                }
+            });
             return cell;
         }
         const ports: ElkModel.Port[] = Skin.getPortsWithPrefix(template, '').map((tp) => {

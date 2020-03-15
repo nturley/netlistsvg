@@ -22,6 +22,7 @@ export class FlatModule {
     public static skin: any;
     public static layoutProps: {[x: string]: any};
     public static modNames: string[];
+
     public static fromNetlist(netlist: Yosys.Netlist, skin: any): FlatModule {
         this.skin = skin;
         this.layoutProps = skin.getProperties();
@@ -50,7 +51,13 @@ export class FlatModule {
         this.parent = parent;
         this.moduleName = name;
         const ports = _.map(mod.ports, (port, portName) => Cell.fromPort(port, portName, this));
-        const cells = _.map(mod.cells, (c, key) => Cell.fromYosysCell(c, key, this));
+        const cells = _.map(mod.cells, (c, key) => {
+            if (!_.includes(FlatModule.modNames, c.type)) {
+                return Cell.fromYosysCell(c, key, this);
+            } else {
+                return Cell.createSubModule(c, key, this, FlatModule.netlist.modules[c.type]);
+            }
+        });
         this.nodes = cells.concat(ports);
         // this can be skipped if there are no 0's or 1's
         if (FlatModule.layoutProps.constants !== false) {
