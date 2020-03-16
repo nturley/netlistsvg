@@ -255,7 +255,7 @@ export default class Cell {
             const elk = buildElkGraph(this.subModule);
             const cell: ElkModel.Cell = {
                 id: this.key,
-                layoutOptions: layoutAttrs,
+                layoutOptions: [],
                 labels: [],
                 ports: inPorts.concat(outPorts),
                 children: [],
@@ -277,6 +277,27 @@ export default class Cell {
                     cell.children.push(child);
                 }
             });
+            _.forEach(elk.edges, (edge: ElkModel.ExtendedEdge) => {
+                const edgeAdd = edge;
+                _.forEach(cell.ports, (port) => {
+                    if (_.includes(inPorts, port)) {
+                        if (edgeAdd.sources[0] === port.id.slice(this.key.length + 1) + '.Y') {
+                            edgeAdd.sources[0] = port.id;
+                        }
+                    } else {
+                        if (edgeAdd.targets[0] === port.id.slice(this.key.length + 1) + '.A') {
+                            edgeAdd.targets[0] = port.id;
+                        }
+                    }
+                });
+                cell.edges.push(edgeAdd);
+            });
+            if (fixedPosX) {
+                cell.x = fixedPosX;
+            }
+            if (fixedPosY) {
+                cell.y = fixedPosY;
+            }
             return cell;
         }
         const ports: ElkModel.Port[] = Skin.getPortsWithPrefix(template, '').map((tp) => {

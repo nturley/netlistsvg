@@ -19,6 +19,7 @@ var WireDirection;
     WireDirection[WireDirection["Right"] = 3] = "Right";
 })(WireDirection || (WireDirection = {}));
 function drawModule(g, module) {
+    console.dir(g, {depth: null});
     var nodes = module.nodes.map(function (n) {
         var kchild = _.find(g.children, function (c) { return c.id === n.Key; });
         return n.render(kchild);

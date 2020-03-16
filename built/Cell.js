@@ -236,7 +236,7 @@ var Cell = /** @class */ (function () {
         if (type === 'generic' && this.subModule !== null) {
             var inTemplates_2 = Skin_1.default.getPortsWithPrefix(template, 'in');
             var outTemplates_2 = Skin_1.default.getPortsWithPrefix(template, 'out');
-            var inPorts = this.inputPorts.map(function (ip, i) {
+            var inPorts_1 = this.inputPorts.map(function (ip, i) {
                 return ip.getGenericElkPort(i, inTemplates_2, 'in');
             });
             var outPorts = this.outputPorts.map(function (op, i) {
@@ -245,9 +245,9 @@ var Cell = /** @class */ (function () {
             var elk = elkGraph_1.buildElkGraph(this.subModule);
             var cell_1 = {
                 id: this.key,
-                layoutOptions: layoutAttrs,
+                layoutOptions: [],
                 labels: [],
-                ports: inPorts.concat(outPorts),
+                ports: inPorts_1.concat(outPorts),
                 children: [],
                 edges: [],
             };
@@ -267,6 +267,28 @@ var Cell = /** @class */ (function () {
                     cell_1.children.push(child);
                 }
             });
+            _.forEach(elk.edges, function (edge) {
+                var edgeAdd = edge;
+                _.forEach(cell_1.ports, function (port) {
+                    if (_.includes(inPorts_1, port)) {
+                        if (edgeAdd.sources[0] === port.id.slice(_this.key.length + 1) + '.Y') {
+                            edgeAdd.sources[0] = port.id;
+                        }
+                    }
+                    else {
+                        if (edgeAdd.targets[0] === port.id.slice(_this.key.length + 1) + '.A') {
+                            edgeAdd.targets[0] = port.id;
+                        }
+                    }
+                });
+                cell_1.edges.push(edgeAdd);
+            });
+            if (fixedPosX) {
+                cell_1.x = fixedPosX;
+            }
+            if (fixedPosY) {
+                cell_1.y = fixedPosY;
+            }
             return cell_1;
         }
         var ports = Skin_1.default.getPortsWithPrefix(template, '').map(function (tp) {
@@ -332,24 +354,24 @@ var Cell = /** @class */ (function () {
         }
         else if (this.type === '$_join_') {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
-            var inPorts_1 = Skin_1.default.getPortsWithPrefix(template, 'in');
-            var gap_2 = Number(inPorts_1[1][1]['s:y']) - Number(inPorts_1[0][1]['s:y']);
-            var startY_2 = Number(inPorts_1[0][1]['s:y']);
+            var inPorts_2 = Skin_1.default.getPortsWithPrefix(template, 'in');
+            var gap_2 = Number(inPorts_2[1][1]['s:y']) - Number(inPorts_2[0][1]['s:y']);
+            var startY_2 = Number(inPorts_2[0][1]['s:y']);
             tempclone.pop();
             tempclone.pop();
             this.inputPorts.forEach(function (port, i) {
-                var portClone = clone(inPorts_1[0]);
+                var portClone = clone(inPorts_2[0]);
                 portClone[portClone.length - 1][2] = port.Key;
-                portClone[1].transform = 'translate(' + inPorts_1[1][1]['s:x'] + ','
+                portClone[1].transform = 'translate(' + inPorts_2[1][1]['s:x'] + ','
                     + (startY_2 + i * gap_2) + ')';
                 tempclone.push(portClone);
             });
         }
         else if (template[1]['s:type'] === 'generic') {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
-            var inPorts_2 = Skin_1.default.getPortsWithPrefix(template, 'in');
-            var ingap_1 = Number(inPorts_2[1][1]['s:y']) - Number(inPorts_2[0][1]['s:y']);
-            var instartY_1 = Number(inPorts_2[0][1]['s:y']);
+            var inPorts_3 = Skin_1.default.getPortsWithPrefix(template, 'in');
+            var ingap_1 = Number(inPorts_3[1][1]['s:y']) - Number(inPorts_3[0][1]['s:y']);
+            var instartY_1 = Number(inPorts_3[0][1]['s:y']);
             var outPorts_2 = Skin_1.default.getPortsWithPrefix(template, 'out');
             var outgap_1 = Number(outPorts_2[1][1]['s:y']) - Number(outPorts_2[0][1]['s:y']);
             var outstartY_1 = Number(outPorts_2[0][1]['s:y']);
@@ -358,9 +380,9 @@ var Cell = /** @class */ (function () {
             tempclone.pop();
             tempclone.pop();
             this.inputPorts.forEach(function (port, i) {
-                var portClone = clone(inPorts_2[0]);
+                var portClone = clone(inPorts_3[0]);
                 portClone[portClone.length - 1][2] = port.Key;
-                portClone[1].transform = 'translate(' + inPorts_2[1][1]['s:x'] + ','
+                portClone[1].transform = 'translate(' + inPorts_3[1][1]['s:x'] + ','
                     + (instartY_1 + i * ingap_1) + ')';
                 portClone[1].id = 'port_' + port.parentNode.Key + '~' + port.Key;
                 tempclone.push(portClone);
