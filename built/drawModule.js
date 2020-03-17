@@ -19,7 +19,6 @@ var WireDirection;
     WireDirection[WireDirection["Right"] = 3] = "Right";
 })(WireDirection || (WireDirection = {}));
 function drawModule(g, module) {
-    console.dir(g, {depth: null});
     var nodes = module.nodes.map(function (n) {
         var kchild = _.find(g.children, function (c) { return c.id === n.Key; });
         return n.render(kchild);
@@ -80,6 +79,62 @@ function drawModule(g, module) {
     return onml.s(ret);
 }
 exports.default = drawModule;
+function drawSubModule(c, subModule) {
+    var nodes = [];
+    _.forEach(subModule.nodes, function (n) {
+        var kchild = _.find(c.children, function (child) { return child.id === n.Key; });
+        if (kchild) {
+            nodes.push(n.render(kchild));
+        }
+    });
+    removeDummyEdges(c);
+    var lines = _.flatMap(c.edges, function (e) {
+        var netId = elkGraph_1.ElkModel.wireNameLookup[e.id];
+        var netName = 'net_' + netId.slice(1, netId.length - 1);
+        return _.flatMap(e.sections, function (s) {
+            var startPoint = s.startPoint;
+            s.bendPoints = s.bendPoints || [];
+            var bends = s.bendPoints.map(function (b) {
+                var l = ['line', {
+                        x1: startPoint.x,
+                        x2: b.x,
+                        y1: startPoint.y,
+                        y2: b.y,
+                        class: netName,
+                    }];
+                startPoint = b;
+                return l;
+            });
+            if (e.junctionPoints) {
+                var circles = e.junctionPoints.map(function (j) {
+                    return ['circle', {
+                            cx: j.x,
+                            cy: j.y,
+                            r: 2,
+                            style: 'fill:#000',
+                            class: netName,
+                        }];
+                });
+                bends = bends.concat(circles);
+            }
+            var line = [['line', {
+                        x1: startPoint.x,
+                        x2: s.endPoint.x,
+                        y1: startPoint.y,
+                        y2: s.endPoint.y,
+                        class: netName,
+                    }]];
+            return bends.concat(line);
+        });
+    });
+    var svgAttrs = Skin_1.default.skin[1];
+    svgAttrs.width = c.width.toString();
+    svgAttrs.height = c.height.toString();
+    var elements = __spreadArrays(nodes, lines);
+    var ret = __spreadArrays(['svg', svgAttrs], elements);
+    return ret;
+}
+exports.drawSubModule = drawSubModule;
 function which_dir(start, end) {
     if (end.x === start.x && end.y === start.y) {
         throw new Error('start and end are the same');

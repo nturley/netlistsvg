@@ -4,6 +4,7 @@ var FlatModule_1 = require("./FlatModule");
 var YosysModel_1 = require("./YosysModel");
 var Skin_1 = require("./Skin");
 var Port_1 = require("./Port");
+var drawModule_1 = require("./drawModule");
 var _ = require("lodash");
 var elkGraph_1 = require("./elkGraph");
 var clone = require("clone");
@@ -289,6 +290,7 @@ var Cell = /** @class */ (function () {
             if (fixedPosY) {
                 cell_1.y = fixedPosY;
             }
+            this.addLabels(template, cell_1);
             return cell_1;
         }
         var ports = Skin_1.default.getPortsWithPrefix(template, '').map(function (tp) {
@@ -367,7 +369,7 @@ var Cell = /** @class */ (function () {
                 tempclone.push(portClone);
             });
         }
-        else if (template[1]['s:type'] === 'generic') {
+        else if (template[1]['s:type'] === 'generic' && this.subModule === null) {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
             var inPorts_3 = Skin_1.default.getPortsWithPrefix(template, 'in');
             var ingap_1 = Number(inPorts_3[1][1]['s:y']) - Number(inPorts_3[0][1]['s:y']);
@@ -396,6 +398,19 @@ var Cell = /** @class */ (function () {
                 tempclone.push(portClone);
             });
             // first child of generic must be a text node.
+            tempclone[2][2] = this.type;
+        }
+        else if (template[1]['s:type'] === 'generic' && this.subModule !== null) {
+            var subModule = drawModule_1.drawSubModule(cell, this.subModule);
+            tempclone.pop();
+            tempclone.pop();
+            tempclone.pop();
+            tempclone.pop();
+            tempclone[3][1].width = subModule[1].width;
+            tempclone[3][1].height = subModule[1].height;
+            subModule.shift();
+            subModule.shift();
+            _.forEach(subModule, function (child) { return tempclone.push(child); });
             tempclone[2][2] = this.type;
         }
         setClass(tempclone, '$cell_id', 'cell_' + this.key);

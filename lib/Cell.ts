@@ -2,6 +2,7 @@ import { SigsByConstName, NameToPorts, addToDefaultDict, FlatModule } from './Fl
 import Yosys from './YosysModel';
 import Skin from './Skin';
 import {Port} from './Port';
+import { drawSubModule } from './drawModule';
 import _ = require('lodash');
 import { ElkModel, buildElkGraph } from './elkGraph';
 import clone = require('clone');
@@ -298,6 +299,7 @@ export default class Cell {
             if (fixedPosY) {
                 cell.y = fixedPosY;
             }
+            this.addLabels(template, cell);
             return cell;
         }
         const ports: ElkModel.Port[] = Skin.getPortsWithPrefix(template, '').map((tp) => {
@@ -374,7 +376,7 @@ export default class Cell {
                     + (startY + i * gap) + ')';
                 tempclone.push(portClone);
             });
-        } else if (template[1]['s:type'] === 'generic') {
+        } else if (template[1]['s:type'] === 'generic' && this.subModule === null) {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
             const inPorts = Skin.getPortsWithPrefix(template, 'in');
             const ingap = Number(inPorts[1][1]['s:y']) - Number(inPorts[0][1]['s:y']);
@@ -403,6 +405,18 @@ export default class Cell {
                 tempclone.push(portClone);
             });
             // first child of generic must be a text node.
+            tempclone[2][2] = this.type;
+        } else if (template[1]['s:type'] === 'generic' && this.subModule !== null) {
+            const subModule = drawSubModule(cell, this.subModule);
+            tempclone.pop();
+            tempclone.pop();
+            tempclone.pop();
+            tempclone.pop();
+            tempclone[3][1].width = subModule[1].width;
+            tempclone[3][1].height = subModule[1].height;
+            subModule.shift();
+            subModule.shift();
+            _.forEach(subModule, (child) => tempclone.push(child));
             tempclone[2][2] = this.type;
         }
         setClass(tempclone, '$cell_id', 'cell_' + this.key);
