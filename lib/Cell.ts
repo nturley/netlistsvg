@@ -418,6 +418,27 @@ export default class Cell {
             subModule.shift();
             _.forEach(subModule, (child) => tempclone.push(child));
             tempclone[2][2] = this.type;
+            tempclone[2][1].x = tempclone[3][1].width / 2;
+            const inPorts = Skin.getPortsWithPrefix(template, 'in');
+            this.inputPorts.forEach((port, i) => {
+                const portElk = _.find(cell.ports, (p) => p.id === cell.id + '.' + port.Key);
+                const portClone = clone(inPorts[0]);
+                portClone[portClone.length - 1][2] = port.Key;
+                portClone[1].transform = 'translate(' + portElk.x + ','
+                    + portElk.y + ')';
+                portClone[1].id = 'port_' + port.parentNode.Key + '~' + port.Key;
+                tempclone.push(portClone);
+            });
+            const outPorts = Skin.getPortsWithPrefix(template, 'out');
+            this.outputPorts.forEach((port, i) => {
+                const portElk = _.find(cell.ports, (p) => p.id === cell.id + '.' + port.Key);
+                const portClone = clone(outPorts[0]);
+                portClone[portClone.length - 1][2] = port.Key;
+                portClone[1].transform = 'translate(' + portElk.x + ','
+                    + portElk.y + ')';
+                portClone[1].id = 'port_' + port.parentNode.Key + '~' + port.Key;
+                tempclone.push(portClone);
+            });
         }
         setClass(tempclone, '$cell_id', 'cell_' + this.key);
         return tempclone;
