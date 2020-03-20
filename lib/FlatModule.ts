@@ -23,9 +23,8 @@ export class FlatModule {
     public static layoutProps: {[x: string]: any};
     public static modNames: string[];
 
-    public static fromNetlist(netlist: Yosys.Netlist, skin: any): FlatModule {
-        this.skin = skin;
-        this.layoutProps = skin.getProperties();
+    public static fromNetlist(netlist: Yosys.Netlist): FlatModule {
+        this.layoutProps = Skin.getProperties();
         this.modNames = Object.keys(netlist.modules);
         this.netlist = netlist;
         let topName = null;

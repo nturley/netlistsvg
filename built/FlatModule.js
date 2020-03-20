@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var Skin_1 = require("./Skin");
 var Cell_1 = require("./Cell");
 var _ = require("lodash");
 var FlatModule = /** @class */ (function () {
@@ -28,9 +29,8 @@ var FlatModule = /** @class */ (function () {
         }
         this.createWires();
     }
-    FlatModule.fromNetlist = function (netlist, skin) {
-        this.skin = skin;
-        this.layoutProps = skin.getProperties();
+    FlatModule.fromNetlist = function (netlist) {
+        this.layoutProps = Skin_1.default.getProperties();
         this.modNames = Object.keys(netlist.modules);
         this.netlist = netlist;
         var topName = null;

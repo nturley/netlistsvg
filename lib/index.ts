@@ -16,7 +16,7 @@ type ICallback = (error: Error, result?: string) => void;
 export function dumpLayout(skinData: string, yosysNetlist: Yosys.Netlist, prelayout: boolean, done: ICallback) {
     const skin = onml.p(skinData);
     Skin.skin = skin;
-    const flatModule = FlatModule.fromNetlist(yosysNetlist, Skin);
+    const flatModule = FlatModule.fromNetlist(yosysNetlist);
     const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
     if (prelayout) {
         done(null, JSON.stringify(kgraph, null, 2));
@@ -33,7 +33,7 @@ export function dumpLayout(skinData: string, yosysNetlist: Yosys.Netlist, prelay
 export function render(skinData: string, yosysNetlist: Yosys.Netlist, done?: ICallback, elkData?: ElkModel.Graph) {
     const skin = onml.p(skinData);
     Skin.skin = skin;
-    const flatModule = FlatModule.fromNetlist(yosysNetlist, Skin);
+    const flatModule = FlatModule.fromNetlist(yosysNetlist);
     const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
 
     let promise;

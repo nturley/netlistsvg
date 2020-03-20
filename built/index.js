@@ -10,7 +10,7 @@ var elk = new ELK();
 function dumpLayout(skinData, yosysNetlist, prelayout, done) {
     var skin = onml.p(skinData);
     Skin_1.default.skin = skin;
-    var flatModule = FlatModule_1.FlatModule.fromNetlist(yosysNetlist, Skin_1.default);
+    var flatModule = FlatModule_1.FlatModule.fromNetlist(yosysNetlist);
     var kgraph = elkGraph_1.buildElkGraph(flatModule);
     if (prelayout) {
         done(null, JSON.stringify(kgraph, null, 2));
@@ -27,7 +27,7 @@ exports.dumpLayout = dumpLayout;
 function render(skinData, yosysNetlist, done, elkData) {
     var skin = onml.p(skinData);
     Skin_1.default.skin = skin;
-    var flatModule = FlatModule_1.FlatModule.fromNetlist(yosysNetlist, Skin_1.default);
+    var flatModule = FlatModule_1.FlatModule.fromNetlist(yosysNetlist);
     var kgraph = elkGraph_1.buildElkGraph(flatModule);
     var promise;
     // if we already have a layout then use it
