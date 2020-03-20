@@ -19,7 +19,7 @@ function createFlatModule(testFile: string): FlatModule {
     const netlist: Yosys.Netlist = json5.parse(testStr);
     const skin = onml.parse(fs.readFileSync(defaultSkin).toString());
     Skin.skin = skin;
-    return FlatModule.fromNetlist(netlist, Skin);
+    return FlatModule.fromNetlist(netlist);
 }
 
 /**
