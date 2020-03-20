@@ -262,11 +262,6 @@ export default class Cell {
                 children: [],
                 edges: [],
             };
-            // Bad practice, solution?
-            _.forEach(cell.ports, (port) => {
-                delete port.x;
-                delete port.y;
-            });
             _.forEach(elk.children, (child) => {
                 let inc: boolean = true;
                 _.forEach(cell.ports, (port) => {
@@ -408,18 +403,19 @@ export default class Cell {
             tempclone[2][2] = this.type;
         } else if (template[1]['s:type'] === 'generic' && this.subModule !== null) {
             const subModule = drawSubModule(cell, this.subModule);
-            tempclone.pop();
-            tempclone.pop();
-            tempclone.pop();
-            tempclone.pop();
             tempclone[3][1].width = subModule[1].width;
             tempclone[3][1].height = subModule[1].height;
+            tempclone[2][1].x = tempclone[3][1].width / 2;
+            tempclone[2][2] = this.type;
+            tempclone.pop();
+            tempclone.pop();
+            tempclone.pop();
+            tempclone.pop();
             subModule.shift();
             subModule.shift();
             _.forEach(subModule, (child) => tempclone.push(child));
-            tempclone[2][2] = this.type;
-            tempclone[2][1].x = tempclone[3][1].width / 2;
             const inPorts = Skin.getPortsWithPrefix(template, 'in');
+            const outPorts = Skin.getPortsWithPrefix(template, 'out');
             this.inputPorts.forEach((port, i) => {
                 const portElk = _.find(cell.ports, (p) => p.id === cell.id + '.' + port.Key);
                 const portClone = clone(inPorts[0]);
@@ -429,7 +425,6 @@ export default class Cell {
                 portClone[1].id = 'port_' + port.parentNode.Key + '~' + port.Key;
                 tempclone.push(portClone);
             });
-            const outPorts = Skin.getPortsWithPrefix(template, 'out');
             this.outputPorts.forEach((port, i) => {
                 const portElk = _.find(cell.ports, (p) => p.id === cell.id + '.' + port.Key);
                 const portClone = clone(outPorts[0]);

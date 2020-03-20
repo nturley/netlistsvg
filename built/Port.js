@@ -81,6 +81,10 @@ var Port = /** @class */ (function () {
                         height: 11,
                     }];
             }
+            if (type === 'generic' && this.parentNode.subModule !== null) {
+                delete ret.x;
+                delete ret.y;
+            }
             return ret;
         }
         else {
@@ -101,6 +105,10 @@ var Port = /** @class */ (function () {
                         width: (6 * this.key.length),
                         height: 11,
                     }];
+            }
+            if (type === 'generic' && this.parentNode.subModule !== null) {
+                delete ret.x;
+                delete ret.y;
             }
             return ret;
         }

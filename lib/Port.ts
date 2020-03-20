@@ -108,6 +108,11 @@ export class Port {
                     height: 11,
                 }];
             }
+
+            if (type === 'generic' && this.parentNode.subModule !== null) {
+                delete ret.x;
+                delete ret.y;
+            }
             return ret;
         } else {
             const gap: number = Number(templatePorts[1][1]['s:y']) - Number(templatePorts[0][1]['s:y']);
@@ -127,6 +132,11 @@ export class Port {
                     width: (6 * this.key.length),
                     height: 11,
                 }];
+            }
+
+            if (type === 'generic' && this.parentNode.subModule !== null) {
+                delete ret.x;
+                delete ret.y;
             }
             return ret;
         }

@@ -252,11 +252,6 @@ var Cell = /** @class */ (function () {
                 children: [],
                 edges: [],
             };
-            // Bad practice, solution?
-            _.forEach(cell_1.ports, function (port) {
-                delete port.x;
-                delete port.y;
-            });
             _.forEach(elk.children, function (child) {
                 var inc = true;
                 _.forEach(cell_1.ports, function (port) {
@@ -402,18 +397,19 @@ var Cell = /** @class */ (function () {
         }
         else if (template[1]['s:type'] === 'generic' && this.subModule !== null) {
             var subModule = drawModule_1.drawSubModule(cell, this.subModule);
-            tempclone.pop();
-            tempclone.pop();
-            tempclone.pop();
-            tempclone.pop();
             tempclone[3][1].width = subModule[1].width;
             tempclone[3][1].height = subModule[1].height;
+            tempclone[2][1].x = tempclone[3][1].width / 2;
+            tempclone[2][2] = this.type;
+            tempclone.pop();
+            tempclone.pop();
+            tempclone.pop();
+            tempclone.pop();
             subModule.shift();
             subModule.shift();
             _.forEach(subModule, function (child) { return tempclone.push(child); });
-            tempclone[2][2] = this.type;
-            tempclone[2][1].x = tempclone[3][1].width / 2;
             var inPorts_4 = Skin_1.default.getPortsWithPrefix(template, 'in');
+            var outPorts_3 = Skin_1.default.getPortsWithPrefix(template, 'out');
             this.inputPorts.forEach(function (port, i) {
                 var portElk = _.find(cell.ports, function (p) { return p.id === cell.id + '.' + port.Key; });
                 var portClone = clone(inPorts_4[0]);
@@ -423,7 +419,6 @@ var Cell = /** @class */ (function () {
                 portClone[1].id = 'port_' + port.parentNode.Key + '~' + port.Key;
                 tempclone.push(portClone);
             });
-            var outPorts_3 = Skin_1.default.getPortsWithPrefix(template, 'out');
             this.outputPorts.forEach(function (port, i) {
                 var portElk = _.find(cell.ports, function (p) { return p.id === cell.id + '.' + port.Key; });
                 var portClone = clone(outPorts_3[0]);
