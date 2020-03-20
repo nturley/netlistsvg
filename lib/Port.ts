@@ -33,7 +33,7 @@ export class Port {
     public findConstants(sigsByConstantName: SigsByConstName,
                          maxNum: number,
                          constantCollector: Cell[],
-                         parent: FlatModule): number {
+                         parent: string): number {
         let constNameCollector = '';
         let constNumCollector: number[] = [];
         const portSigs: Yosys.Signals = this.value;
@@ -147,7 +147,7 @@ export class Port {
                            currIndex: number,
                            signalsByConstantName: SigsByConstName,
                            constantCollector: Cell[],
-                           parent: FlatModule) {
+                           parent: string) {
         // we've been appending to nameCollector, so reverse to get const name
         const constName = nameCollector.split('').reverse().join('');
         // if the constant has already been used

@@ -41,20 +41,20 @@ export class FlatModule {
         return new FlatModule(top, topName);
     }
 
-    public parent: FlatModule;
+    public parent: string;
     public moduleName: string;
     public nodes: Cell[];
     public wires: Wire[];
 
-    constructor(mod: Yosys.Module, name: string, parent: FlatModule = null) {
+    constructor(mod: Yosys.Module, name: string, parent: string = null) {
         this.parent = parent;
         this.moduleName = name;
-        const ports = _.map(mod.ports, (port, portName) => Cell.fromPort(port, portName, this));
+        const ports = _.map(mod.ports, (port, portName) => Cell.fromPort(port, portName, this.moduleName));
         const cells = _.map(mod.cells, (c, key) => {
             if (!_.includes(FlatModule.modNames, c.type)) {
-                return Cell.fromYosysCell(c, key, this);
+                return Cell.fromYosysCell(c, key, this.moduleName);
             } else {
-                return Cell.createSubModule(c, key, this, FlatModule.netlist.modules[c.type]);
+                return Cell.createSubModule(c, key, this.moduleName, FlatModule.netlist.modules[c.type]);
             }
         });
         this.nodes = cells.concat(ports);
@@ -103,9 +103,9 @@ export class FlatModule {
         });
 
         this.nodes = this.nodes.concat(_.map(joins, (joinOutput, joinInputs) => {
-            return Cell.fromJoinInfo(joinInputs, joinOutput, this);
+            return Cell.fromJoinInfo(joinInputs, joinOutput, this.moduleName);
         })).concat(_.map(splits, (splitOutputs, splitInput) => {
-            return Cell.fromSplitInfo(splitInput, splitOutputs, this);
+            return Cell.fromSplitInfo(splitInput, splitOutputs, this.moduleName);
         }));
     }
 

@@ -9,13 +9,13 @@ var FlatModule = /** @class */ (function () {
         if (parent === void 0) { parent = null; }
         this.parent = parent;
         this.moduleName = name;
-        var ports = _.map(mod.ports, function (port, portName) { return Cell_1.default.fromPort(port, portName, _this); });
+        var ports = _.map(mod.ports, function (port, portName) { return Cell_1.default.fromPort(port, portName, _this.moduleName); });
         var cells = _.map(mod.cells, function (c, key) {
             if (!_.includes(FlatModule.modNames, c.type)) {
-                return Cell_1.default.fromYosysCell(c, key, _this);
+                return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
             }
             else {
-                return Cell_1.default.createSubModule(c, key, _this, FlatModule.netlist.modules[c.type]);
+                return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type]);
             }
         });
         this.nodes = cells.concat(ports);
@@ -70,9 +70,9 @@ var FlatModule = /** @class */ (function () {
             gather(allOutputs, allInputsCopy, input, 0, input.length, splits, joins);
         });
         this.nodes = this.nodes.concat(_.map(joins, function (joinOutput, joinInputs) {
-            return Cell_1.default.fromJoinInfo(joinInputs, joinOutput, _this);
+            return Cell_1.default.fromJoinInfo(joinInputs, joinOutput, _this.moduleName);
         })).concat(_.map(splits, function (splitOutputs, splitInput) {
-            return Cell_1.default.fromSplitInfo(splitInput, splitOutputs, _this);
+            return Cell_1.default.fromSplitInfo(splitInput, splitOutputs, _this.moduleName);
         }));
     };
     // search through all the ports to find all of the wires

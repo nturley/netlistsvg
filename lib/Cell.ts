@@ -14,7 +14,7 @@ export default class Cell {
      * @param yPort the Yosys Port with our port data
      * @param name the name of the port
      */
-    public static fromPort(yPort: Yosys.ExtPort, name: string, parent: FlatModule): Cell {
+    public static fromPort(yPort: Yosys.ExtPort, name: string, parent: string): Cell {
         const isInput: boolean = yPort.direction === Yosys.Direction.Input;
         if (isInput) {
             return new Cell(name, '$_inputExt_', [], [new Port('Y', yPort.bits)], {}, parent);
@@ -22,7 +22,7 @@ export default class Cell {
         return new Cell(name, '$_outputExt_', [new Port('A', yPort.bits)], [], {}, parent);
     }
 
-    public static fromYosysCell(yCell: Yosys.Cell, name: string, parent: FlatModule) {
+    public static fromYosysCell(yCell: Yosys.Cell, name: string, parent: string) {
         const template = Skin.findSkinType(yCell.type);
         const templateInputPids = Skin.getInputPids(template);
         const templateOutputPids = Skin.getOutputPids(template);
@@ -40,7 +40,7 @@ export default class Cell {
         return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent);
     }
 
-    public static fromConstantInfo(name: string, constants: number[], parent: FlatModule): Cell {
+    public static fromConstantInfo(name: string, constants: number[], parent: string): Cell {
         return new Cell(name, '$_constant_', [], [new Port('Y', constants)], {}, parent);
     }
 
@@ -49,7 +49,7 @@ export default class Cell {
      * @param target string name of net (starts and ends with and delimited by commas)
      * @param sources list of index strings (one number, or two numbers separated by a colon)
      */
-    public static fromJoinInfo(target: string, sources: string[], parent: FlatModule): Cell {
+    public static fromJoinInfo(target: string, sources: string[], parent: string): Cell {
         const signalStrs: string[] = target.slice(1, -1).split(',');
         const signals: number[] = signalStrs.map((ss) =>  Number(ss));
         const joinOutPorts: Port[] = [new Port('Y', signals)];
@@ -64,7 +64,7 @@ export default class Cell {
      * @param source string name of net (starts and ends with and delimited by commas)
      * @param targets list of index strings (one number, or two numbers separated by a colon)
      */
-    public static fromSplitInfo(source: string, targets: string[], parent: FlatModule): Cell {
+    public static fromSplitInfo(source: string, targets: string[], parent: string): Cell {
         // turn string into array of signal names
         const sigStrs: string[] = source.slice(1, -1).split(',');
         // convert the signals into actual numbers
@@ -78,7 +78,7 @@ export default class Cell {
         return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {}, parent);
     }
 
-    public static createSubModule(yCell: Yosys.Cell, name: string, parent: FlatModule, subModule: Yosys.Module): Cell {
+    public static createSubModule(yCell: Yosys.Cell, name: string, parent: string, subModule: Yosys.Module): Cell {
         const template = Skin.findSkinType(yCell.type);
         const templateInputPids = Skin.getInputPids(template);
         const templateOutputPids = Skin.getOutputPids(template);
@@ -97,7 +97,7 @@ export default class Cell {
         return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod);
     }
 
-    public parent: FlatModule;
+    public parent: string;
     public subModule: FlatModule;
     protected key: string;
     protected type: string;
@@ -110,7 +110,7 @@ export default class Cell {
                 inputPorts: Port[],
                 outputPorts: Port[],
                 attributes: Yosys.CellAttributes,
-                parent: FlatModule,
+                parent: string,
                 subModule: FlatModule = null) {
         this.key = key;
         this.type = type;
