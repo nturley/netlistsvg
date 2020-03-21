@@ -218,7 +218,7 @@ var Cell = /** @class */ (function () {
                 return op.getGenericElkPort(i, outTemplates_1, 'out');
             });
             var cell = {
-                id: this.key,
+                id: this.parent + '.' + this.key,
                 width: Number(template[1]['s:width']),
                 height: Number(this.getGenericHeight()),
                 ports: inPorts.concat(outPorts),
@@ -245,7 +245,7 @@ var Cell = /** @class */ (function () {
             });
             var elk = elkGraph_1.buildElkGraph(this.subModule);
             var cell_1 = {
-                id: this.key,
+                id: this.parent + '.' + this.key,
                 layoutOptions: [],
                 labels: [],
                 ports: inPorts_1.concat(outPorts),
@@ -255,7 +255,7 @@ var Cell = /** @class */ (function () {
             _.forEach(elk.children, function (child) {
                 var inc = true;
                 _.forEach(cell_1.ports, function (port) {
-                    if (_this.key + '.' + child.id === port.id) {
+                    if (_this.parent + '.' + child.id === port.id) {
                         inc = false;
                     }
                 });
@@ -267,12 +267,12 @@ var Cell = /** @class */ (function () {
                 var edgeAdd = edge;
                 _.forEach(cell_1.ports, function (port) {
                     if (_.includes(inPorts_1, port)) {
-                        if (edgeAdd.sources[0] === port.id.slice(_this.key.length + 1) + '.Y') {
+                        if (edgeAdd.sources[0] === port.id.slice(_this.parent.length + 1) + '.Y') {
                             edgeAdd.sources[0] = port.id;
                         }
                     }
                     else {
-                        if (edgeAdd.targets[0] === port.id.slice(_this.key.length + 1) + '.A') {
+                        if (edgeAdd.targets[0] === port.id.slice(_this.parent.length + 1) + '.A') {
                             edgeAdd.targets[0] = port.id;
                         }
                     }
@@ -290,7 +290,7 @@ var Cell = /** @class */ (function () {
         }
         var ports = Skin_1.default.getPortsWithPrefix(template, '').map(function (tp) {
             return {
-                id: _this.key + '.' + tp[1]['s:pid'],
+                id: _this.parent + '.' + _this.key + '.' + tp[1]['s:pid'],
                 width: 0,
                 height: 0,
                 x: Number(tp[1]['s:x']),
@@ -299,7 +299,7 @@ var Cell = /** @class */ (function () {
         });
         var nodeWidth = Number(template[1]['s:width']);
         var ret = {
-            id: this.key,
+            id: this.parent + '.' + this.key,
             width: nodeWidth,
             height: Number(template[1]['s:height']),
             ports: ports,

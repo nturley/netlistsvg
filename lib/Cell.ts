@@ -230,7 +230,7 @@ export default class Cell {
             const outPorts = this.outputPorts.map((op, i) =>
                 op.getGenericElkPort(i, outTemplates, 'out'));
             const cell: ElkModel.Cell = {
-                id: this.key,
+                id: this.parent + '.' + this.key,
                 width: Number(template[1]['s:width']),
                 height: Number(this.getGenericHeight()),
                 ports: inPorts.concat(outPorts),
@@ -255,7 +255,7 @@ export default class Cell {
                 op.getGenericElkPort(i, outTemplates, 'out'));
             const elk = buildElkGraph(this.subModule);
             const cell: ElkModel.Cell = {
-                id: this.key,
+                id: this.parent + '.' + this.key,
                 layoutOptions: [],
                 labels: [],
                 ports: inPorts.concat(outPorts),
@@ -265,7 +265,7 @@ export default class Cell {
             _.forEach(elk.children, (child) => {
                 let inc: boolean = true;
                 _.forEach(cell.ports, (port) => {
-                    if (this.key + '.' + child.id === port.id) {
+                    if (this.parent + '.' + child.id === port.id) {
                         inc = false;
                     }
                 });
@@ -277,11 +277,11 @@ export default class Cell {
                 const edgeAdd = edge;
                 _.forEach(cell.ports, (port) => {
                     if (_.includes(inPorts, port)) {
-                        if (edgeAdd.sources[0] === port.id.slice(this.key.length + 1) + '.Y') {
+                        if (edgeAdd.sources[0] === port.id.slice(this.parent.length + 1) + '.Y') {
                             edgeAdd.sources[0] = port.id;
                         }
                     } else {
-                        if (edgeAdd.targets[0] === port.id.slice(this.key.length + 1) + '.A') {
+                        if (edgeAdd.targets[0] === port.id.slice(this.parent.length + 1) + '.A') {
                             edgeAdd.targets[0] = port.id;
                         }
                     }
@@ -299,7 +299,7 @@ export default class Cell {
         }
         const ports: ElkModel.Port[] = Skin.getPortsWithPrefix(template, '').map((tp) => {
             return {
-                id: this.key + '.' + tp[1]['s:pid'],
+                id: this.parent + '.' + this.key + '.' + tp[1]['s:pid'],
                 width: 0,
                 height: 0,
                 x: Number(tp[1]['s:x']),
@@ -308,7 +308,7 @@ export default class Cell {
         });
         const nodeWidth: number = Number(template[1]['s:width']);
         const ret: ElkModel.Cell = {
-            id: this.key,
+            id: this.parent + '.' + this.key,
             width: nodeWidth,
             height: Number(template[1]['s:height']),
             ports,

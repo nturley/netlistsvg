@@ -51,7 +51,7 @@ var Port = /** @class */ (function () {
         return maxNum;
     };
     Port.prototype.getGenericElkPort = function (index, templatePorts, dir) {
-        var nkey = this.parentNode.Key;
+        var nkey = this.parentNode.parent + '.' + this.parentNode.Key;
         var type = this.parentNode.getTemplate()[1]['s:type'];
         if (index === 0) {
             var ret = {

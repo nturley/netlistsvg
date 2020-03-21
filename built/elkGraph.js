@@ -17,14 +17,14 @@ function buildElkGraph(module) {
         // at least one driver and at least one rider and no laterals
         if (w.drivers.length > 0 && w.riders.length > 0 && w.laterals.length === 0) {
             var ret = [];
-            route(w.drivers, w.riders, ret);
+            route(w.drivers, w.riders, ret, module.moduleName);
             return ret;
             // at least one driver or rider and at least one lateral
         }
         else if (w.drivers.concat(w.riders).length > 0 && w.laterals.length > 0) {
             var ret = [];
-            route(w.drivers, w.laterals, ret);
-            route(w.laterals, w.riders, ret);
+            route(w.drivers, w.laterals, ret, module.moduleName);
+            route(w.laterals, w.riders, ret, module.moduleName);
             return ret;
             // at least two drivers and no riders
         }
@@ -114,14 +114,14 @@ function addDummy(children) {
     children.push(child);
     return dummyId;
 }
-function route(sourcePorts, targetPorts, edges) {
+function route(sourcePorts, targetPorts, edges, moduleName) {
     var newEdges = (_.flatMap(sourcePorts, function (sourcePort) {
         var sourceParentKey = sourcePort.parentNode.key;
-        var sourceKey = sourceParentKey + '.' + sourcePort.key;
+        var sourceKey = moduleName + '.' + sourceParentKey + '.' + sourcePort.key;
         return targetPorts.map(function (targetPort) {
             var targetParentKey = targetPort.parentNode.key;
-            var targetKey = targetParentKey + '.' + targetPort.key;
-            var id = 'e' + ElkModel.edgeIndex;
+            var targetKey = moduleName + '.' + targetParentKey + '.' + targetPort.key;
+            var id = moduleName + '.e' + ElkModel.edgeIndex;
             var edge = {
                 id: id,
                 sources: [sourceKey],

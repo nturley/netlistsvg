@@ -13,7 +13,7 @@ enum WireDirection {
 
 export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
     const nodes: onml.Element[] = module.nodes.map((n: Cell) => {
-        const kchild: ElkModel.Cell = _.find(g.children, (c) => c.id === n.Key);
+        const kchild: ElkModel.Cell = _.find(g.children, (c) => c.id === n.parent + '.' + n.Key);
         return n.render(kchild);
     });
     removeDummyEdges(g);
@@ -75,7 +75,7 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
 export function drawSubModule(c: ElkModel.Cell, subModule: FlatModule) {
     const nodes: onml.Element[] = [];
     _.forEach(subModule.nodes, (n: Cell) => {
-        const kchild: ElkModel.Cell = _.find(c.children, (child) => child.id === n.Key);
+        const kchild: ElkModel.Cell = _.find(c.children, (child) => child.id === n.parent + '.' + n.Key);
         if (kchild) {
             nodes.push(n.render(kchild));
         }

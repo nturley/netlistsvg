@@ -20,7 +20,7 @@ var WireDirection;
 })(WireDirection || (WireDirection = {}));
 function drawModule(g, module) {
     var nodes = module.nodes.map(function (n) {
-        var kchild = _.find(g.children, function (c) { return c.id === n.Key; });
+        var kchild = _.find(g.children, function (c) { return c.id === n.parent + '.' + n.Key; });
         return n.render(kchild);
     });
     removeDummyEdges(g);
@@ -82,7 +82,7 @@ exports.default = drawModule;
 function drawSubModule(c, subModule) {
     var nodes = [];
     _.forEach(subModule.nodes, function (n) {
-        var kchild = _.find(c.children, function (child) { return child.id === n.Key; });
+        var kchild = _.find(c.children, function (child) { return child.id === n.parent + '.' + n.Key; });
         if (kchild) {
             nodes.push(n.render(kchild));
         }

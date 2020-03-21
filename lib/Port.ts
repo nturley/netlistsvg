@@ -76,7 +76,7 @@ export class Port {
         templatePorts: any[],
         dir: string,
     ): ElkModel.Port {
-        const nkey = this.parentNode.Key;
+        const nkey = this.parentNode.parent + '.' + this.parentNode.Key;
         const type = this.parentNode.getTemplate()[1]['s:type'];
         if (index === 0) {
             const ret: ElkModel.Port = {

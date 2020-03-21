@@ -93,13 +93,13 @@ export function buildElkGraph(module: FlatModule): ElkModel.Graph {
         // at least one driver and at least one rider and no laterals
         if (w.drivers.length > 0 && w.riders.length > 0 && w.laterals.length === 0) {
             const ret: ElkModel.Edge[] = [];
-            route(w.drivers, w.riders, ret);
+            route(w.drivers, w.riders, ret, module.moduleName);
             return ret;
             // at least one driver or rider and at least one lateral
         } else if (w.drivers.concat(w.riders).length > 0 && w.laterals.length > 0) {
             const ret: ElkModel.Edge[] = [];
-            route(w.drivers, w.laterals, ret);
-            route(w.laterals, w.riders, ret);
+            route(w.drivers, w.laterals, ret, module.moduleName);
+            route(w.laterals, w.riders, ret, module.moduleName);
             return ret;
             // at least two drivers and no riders
         } else if (w.riders.length === 0 && w.drivers.length > 1) {
@@ -188,14 +188,14 @@ function addDummy(children: ElkModel.Cell[]) {
     return dummyId;
 }
 
-function route(sourcePorts, targetPorts, edges: ElkModel.Edge[]) {
+function route(sourcePorts, targetPorts, edges: ElkModel.Edge[], moduleName: string) {
     const newEdges: ElkModel.Edge[] = (_.flatMap(sourcePorts, (sourcePort) => {
         const sourceParentKey: string = sourcePort.parentNode.key;
-        const sourceKey: string = sourceParentKey + '.' + sourcePort.key;
+        const sourceKey: string = moduleName + '.' + sourceParentKey + '.' + sourcePort.key;
         return targetPorts.map((targetPort) => {
             const targetParentKey: string = targetPort.parentNode.key;
-            const targetKey: string = targetParentKey + '.' + targetPort.key;
-            const id: string = 'e' + ElkModel.edgeIndex;
+            const targetKey: string = moduleName + '.' + targetParentKey + '.' + targetPort.key;
+            const id: string = moduleName + '.e' + ElkModel.edgeIndex;
             const edge: ElkModel.ExtendedEdge = {
                 id,
                 sources: [sourceKey],
