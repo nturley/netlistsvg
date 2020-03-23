@@ -104,16 +104,16 @@ export function buildElkGraph(module: FlatModule): ElkModel.Graph {
             // at least two drivers and no riders
         } else if (w.riders.length === 0 && w.drivers.length > 1) {
             // create a dummy node and add it to children
-            const dummyId: string = addDummy(children);
+            const dummyId: string = addDummy(children, module.moduleName);
             ElkModel.dummyNum += 1;
             const dummyEdges: ElkModel.Edge[] = w.drivers.map((driver) => {
                 const sourceParentKey: string = driver.parentNode.Key;
-                const id: string = 'e' + String(ElkModel.edgeIndex);
+                const id: string = module.moduleName + '.e' + String(ElkModel.edgeIndex);
                 ElkModel.edgeIndex += 1;
                 const d: ElkModel.Edge = {
                     id,
-                    source: sourceParentKey,
-                    sourcePort: sourceParentKey + '.' + driver.key,
+                    source: module.moduleName + '.' + sourceParentKey,
+                    sourcePort: module.moduleName + '.' + sourceParentKey + '.' + driver.key,
                     target: dummyId,
                     targetPort: dummyId + '.p',
                 };
@@ -125,18 +125,18 @@ export function buildElkGraph(module: FlatModule): ElkModel.Graph {
             // at least one rider and no drivers
         } else if (w.riders.length > 1 && w.drivers.length === 0) {
             // create a dummy node and add it to children
-            const dummyId: string = addDummy(children);
+            const dummyId: string = addDummy(children, module.moduleName);
             ElkModel.dummyNum += 1;
             const dummyEdges: ElkModel.Edge[] = w.riders.map((rider) => {
                 const sourceParentKey: string = rider.parentNode.Key;
-                const id: string = 'e' + String(ElkModel.edgeIndex);
+                const id: string = module.moduleName + '.e' + String(ElkModel.edgeIndex);
                 ElkModel.edgeIndex += 1;
                 const edge: ElkModel.Edge = {
                     id,
                     source: dummyId,
                     sourcePort: dummyId + '.p',
-                    target: sourceParentKey,
-                    targetPort: sourceParentKey + '.' + rider.key,
+                    target: module.moduleName + '.' + sourceParentKey,
+                    targetPort: module.moduleName + '.' + sourceParentKey + '.' + rider.key,
                 };
                 ElkModel.wireNameLookup[id] = rider.wire.netName;
                 return edge;
@@ -147,14 +147,14 @@ export function buildElkGraph(module: FlatModule): ElkModel.Graph {
             const sourceParentKey: string = source.parentNode.Key;
             const lateralEdges: ElkModel.Edge[] = w.laterals.slice(1).map((lateral) => {
                 const lateralParentKey: string = lateral.parentNode.Key;
-                const id: string = 'e' + String(ElkModel.edgeIndex);
+                const id: string = module.moduleName + '.e' + String(ElkModel.edgeIndex);
                 ElkModel.edgeIndex += 1;
                 const edge: ElkModel.Edge = {
                     id,
-                    source: sourceParentKey,
-                    sourcePort: sourceParentKey + '.' + source.key,
-                    target: lateralParentKey,
-                    targetPort: lateralParentKey + '.' + lateral.key,
+                    source: module.moduleName + '.' + sourceParentKey,
+                    sourcePort: module.moduleName + '.' + sourceParentKey + '.' + source.key,
+                    target: module.moduleName + '.' + lateralParentKey,
+                    targetPort: module.moduleName + '.' + lateralParentKey + '.' + lateral.key,
                 };
                 ElkModel.wireNameLookup[id] = lateral.wire.netName;
                 return edge;
@@ -171,14 +171,14 @@ export function buildElkGraph(module: FlatModule): ElkModel.Graph {
     };
 }
 
-function addDummy(children: ElkModel.Cell[]) {
-    const dummyId: string = '$d_' + String(ElkModel.dummyNum);
+function addDummy(children: ElkModel.Cell[], moduleName: string) {
+    const dummyId: string = moduleName + '.$d_' + String(ElkModel.dummyNum);
     const child: ElkModel.Cell = {
         id: dummyId,
         width: 0,
         height: 0,
         ports: [{
-            id: dummyId + '.p',
+            id: moduleName + '.' + dummyId + '.p',
             width: 0,
             height: 0,
         }],

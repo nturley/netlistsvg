@@ -30,16 +30,16 @@ function buildElkGraph(module) {
         }
         else if (w.riders.length === 0 && w.drivers.length > 1) {
             // create a dummy node and add it to children
-            var dummyId_1 = addDummy(children);
+            var dummyId_1 = addDummy(children, module.moduleName);
             ElkModel.dummyNum += 1;
             var dummyEdges = w.drivers.map(function (driver) {
                 var sourceParentKey = driver.parentNode.Key;
-                var id = 'e' + String(ElkModel.edgeIndex);
+                var id = module.moduleName + '.e' + String(ElkModel.edgeIndex);
                 ElkModel.edgeIndex += 1;
                 var d = {
                     id: id,
-                    source: sourceParentKey,
-                    sourcePort: sourceParentKey + '.' + driver.key,
+                    source: module.moduleName + '.' + sourceParentKey,
+                    sourcePort: module.moduleName + '.' + sourceParentKey + '.' + driver.key,
                     target: dummyId_1,
                     targetPort: dummyId_1 + '.p',
                 };
@@ -51,18 +51,18 @@ function buildElkGraph(module) {
         }
         else if (w.riders.length > 1 && w.drivers.length === 0) {
             // create a dummy node and add it to children
-            var dummyId_2 = addDummy(children);
+            var dummyId_2 = addDummy(children, module.moduleName);
             ElkModel.dummyNum += 1;
             var dummyEdges = w.riders.map(function (rider) {
                 var sourceParentKey = rider.parentNode.Key;
-                var id = 'e' + String(ElkModel.edgeIndex);
+                var id = module.moduleName + '.e' + String(ElkModel.edgeIndex);
                 ElkModel.edgeIndex += 1;
                 var edge = {
                     id: id,
                     source: dummyId_2,
                     sourcePort: dummyId_2 + '.p',
-                    target: sourceParentKey,
-                    targetPort: sourceParentKey + '.' + rider.key,
+                    target: module.moduleName + '.' + sourceParentKey,
+                    targetPort: module.moduleName + '.' + sourceParentKey + '.' + rider.key,
                 };
                 ElkModel.wireNameLookup[id] = rider.wire.netName;
                 return edge;
@@ -74,14 +74,14 @@ function buildElkGraph(module) {
             var sourceParentKey_1 = source_1.parentNode.Key;
             var lateralEdges = w.laterals.slice(1).map(function (lateral) {
                 var lateralParentKey = lateral.parentNode.Key;
-                var id = 'e' + String(ElkModel.edgeIndex);
+                var id = module.moduleName + '.e' + String(ElkModel.edgeIndex);
                 ElkModel.edgeIndex += 1;
                 var edge = {
                     id: id,
-                    source: sourceParentKey_1,
-                    sourcePort: sourceParentKey_1 + '.' + source_1.key,
-                    target: lateralParentKey,
-                    targetPort: lateralParentKey + '.' + lateral.key,
+                    source: module.moduleName + '.' + sourceParentKey_1,
+                    sourcePort: module.moduleName + '.' + sourceParentKey_1 + '.' + source_1.key,
+                    target: module.moduleName + '.' + lateralParentKey,
+                    targetPort: module.moduleName + '.' + lateralParentKey + '.' + lateral.key,
                 };
                 ElkModel.wireNameLookup[id] = lateral.wire.netName;
                 return edge;
@@ -98,14 +98,14 @@ function buildElkGraph(module) {
     };
 }
 exports.buildElkGraph = buildElkGraph;
-function addDummy(children) {
-    var dummyId = '$d_' + String(ElkModel.dummyNum);
+function addDummy(children, moduleName) {
+    var dummyId = moduleName + '.$d_' + String(ElkModel.dummyNum);
     var child = {
         id: dummyId,
         width: 0,
         height: 0,
         ports: [{
-                id: dummyId + '.p',
+                id: moduleName + '.' + dummyId + '.p',
                 width: 0,
                 height: 0,
             }],
