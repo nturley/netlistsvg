@@ -24,9 +24,12 @@ function dumpLayout(skinData, yosysNetlist, prelayout, done) {
     });
 }
 exports.dumpLayout = dumpLayout;
-function render(skinData, yosysNetlist, done, elkData) {
+function render(skinData, yosysNetlist, done, elkData, configData) {
     var skin = onml.p(skinData);
     Skin_1.default.skin = skin;
+    if (configData) {
+        throw new Error('WIP');
+    }
     var flatModule = FlatModule_1.FlatModule.fromNetlist(yosysNetlist);
     var kgraph = elkGraph_1.buildElkGraph(flatModule);
     var promise;

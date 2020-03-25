@@ -5,6 +5,7 @@ import onml = require('onml');
 
 import { FlatModule } from './FlatModule';
 import Yosys from './YosysModel';
+import Config from './ConfigModel';
 import Skin from './Skin';
 import { ElkModel, buildElkGraph } from './elkGraph';
 import drawModule from './drawModule';
@@ -30,9 +31,13 @@ export function dumpLayout(skinData: string, yosysNetlist: Yosys.Netlist, prelay
     });
 }
 
-export function render(skinData: string, yosysNetlist: Yosys.Netlist, done?: ICallback, elkData?: ElkModel.Graph) {
+export function render(skinData: string, yosysNetlist: Yosys.Netlist,
+                       done?: ICallback, elkData?: ElkModel.Graph, configData?: Config) {
     const skin = onml.p(skinData);
     Skin.skin = skin;
+    if (configData) {
+        throw new Error('WIP');
+    }
     const flatModule = FlatModule.fromNetlist(yosysNetlist);
     const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
 
