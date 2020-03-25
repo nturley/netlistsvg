@@ -273,16 +273,22 @@ export default class Cell {
                     cell.children.push(child);
                 }
             });
-            _.forEach(elk.edges, (edge: ElkModel.ExtendedEdge) => {
+            _.forEach(elk.edges, (edge: ElkModel.Edge) => {
                 const edgeAdd = edge;
                 _.forEach(cell.ports, (port) => {
                     if (_.includes(inPorts, port)) {
-                        if (edgeAdd.sources[0] === port.id.slice(this.parent.length + 1) + '.Y') {
-                            edgeAdd.sources[0] = port.id;
+                        if (edgeAdd.sourcePort === port.id.slice(this.parent.length + 1) + '.Y') {
+                            const source: string[] = port.id.split('.');
+                            source.pop();
+                            edgeAdd.source = source.join('.');
+                            edgeAdd.sourcePort = port.id;
                         }
                     } else {
-                        if (edgeAdd.targets[0] === port.id.slice(this.parent.length + 1) + '.A') {
-                            edgeAdd.targets[0] = port.id;
+                        if (edgeAdd.targetPort === port.id.slice(this.parent.length + 1) + '.A') {
+                            const target: string[] = port.id.split('.');
+                            target.pop();
+                            edgeAdd.target = target.join('.');
+                            edgeAdd.targetPort = port.id;
                         }
                     }
                 });

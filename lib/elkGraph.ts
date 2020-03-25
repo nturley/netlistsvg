@@ -24,13 +24,13 @@ export namespace ElkModel {
         x?: number;
         y?: number;
         children?: Cell[];
-        edges?: Array<Edge|ExtendedEdge>;
+        edges?: Edge[];
     }
 
     export interface Graph {
         id: string;
         children: Cell[];
-        edges: Array<Edge|ExtendedEdge>;
+        edges: Edge[];
         width?: number;
         height?: number;
     }
@@ -61,13 +61,6 @@ export namespace ElkModel {
         junctionPoints?: WirePoint[];
         bendPoints?: WirePoint[];
         sections?: Section[];
-    }
-
-    export interface ExtendedEdge {
-        id: string;
-        sources: [ string ];
-        targets: [ string ];
-        layoutOptions?: LayoutOptions;
     }
 
     export interface LayoutOptions {
@@ -196,10 +189,12 @@ function route(sourcePorts, targetPorts, edges: ElkModel.Edge[], moduleName: str
             const targetParentKey: string = targetPort.parentNode.key;
             const targetKey: string = moduleName + '.' + targetParentKey + '.' + targetPort.key;
             const id: string = moduleName + '.e' + ElkModel.edgeIndex;
-            const edge: ElkModel.ExtendedEdge = {
+            const edge: ElkModel.Edge = {
                 id,
-                sources: [sourceKey],
-                targets: [targetKey],
+                source: moduleName + '.' + sourceParentKey,
+                sourcePort: sourceKey,
+                target: moduleName + '.' + targetParentKey,
+                targetPort: targetKey,
             };
             ElkModel.wireNameLookup[id] = targetPort.wire.netName;
             if (sourcePort.parentNode.type !== '$dff') {

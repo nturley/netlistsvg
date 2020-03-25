@@ -267,13 +267,19 @@ var Cell = /** @class */ (function () {
                 var edgeAdd = edge;
                 _.forEach(cell_1.ports, function (port) {
                     if (_.includes(inPorts_1, port)) {
-                        if (edgeAdd.sources[0] === port.id.slice(_this.parent.length + 1) + '.Y') {
-                            edgeAdd.sources[0] = port.id;
+                        if (edgeAdd.sourcePort === port.id.slice(_this.parent.length + 1) + '.Y') {
+                            var source = port.id.split('.');
+                            source.pop();
+                            edgeAdd.source = source.join('.');
+                            edgeAdd.sourcePort = port.id;
                         }
                     }
                     else {
-                        if (edgeAdd.targets[0] === port.id.slice(_this.parent.length + 1) + '.A') {
-                            edgeAdd.targets[0] = port.id;
+                        if (edgeAdd.targetPort === port.id.slice(_this.parent.length + 1) + '.A') {
+                            var target = port.id.split('.');
+                            target.pop();
+                            edgeAdd.target = target.join('.');
+                            edgeAdd.targetPort = port.id;
                         }
                     }
                 });
