@@ -1,4 +1,10 @@
 interface Config {
-    hierarchy: string[];
+    hierarchy: Hierarchy;
 }
+
+interface Hierarchy {
+    types: string[];
+    ids: string[];
+}
+
 export default Config;

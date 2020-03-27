@@ -7,30 +7,10 @@ var Skin_1 = require("./Skin");
 var elkGraph_1 = require("./elkGraph");
 var drawModule_1 = require("./drawModule");
 var elk = new ELK();
-function dumpLayout(skinData, yosysNetlist, prelayout, done) {
-    var skin = onml.p(skinData);
-    Skin_1.default.skin = skin;
-    var flatModule = FlatModule_1.FlatModule.fromNetlist(yosysNetlist);
-    var kgraph = elkGraph_1.buildElkGraph(flatModule);
-    if (prelayout) {
-        done(null, JSON.stringify(kgraph, null, 2));
-        return;
-    }
-    var promise = elk.layout(kgraph, { layoutOptions: FlatModule_1.FlatModule.layoutProps.layoutEngine });
-    promise.then(function (graph) {
-        done(null, JSON.stringify(graph, null, 2));
-    }).catch(function (reason) {
-        throw Error(reason);
-    });
-}
-exports.dumpLayout = dumpLayout;
 function render(skinData, yosysNetlist, done, elkData, configData) {
     var skin = onml.p(skinData);
     Skin_1.default.skin = skin;
-    if (configData) {
-        throw new Error('WIP');
-    }
-    var flatModule = FlatModule_1.FlatModule.fromNetlist(yosysNetlist);
+    var flatModule = FlatModule_1.FlatModule.fromNetlist(yosysNetlist, configData);
     var kgraph = elkGraph_1.buildElkGraph(flatModule);
     var promise;
     // if we already have a layout then use it

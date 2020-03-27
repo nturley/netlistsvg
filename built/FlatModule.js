@@ -11,11 +11,15 @@ var FlatModule = /** @class */ (function () {
         this.moduleName = name;
         var ports = _.map(mod.ports, function (port, portName) { return Cell_1.default.fromPort(port, portName, _this.moduleName); });
         var cells = _.map(mod.cells, function (c, key) {
-            if (!_.includes(FlatModule.modNames, c.type)) {
-                return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
+            if (_.includes(FlatModule.config.hierarchy.types, c.type) ||
+                _.includes(FlatModule.config.hierarchy.ids, key)) {
+                if (!_.includes(FlatModule.modNames, c.type)) {
+                    throw new Error('Module in config file not included in input json file.');
+                }
+                return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type]);
             }
             else {
-                return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type]);
+                return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
             }
         });
         this.nodes = cells.concat(ports);
@@ -29,10 +33,11 @@ var FlatModule = /** @class */ (function () {
         }
         this.createWires();
     }
-    FlatModule.fromNetlist = function (netlist) {
+    FlatModule.fromNetlist = function (netlist, config) {
         this.layoutProps = Skin_1.default.getProperties();
         this.modNames = Object.keys(netlist.modules);
         this.netlist = netlist;
+        this.config = config;
         var topName = null;
         _.forEach(netlist.modules, function (mod, name) {
             if (mod.attributes && mod.attributes.top === 1) {

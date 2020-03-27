@@ -4,6 +4,7 @@ import json5 = require('json5');
 import onml = require('onml');
 
 import Yosys from '../lib/YosysModel';
+import Config from '../lib/ConfigModel';
 import Cell from '../lib/Cell';
 import { FlatModule } from '../lib/FlatModule';
 import Skin from '../lib/Skin';
@@ -15,11 +16,13 @@ import Skin from '../lib/Skin';
 function createFlatModule(testFile: string): FlatModule {
     const testPath = path.join(__dirname,'digital', testFile + '.json');
     const defaultSkin = path.join(__dirname, '../lib/default.svg');
+    const defaultConfig = path.join(__dirname, '../lib/config.json');
     const testStr = fs.readFileSync(testPath).toString();
     const netlist: Yosys.Netlist = json5.parse(testStr);
+    const config: Config = json5.parse(fs.readFileSync(defaultConfig).toString());
     const skin = onml.parse(fs.readFileSync(defaultSkin).toString());
     Skin.skin = skin;
-    return FlatModule.fromNetlist(netlist);
+    return FlatModule.fromNetlist(netlist, config);
 }
 
 /**

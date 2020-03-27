@@ -1,4 +1,5 @@
 import Yosys from './YosysModel';
+import Config from './ConfigModel';
 import Skin from './Skin';
 import Cell from './Cell';
 import _ = require('lodash');
@@ -22,11 +23,13 @@ export class FlatModule {
     public static skin: any;
     public static layoutProps: {[x: string]: any};
     public static modNames: string[];
+    public static config: Config;
 
-    public static fromNetlist(netlist: Yosys.Netlist): FlatModule {
+    public static fromNetlist(netlist: Yosys.Netlist, config: Config): FlatModule {
         this.layoutProps = Skin.getProperties();
         this.modNames = Object.keys(netlist.modules);
         this.netlist = netlist;
+        this.config = config;
         let topName = null;
         _.forEach(netlist.modules, (mod: Yosys.Module, name: string) => {
             if (mod.attributes && mod.attributes.top === 1) {
@@ -51,10 +54,14 @@ export class FlatModule {
         this.moduleName = name;
         const ports = _.map(mod.ports, (port, portName) => Cell.fromPort(port, portName, this.moduleName));
         const cells = _.map(mod.cells, (c, key) => {
-            if (!_.includes(FlatModule.modNames, c.type)) {
-                return Cell.fromYosysCell(c, key, this.moduleName);
-            } else {
+            if (_.includes(FlatModule.config.hierarchy.types, c.type) ||
+                _.includes(FlatModule.config.hierarchy.ids, key)) {
+                if (!_.includes(FlatModule.modNames, c.type)) {
+                    throw new Error('Module in config file not included in input json file.');
+                }
                 return Cell.createSubModule(c, key, this.moduleName, FlatModule.netlist.modules[c.type]);
+            } else {
+                return Cell.fromYosysCell(c, key, this.moduleName);
             }
         });
         this.nodes = cells.concat(ports);

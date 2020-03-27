@@ -14,31 +14,11 @@ const elk = new ELK();
 
 type ICallback = (error: Error, result?: string) => void;
 
-export function dumpLayout(skinData: string, yosysNetlist: Yosys.Netlist, prelayout: boolean, done: ICallback) {
-    const skin = onml.p(skinData);
-    Skin.skin = skin;
-    const flatModule = FlatModule.fromNetlist(yosysNetlist);
-    const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
-    if (prelayout) {
-        done(null, JSON.stringify(kgraph, null, 2));
-        return;
-    }
-    const promise = elk.layout(kgraph, { layoutOptions: FlatModule.layoutProps.layoutEngine });
-    promise.then((graph: ElkModel.Graph) => {
-        done(null, JSON.stringify(graph, null, 2));
-    }).catch((reason) => {
-        throw Error(reason);
-    });
-}
-
 export function render(skinData: string, yosysNetlist: Yosys.Netlist,
                        done?: ICallback, elkData?: ElkModel.Graph, configData?: Config) {
     const skin = onml.p(skinData);
     Skin.skin = skin;
-    if (configData) {
-        throw new Error('WIP');
-    }
-    const flatModule = FlatModule.fromNetlist(yosysNetlist);
+    const flatModule = FlatModule.fromNetlist(yosysNetlist, configData);
     const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
 
     let promise;

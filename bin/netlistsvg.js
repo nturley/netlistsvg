@@ -36,16 +36,10 @@ function parseFiles(skinPath, netlistPath, elkJsonPath, configPath, callback) {
         fs.readFile(netlistPath, (err, netlistData) => {
             if (err) throw err;
             if (elkJsonPath) {
-                fs.readFile(elkJsonPath, (err, elkString) => {
-                    if (err) throw err;
-                    elkData = json5.parse(elkString);
-                });
+                elkData = json5.parse(fs.readFileSync(elkJsonPath));
             } 
             if (configPath) {
-                fs.readFile(configPath, (err, configString) => {
-                    if (err) throw err;
-                    configData = json5.parse(configString);
-                });
+                configData = json5.parse(fs.readFileSync(configPath));
             }
             callback(skinData, netlistData, elkData, configData);
         });
@@ -54,6 +48,7 @@ function parseFiles(skinPath, netlistPath, elkJsonPath, configPath, callback) {
 
 function main(netlistPath, outputPath, skinPath, elkJsonPath, configPath) {
     skinPath = skinPath || path.join(__dirname, '../lib/default.svg');
+    configPath = configPath || path.join(__dirname, '../lib/config.json');
     outputPath = outputPath || 'out.svg';
     var schemaPath = path.join(__dirname, '../lib/yosys.schema.json5');
     parseFiles(skinPath, netlistPath, elkJsonPath, configPath, (skinData, netlistString, elkData, configData) => {
