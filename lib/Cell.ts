@@ -78,7 +78,8 @@ export default class Cell {
         return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {}, parent);
     }
 
-    public static createSubModule(yCell: Yosys.Cell, name: string, parent: string, subModule: Yosys.Module): Cell {
+    public static createSubModule(yCell: Yosys.Cell, name: string, parent: string,
+                                  subModule: Yosys.Module, depth: number): Cell {
         const template = Skin.findSkinType(yCell.type);
         const templateInputPids = Skin.getInputPids(template);
         const templateOutputPids = Skin.getOutputPids(template);
@@ -93,7 +94,7 @@ export default class Cell {
             inputPorts = ports.filter((port) => port.keyIn(inputPids));
             outputPorts = ports.filter((port) => port.keyIn(outputPids));
         }
-        const mod = new FlatModule(subModule, name, parent);
+        const mod = new FlatModule(subModule, name, depth + 1, parent);
         return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod);
     }
 

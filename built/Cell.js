@@ -91,7 +91,7 @@ var Cell = /** @class */ (function () {
         });
         return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {}, parent);
     };
-    Cell.createSubModule = function (yCell, name, parent, subModule) {
+    Cell.createSubModule = function (yCell, name, parent, subModule, depth) {
         var template = Skin_1.default.findSkinType(yCell.type);
         var templateInputPids = Skin_1.default.getInputPids(template);
         var templateOutputPids = Skin_1.default.getOutputPids(template);
@@ -106,7 +106,7 @@ var Cell = /** @class */ (function () {
             inputPorts = ports.filter(function (port) { return port.keyIn(inputPids_2); });
             outputPorts = ports.filter(function (port) { return port.keyIn(outputPids_2); });
         }
-        var mod = new FlatModule_1.FlatModule(subModule, name, parent);
+        var mod = new FlatModule_1.FlatModule(subModule, name, depth + 1, parent);
         return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod);
     };
     Object.defineProperty(Cell.prototype, "Type", {

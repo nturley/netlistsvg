@@ -4,22 +4,50 @@ var Skin_1 = require("./Skin");
 var Cell_1 = require("./Cell");
 var _ = require("lodash");
 var FlatModule = /** @class */ (function () {
-    function FlatModule(mod, name, parent) {
+    function FlatModule(mod, name, depth, parent) {
         var _this = this;
         if (parent === void 0) { parent = null; }
         this.parent = parent;
         this.moduleName = name;
         var ports = _.map(mod.ports, function (port, portName) { return Cell_1.default.fromPort(port, portName, _this.moduleName); });
         var cells = _.map(mod.cells, function (c, key) {
-            if (_.includes(FlatModule.config.hierarchy.types, c.type) ||
-                _.includes(FlatModule.config.hierarchy.ids, key)) {
-                if (!_.includes(FlatModule.modNames, c.type)) {
-                    throw new Error('Module in config file not included in input json file.');
+            switch (FlatModule.config.hierarchy.enable) {
+                case 'level': {
+                    if (FlatModule.config.hierarchy.expandLevel > depth) {
+                        if (_.includes(FlatModule.modNames, c.type)) {
+                            return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth);
+                        }
+                        else {
+                            return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
+                        }
+                    }
+                    else {
+                        return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
+                    }
                 }
-                return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type]);
-            }
-            else {
-                return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
+                case 'all': {
+                    if (_.includes(FlatModule.modNames, c.type)) {
+                        return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth);
+                    }
+                    else {
+                        return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
+                    }
+                }
+                case 'modules': {
+                    if (_.includes(FlatModule.config.hierarchy.expandModules.types, c.type) ||
+                        _.includes(FlatModule.config.hierarchy.expandModules.ids, key)) {
+                        if (!_.includes(FlatModule.modNames, c.type)) {
+                            throw new Error('Module in config file not included in input json file.');
+                        }
+                        return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth);
+                    }
+                    else {
+                        return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
+                    }
+                }
+                default: {
+                    return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
+                }
             }
         });
         this.nodes = cells.concat(ports);
@@ -49,7 +77,7 @@ var FlatModule = /** @class */ (function () {
             topName = this.modNames[0];
         }
         var top = netlist.modules[topName];
-        return new FlatModule(top, topName);
+        return new FlatModule(top, topName, 0);
     };
     // converts input ports with constant assignments to constant nodes
     FlatModule.prototype.addConstants = function () {

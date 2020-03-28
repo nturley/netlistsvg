@@ -1,10 +1,10 @@
 {
   "hierarchy": {
-    "types": [
-
-    ],
-    "id": [
-      
-    ]
+    "enable": "off",
+    "expandLevel": 0,
+    "expandModules": {
+      "types": [],
+      "ids": []
+    }
   }
 }

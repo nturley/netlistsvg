@@ -41,7 +41,7 @@ export class FlatModule {
             topName = this.modNames[0];
         }
         const top = netlist.modules[topName];
-        return new FlatModule(top, topName);
+        return new FlatModule(top, topName, 0);
     }
 
     public parent: string;
@@ -49,19 +49,45 @@ export class FlatModule {
     public nodes: Cell[];
     public wires: Wire[];
 
-    constructor(mod: Yosys.Module, name: string, parent: string = null) {
+    constructor(mod: Yosys.Module, name: string, depth: number, parent: string = null) {
         this.parent = parent;
         this.moduleName = name;
         const ports = _.map(mod.ports, (port, portName) => Cell.fromPort(port, portName, this.moduleName));
         const cells = _.map(mod.cells, (c, key) => {
-            if (_.includes(FlatModule.config.hierarchy.types, c.type) ||
-                _.includes(FlatModule.config.hierarchy.ids, key)) {
-                if (!_.includes(FlatModule.modNames, c.type)) {
-                    throw new Error('Module in config file not included in input json file.');
+            switch (FlatModule.config.hierarchy.enable) {
+                case 'level': {
+                    if (FlatModule.config.hierarchy.expandLevel > depth) {
+                        if (_.includes(FlatModule.modNames, c.type)) {
+                            return Cell.createSubModule(c, key, this.moduleName, FlatModule.netlist.modules[c.type],
+                                                        depth);
+                        } else {
+                            return Cell.fromYosysCell(c, key, this.moduleName);
+                        }
+                    } else {
+                        return Cell.fromYosysCell(c, key, this.moduleName);
+                    }
                 }
-                return Cell.createSubModule(c, key, this.moduleName, FlatModule.netlist.modules[c.type]);
-            } else {
-                return Cell.fromYosysCell(c, key, this.moduleName);
+                case 'all': {
+                    if (_.includes(FlatModule.modNames, c.type)) {
+                        return Cell.createSubModule(c, key, this.moduleName, FlatModule.netlist.modules[c.type], depth);
+                    } else {
+                        return Cell.fromYosysCell(c, key, this.moduleName);
+                    }
+                }
+                case 'modules': {
+                    if (_.includes(FlatModule.config.hierarchy.expandModules.types, c.type) ||
+                        _.includes(FlatModule.config.hierarchy.expandModules.ids, key)) {
+                        if (!_.includes(FlatModule.modNames, c.type)) {
+                            throw new Error('Module in config file not included in input json file.');
+                        }
+                        return Cell.createSubModule(c, key, this.moduleName, FlatModule.netlist.modules[c.type], depth);
+                    } else {
+                        return Cell.fromYosysCell(c, key, this.moduleName);
+                    }
+                }
+                default: {
+                    return Cell.fromYosysCell(c, key, this.moduleName);
+                }
             }
         });
         this.nodes = cells.concat(ports);
