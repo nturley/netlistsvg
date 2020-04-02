@@ -405,6 +405,8 @@ var Cell = /** @class */ (function () {
             var subModule = drawModule_1.drawSubModule(cell, this.subModule);
             tempclone[3][1].width = subModule[1].width;
             tempclone[3][1].height = subModule[1].height;
+            tempclone[3][1].fill = '#D3D3D3';
+            tempclone[3][1].rx = '4';
             tempclone[2][1].x = tempclone[3][1].width / 2;
             tempclone[2][2] = this.type;
             tempclone.pop();
