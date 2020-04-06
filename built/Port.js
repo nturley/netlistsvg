@@ -30,7 +30,7 @@ var Port = /** @class */ (function () {
         var portSigs = this.value;
         portSigs.forEach(function (portSig, portSigIndex) {
             // is constant?
-            if (portSig === '0' || portSig === '1') {
+            if (portSig === '0' || portSig === '1' || portSig === 'x') {
                 maxNum += 1;
                 constNameCollector += portSig;
                 // replace the constant with new signal num
@@ -70,6 +70,9 @@ var Port = /** @class */ (function () {
                         width: (6 * this.key.length),
                         height: 11,
                     }];
+                if (type === 'generic') {
+                    ret.layoutOptions = { 'org.eclipse.elk.port.side': 'WEST' };
+                }
             }
             if ((type === 'generic' || type === 'split') && dir === 'out') {
                 ret.labels = [{
@@ -80,6 +83,9 @@ var Port = /** @class */ (function () {
                         width: (6 * this.key.length),
                         height: 11,
                     }];
+                if (type === 'generic') {
+                    ret.layoutOptions = { 'org.eclipse.elk.port.side': 'EAST' };
+                }
             }
             if (type === 'generic' && this.parentNode.subModule !== null) {
                 delete ret.x;
@@ -105,6 +111,12 @@ var Port = /** @class */ (function () {
                         width: (6 * this.key.length),
                         height: 11,
                     }];
+                if (dir === 'in') {
+                    ret.layoutOptions = { 'org.eclipse.elk.port.side': 'WEST' };
+                }
+                if (dir === 'out') {
+                    ret.layoutOptions = { 'org.eclipse.elk.port.side': 'EAST' };
+                }
             }
             if (type === 'generic' && this.parentNode.subModule !== null) {
                 delete ret.x;

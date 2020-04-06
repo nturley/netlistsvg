@@ -257,7 +257,7 @@ export default class Cell {
             const elk = buildElkGraph(this.subModule);
             const cell: ElkModel.Cell = {
                 id: this.parent + '.' + this.key,
-                layoutOptions: [],
+                layoutOptions: {'org.eclipse.elk.portConstraints': 'FIXED_SIDE'},
                 labels: [],
                 ports: inPorts.concat(outPorts),
                 children: [],
@@ -293,7 +293,42 @@ export default class Cell {
                         }
                     }
                 });
-                cell.edges.push(edgeAdd);
+                if (edgeAdd.source === edgeAdd.target) {
+                    const dummyId = this.subModule.moduleName + '.$d_' + edgeAdd.sourcePort + '_' + edgeAdd.targetPort;
+                    const dummy: ElkModel.Cell = {
+                        id: dummyId,
+                        width: 0,
+                        height: 0,
+                        ports: [
+                            {
+                            id: dummyId + '.pin',
+                            width: 0,
+                            height: 0,
+                            },
+                            {
+                            id: dummyId + '.pout',
+                            width: 0,
+                            height: 0,
+                            },
+                        ],
+                        layoutOptions: { 'org.eclipse.elk.portConstraints': 'FIXED_SIDE' },
+                    };
+                    const edgeId = edgeAdd.id;
+                    const edgeAddCopy = {...edgeAdd};
+                    edgeAdd.target = dummyId;
+                    edgeAdd.targetPort = dummyId + '.pin';
+                    edgeAdd.id = this.subModule.moduleName + '.e_' + edgeAdd.sourcePort + '_' + edgeAdd.targetPort;
+                    ElkModel.wireNameLookup[edgeAdd.id] = ElkModel.wireNameLookup[edgeId];
+                    edgeAddCopy.source = dummyId;
+                    edgeAddCopy.sourcePort = dummyId + '.pout';
+                    edgeAddCopy.id = this.subModule.moduleName + '.e_' + edgeAddCopy.sourcePort +
+                                     '_' + edgeAddCopy.targetPort;
+                    ElkModel.wireNameLookup[edgeAddCopy.id] = ElkModel.wireNameLookup[edgeId];
+                    cell.edges.push(edgeAdd, edgeAddCopy);
+                    cell.children.push(dummy);
+                } else {
+                    cell.edges.push(edgeAdd);
+                }
             });
             if (fixedPosX) {
                 cell.x = fixedPosX;

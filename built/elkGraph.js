@@ -105,7 +105,7 @@ function addDummy(children, moduleName) {
         width: 0,
         height: 0,
         ports: [{
-                id: moduleName + '.' + dummyId + '.p',
+                id: dummyId + '.p',
                 width: 0,
                 height: 0,
             }],

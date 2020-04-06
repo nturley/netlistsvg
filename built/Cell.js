@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var FlatModule_1 = require("./FlatModule");
 var YosysModel_1 = require("./YosysModel");
@@ -246,7 +257,7 @@ var Cell = /** @class */ (function () {
             var elk = elkGraph_1.buildElkGraph(this.subModule);
             var cell_1 = {
                 id: this.parent + '.' + this.key,
-                layoutOptions: [],
+                layoutOptions: { 'org.eclipse.elk.portConstraints': 'FIXED_SIDE' },
                 labels: [],
                 ports: inPorts_1.concat(outPorts),
                 children: [],
@@ -283,7 +294,43 @@ var Cell = /** @class */ (function () {
                         }
                     }
                 });
-                cell_1.edges.push(edgeAdd);
+                if (edgeAdd.source === edgeAdd.target) {
+                    var dummyId = _this.subModule.moduleName + '.$d_' + edgeAdd.sourcePort + '_' + edgeAdd.targetPort;
+                    var dummy = {
+                        id: dummyId,
+                        width: 0,
+                        height: 0,
+                        ports: [
+                            {
+                                id: dummyId + '.pin',
+                                width: 0,
+                                height: 0,
+                            },
+                            {
+                                id: dummyId + '.pout',
+                                width: 0,
+                                height: 0,
+                            },
+                        ],
+                        layoutOptions: { 'org.eclipse.elk.portConstraints': 'FIXED_SIDE' },
+                    };
+                    var edgeId = edgeAdd.id;
+                    var edgeAddCopy = __assign({}, edgeAdd);
+                    edgeAdd.target = dummyId;
+                    edgeAdd.targetPort = dummyId + '.pin';
+                    edgeAdd.id = _this.subModule.moduleName + '.e_' + edgeAdd.sourcePort + '_' + edgeAdd.targetPort;
+                    elkGraph_1.ElkModel.wireNameLookup[edgeAdd.id] = elkGraph_1.ElkModel.wireNameLookup[edgeId];
+                    edgeAddCopy.source = dummyId;
+                    edgeAddCopy.sourcePort = dummyId + '.pout';
+                    edgeAddCopy.id = _this.subModule.moduleName + '.e_' + edgeAddCopy.sourcePort +
+                        '_' + edgeAddCopy.targetPort;
+                    elkGraph_1.ElkModel.wireNameLookup[edgeAddCopy.id] = elkGraph_1.ElkModel.wireNameLookup[edgeId];
+                    cell_1.edges.push(edgeAdd, edgeAddCopy);
+                    cell_1.children.push(dummy);
+                }
+                else {
+                    cell_1.edges.push(edgeAdd);
+                }
             });
             if (fixedPosX) {
                 cell_1.x = fixedPosX;

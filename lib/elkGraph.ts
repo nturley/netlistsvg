@@ -42,6 +42,7 @@ export namespace ElkModel {
         x?: number;
         y?: number;
         labels?: Label[];
+        layoutOptions?: LayoutOptions;
     }
 
     export interface Section {
@@ -171,7 +172,7 @@ function addDummy(children: ElkModel.Cell[], moduleName: string) {
         width: 0,
         height: 0,
         ports: [{
-            id: moduleName + '.' + dummyId + '.p',
+            id: dummyId + '.p',
             width: 0,
             height: 0,
         }],
