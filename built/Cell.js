@@ -236,6 +236,12 @@ var Cell = /** @class */ (function () {
                 layoutOptions: layoutAttrs,
                 labels: [],
             };
+            if (type === 'split') {
+                cell.ports[0].y = cell.height / 2;
+            }
+            if (type === 'join') {
+                cell.ports[cell.ports.length - 1].y = cell.height / 2;
+            }
             if (fixedPosX) {
                 cell.x = fixedPosX;
             }

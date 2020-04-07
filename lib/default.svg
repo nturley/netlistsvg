@@ -276,11 +276,11 @@ text {
     <rect width="5" height="40" class="splitjoinBody" s:generic="body"/>
     <s:alias val="$_split_"/>
 
-    <g s:x="0" s:y="20" s:pid="in"/>
-    <g transform="translate(5, 10)" s:x="4" s:y="10" s:pid="out0">
+    <g s:x="-1" s:y="20" s:pid="in"/>
+    <g transform="translate(5, 10)" s:x="5" s:y="10" s:pid="out0">
       <text x="5" y="-4">hi:lo</text>
     </g>
-    <g transform="translate(5, 30)" s:x="4" s:y="30" s:pid="out1">
+    <g transform="translate(5, 30)" s:x="5" s:y="30" s:pid="out1">
       <text x="5" y="-4">hi:lo</text>
     </g>
   </g>
@@ -289,10 +289,10 @@ text {
     <rect width="5" height="40" class="splitjoinBody" s:generic="body"/>
     <s:alias val="$_join_"/>
     <g s:x="5" s:y="20"  s:pid="out"/>
-    <g transform="translate(0, 10)" s:x="0" s:y="10" s:pid="in0">
+    <g transform="translate(0, 10)" s:x="-1" s:y="10" s:pid="in0">
       <text x="-3" y="-4" class="inputPortLabel">hi:lo</text>
     </g>
-    <g transform="translate(0, 30)" s:x="0" s:y="30" s:pid="in1">
+    <g transform="translate(0, 30)" s:x="-1" s:y="30" s:pid="in1">
       <text x="-3" y="-4" class="inputPortLabel">hi:lo</text>
     </g>
   </g>
