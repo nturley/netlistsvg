@@ -1,5 +1,6 @@
 interface Config {
     hierarchy: Hierarchy;
+    top: Top;
 }
 
 interface Hierarchy {
@@ -11,6 +12,11 @@ interface Hierarchy {
 interface ExpandModules {
     types: string[];
     ids: string[];
+}
+
+interface Top {
+    enable: boolean;
+    module: string;
 }
 
 export default Config;

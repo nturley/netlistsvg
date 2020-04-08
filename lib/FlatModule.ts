@@ -31,14 +31,21 @@ export class FlatModule {
         this.netlist = netlist;
         this.config = config;
         let topName = null;
-        _.forEach(netlist.modules, (mod: Yosys.Module, name: string) => {
-            if (mod.attributes && mod.attributes.top === 1) {
-                topName = name;
+        if (this.config.top.enable) {
+            topName = this.config.top.module;
+            if (!_.includes(this.modNames, topName)) {
+                throw new Error('Top module in config file not defined in input json file.');
             }
-        });
-        // Otherwise default the first one in the file...
-        if (topName == null) {
-            topName = this.modNames[0];
+        } else {
+            _.forEach(netlist.modules, (mod: Yosys.Module, name: string) => {
+                if (mod.attributes && mod.attributes.top === 1) {
+                    topName = name;
+                }
+            });
+            // Otherwise default the first one in the file...
+            if (topName == null) {
+                topName = this.modNames[0];
+            }
         }
         const top = netlist.modules[topName];
         return new FlatModule(top, topName, 0);
@@ -78,7 +85,7 @@ export class FlatModule {
                     if (_.includes(FlatModule.config.hierarchy.expandModules.types, c.type) ||
                         _.includes(FlatModule.config.hierarchy.expandModules.ids, key)) {
                         if (!_.includes(FlatModule.modNames, c.type)) {
-                            throw new Error('Module in config file not included in input json file.');
+                            throw new Error('Submodule in config file not defined in input json file.');
                         }
                         return Cell.createSubModule(c, key, this.moduleName, FlatModule.netlist.modules[c.type], depth);
                     } else {

@@ -6,5 +6,9 @@
       "types": [],
       "ids": []
     }
+  },
+  "top": {
+    "enable": false,
+    "module": ""
   }
 }

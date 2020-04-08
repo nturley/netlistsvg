@@ -37,7 +37,7 @@ var FlatModule = /** @class */ (function () {
                     if (_.includes(FlatModule.config.hierarchy.expandModules.types, c.type) ||
                         _.includes(FlatModule.config.hierarchy.expandModules.ids, key)) {
                         if (!_.includes(FlatModule.modNames, c.type)) {
-                            throw new Error('Module in config file not included in input json file.');
+                            throw new Error('Submodule in config file not defined in input json file.');
                         }
                         return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth);
                     }
@@ -67,14 +67,22 @@ var FlatModule = /** @class */ (function () {
         this.netlist = netlist;
         this.config = config;
         var topName = null;
-        _.forEach(netlist.modules, function (mod, name) {
-            if (mod.attributes && mod.attributes.top === 1) {
-                topName = name;
+        if (this.config.top.enable) {
+            topName = this.config.top.module;
+            if (!_.includes(this.modNames, topName)) {
+                throw new Error('Top module in config file not defined in input json file.');
             }
-        });
-        // Otherwise default the first one in the file...
-        if (topName == null) {
-            topName = this.modNames[0];
+        }
+        else {
+            _.forEach(netlist.modules, function (mod, name) {
+                if (mod.attributes && mod.attributes.top === 1) {
+                    topName = name;
+                }
+            });
+            // Otherwise default the first one in the file...
+            if (topName == null) {
+                topName = this.modNames[0];
+            }
         }
         var top = netlist.modules[topName];
         return new FlatModule(top, topName, 0);
