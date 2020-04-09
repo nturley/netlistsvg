@@ -75,7 +75,7 @@ var FlatModule = /** @class */ (function () {
         }
         else {
             _.forEach(netlist.modules, function (mod, name) {
-                if (mod.attributes && mod.attributes.top === 1) {
+                if (mod.attributes && (mod.attributes.top === 1 || mod.attributes.top === '00000000000000000000000000000001')) {
                     topName = name;
                 }
             });
