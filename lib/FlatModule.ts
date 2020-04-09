@@ -25,8 +25,7 @@ export class FlatModule {
     constructor(netlist: Yosys.Netlist) {
         this.moduleName = null;
         _.forEach(netlist.modules, (mod: Yosys.Module, name: string) => {
-            if (mod.attributes && (mod.attributes.top === 1 ||
-                                   mod.attributes.top === '00000000000000000000000000000001')) {
+            if (mod.attributes && Number(mod.attributes.top) === 1) {
                 this.moduleName = name;
             }
         });
