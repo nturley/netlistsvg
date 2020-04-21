@@ -79,7 +79,7 @@ export default class Cell {
     }
 
     public static createSubModule(yCell: Yosys.Cell, name: string, parent: string,
-                                  subModule: Yosys.Module, depth: number): Cell {
+                                  subModule: Yosys.Module, depth: number, colour: string): Cell {
         const template = Skin.findSkinType(yCell.type);
         const templateInputPids = Skin.getInputPids(template);
         const templateOutputPids = Skin.getOutputPids(template);
@@ -95,11 +95,12 @@ export default class Cell {
             outputPorts = ports.filter((port) => port.keyIn(outputPids));
         }
         const mod = new FlatModule(subModule, name, depth + 1, parent);
-        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod);
+        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod, colour);
     }
 
     public parent: string;
     public subModule: FlatModule;
+    public colour: string;
     protected key: string;
     protected type: string;
     protected inputPorts: Port[];
@@ -112,7 +113,8 @@ export default class Cell {
                 outputPorts: Port[],
                 attributes: Yosys.CellAttributes,
                 parent: string,
-                subModule: FlatModule = null) {
+                subModule: FlatModule = null,
+                subColour: string = null) {
         this.key = key;
         this.type = type;
         this.inputPorts = inputPorts;
@@ -120,6 +122,7 @@ export default class Cell {
         this.attributes = attributes || {};
         this.parent = parent;
         this.subModule = subModule;
+        this.colour = subColour;
         inputPorts.forEach((ip) => {
             ip.parentNode = this;
         });
@@ -453,7 +456,7 @@ export default class Cell {
             const subModule = drawSubModule(cell, this.subModule);
             tempclone[3][1].width = subModule[1].width;
             tempclone[3][1].height = subModule[1].height;
-            tempclone[3][1].fill = '#e9e9e9';
+            tempclone[3][1].fill = this.colour;
             tempclone[3][1].rx = '4';
             tempclone[2][1].x = tempclone[3][1].width / 2;
             tempclone[2][2] = this.type;

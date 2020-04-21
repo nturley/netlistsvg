@@ -21,9 +21,10 @@ var elkGraph_1 = require("./elkGraph");
 var clone = require("clone");
 var onml = require("onml");
 var Cell = /** @class */ (function () {
-    function Cell(key, type, inputPorts, outputPorts, attributes, parent, subModule) {
+    function Cell(key, type, inputPorts, outputPorts, attributes, parent, subModule, subColour) {
         var _this = this;
         if (subModule === void 0) { subModule = null; }
+        if (subColour === void 0) { subColour = null; }
         this.key = key;
         this.type = type;
         this.inputPorts = inputPorts;
@@ -31,6 +32,7 @@ var Cell = /** @class */ (function () {
         this.attributes = attributes || {};
         this.parent = parent;
         this.subModule = subModule;
+        this.colour = subColour;
         inputPorts.forEach(function (ip) {
             ip.parentNode = _this;
         });
@@ -102,7 +104,7 @@ var Cell = /** @class */ (function () {
         });
         return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {}, parent);
     };
-    Cell.createSubModule = function (yCell, name, parent, subModule, depth) {
+    Cell.createSubModule = function (yCell, name, parent, subModule, depth, colour) {
         var template = Skin_1.default.findSkinType(yCell.type);
         var templateInputPids = Skin_1.default.getInputPids(template);
         var templateOutputPids = Skin_1.default.getOutputPids(template);
@@ -118,7 +120,7 @@ var Cell = /** @class */ (function () {
             outputPorts = ports.filter(function (port) { return port.keyIn(outputPids_2); });
         }
         var mod = new FlatModule_1.FlatModule(subModule, name, depth + 1, parent);
-        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod);
+        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod, colour);
     };
     Object.defineProperty(Cell.prototype, "Type", {
         get: function () {
@@ -458,7 +460,7 @@ var Cell = /** @class */ (function () {
             var subModule = drawModule_1.drawSubModule(cell, this.subModule);
             tempclone[3][1].width = subModule[1].width;
             tempclone[3][1].height = subModule[1].height;
-            tempclone[3][1].fill = '#e9e9e9';
+            tempclone[3][1].fill = this.colour;
             tempclone[3][1].rx = '4';
             tempclone[2][1].x = tempclone[3][1].width / 2;
             tempclone[2][2] = this.type;
