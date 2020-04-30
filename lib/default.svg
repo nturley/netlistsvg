@@ -77,7 +77,7 @@ text {
     <s:alias val="$logic_or"/>
     <s:alias val="$_OR_"/>
 
-    <path d="M0,25 L0,25 L15,25 A15 12.5 0 0 0 15,0 L0,0,M0,0 A30 25 0 0 1 0,25" fill="#ffffff" class="$cell_id"/>
+    <path d="M0,25 L0,25 L15,25 A15 12.5 0 0 0 15,0 L0,0 A30 25 0 0 1 0,25 Z" fill="#ffffff" class="$cell_id"/>
 
     <g s:x="3" s:y="5" s:pid="A"/>
     <g s:x="3" s:y="20" s:pid="B"/>
@@ -89,7 +89,7 @@ text {
     <s:alias val="$_NOR_"/>
     <s:alias val="$_ORNOT_"/>
 
-    <path d="M0,25 L0,25 L15,25 A15 12.5 0 0 0 15,0 L0,0,M0,0 A30 25 0 0 1 0,25" fill="#ffffff" class="$cell_id"/>
+    <path d="M0,25 L0,25 L15,25 A15 12.5 0 0 0 15,0 L0,0 A30 25 0 0 1 0,25 Z" fill="#ffffff" class="$cell_id"/>
     <circle cx="34" cy="12.5" r="3" fill="#ffffff" class="$cell_id"/>
 
     <g s:x="3" s:y="5" s:pid="A"/>
