@@ -48,14 +48,14 @@ text {
 <g s:type="vcc" s:width="20" s:height="30" transform="translate(5,20)">
   <s:alias val="vcc" />
   <text x="10" y="-4" class="nodelabel $cell_id" s:attribute="name">name</text>
-  <path d="M0,0 H20 L10,15 Z M10,15 V30" class="$cell_id"/>
+  <path d="M0,0 H20 L10,15 Z M10,15 V30" fill="#ffffff" class="$cell_id"/>
   <g s:x="10" s:y="30" s:pid="A" s:position="bottom"/>
 </g>
 
 <g s:type="vee" s:width="20" s:height="30" transform="translate(40,35)">
 	  <s:alias val="vee" />
 	  <text x="10" y="10" class="nodelabel $cell_id" s:attribute="name">name</text>
-	  <path d="M0,0 H20 L10,-15 Z M10,-15 V-30" class="$cell_id"/>
+	  <path d="M0,0 H20 L10,-15 Z M10,-15 V-30" fill="#ffffff" class="$cell_id"/>
 	  <g s:x="10" s:y="-30" s:pid="A" s:position="top"/>
 	</g>
 
@@ -71,14 +71,14 @@ text {
 <g s:type="inputExt" s:width="30" s:height="20" transform="translate(5,70)">
   <text x="15" y="-4" class="$cell_id" s:attribute="ref">input</text>
   <s:alias val="$_inputExt_"/>
-  <path d="M0,0 V20 H15 L30,10 15,0 Z" class="$cell_id"/>
+  <path d="M0,0 V20 H15 L30,10 15,0 Z" fill="#ffffff" class="$cell_id"/>
   <g s:x="30" s:y="10" s:pid="Y" s:position="right"/>
 </g>
 
 <g s:type="outputExt" s:width="30" s:height="20" transform="translate(60,70)">
   <text x="15" y="-4" class="$cell_id" s:attribute="ref">output</text>
   <s:alias val="$_outputExt_"/>
-  <path d="M30,0 V20 H15 L0,10 15,0 Z" class="$cell_id"/>
+  <path d="M30,0 V20 H15 L0,10 15,0 Z" fill="#ffffff" class="$cell_id"/>
   <g s:x="0" s:y="10" s:pid="A" s:position="left"/>
 </g>
 <!-- signal -->
@@ -88,7 +88,7 @@ text {
   <s:alias val="r_h"/>
   <text class="nodelabel $cell_id" x="25" y="-5" s:attribute="ref">X1</text>
   <text class="nodelabel $cell_id" x="25" y="20" s:attribute="value">Xk</text>
-  <path d="M10,0 H40 V10 H10 Z" class="symbol $cell_id"/>
+  <path d="M10,0 H40 V10 H10 Z" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M0,5 H10 M40,5 H50" class="connect $cell_id"/>
   <g s:x="0" s:y="5" s:pid="A" s:position="left"/>
   <g s:x="50" s:y="5" s:pid="B" s:position="right"/>
@@ -98,7 +98,7 @@ text {
   <s:alias val="r_v"/>
   <text x="15"  y="15" s:attribute="ref" class="$cell_id">X1</text>
   <text x="15" y="30" s:attribute="value" class="$cell_id" >Xk</text>
-  <path d="M0,10 V40 H10 V10 Z" class="symbol $cell_id"/>
+  <path d="M0,10 V40 H10 V10 Z" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M5,0 V10 M5,40 V50" class="connect $cell_id"/>
   <g s:x="5" s:y="0" s:pid="A" s:position="top"/>
   <g s:x="5" s:y="50" s:pid="B" s:position="bottom"/>
@@ -150,7 +150,7 @@ text {
   <s:alias val="v"/>
   <text x="35" y="20" s:attribute="ref" class="$cell_id">X1</text>
   <text x="35" y="35" s:attribute="value" class="$cell_id">XV</text>
-  <circle cx="16" cy="26" r="16" class="symbol $cell_id"/>
+  <circle cx="16" cy="26" r="16" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M16,10 V42" class="detail $cell_id"/>
   <path d="M16,0 V10 M16,42 V52" class="connect $cell_id"/>
   <g s:x="16" s:y="0" s:pid="+" s:position="top"/>
@@ -161,7 +161,7 @@ text {
   <s:alias val="i"/>
   <text x="35" y="20" s:attribute="ref" class="$cell_id">X1</text>
   <text x="35" y="35" s:attribute="value" class="$cell_id">XA</text>
-  <circle cx="16" cy="26" r="16" class="symbol $cell_id"/>
+  <circle cx="16" cy="26" r="16" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M0,26 H32" class="detail $cell_id"/>
   <path d="M16,0 V10 M16,42 V52" class="connect $cell_id"/>
   <g s:x="16" s:y="0" s:pid="+" s:position="top"/>
@@ -173,7 +173,7 @@ text {
 <g s:type="diode_h" s:width="50" s:height="20" transform="translate(5,250)">
   <s:alias val="d_h"/>
   <text class="nodelabel $cell_id" x="25" y="-5" s:attribute="ref">X1</text>
-  <path d="M15,0 V20 L35,10 Z M35,0 V20" class="symbol $cell_id"/>
+  <path d="M15,0 V20 L35,10 Z M35,0 V20" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M0,10 H15 M35,10 H50" class="connect $cell_id"/>
   <g s:x="0" s:y="10" s:pid="+" s:position="left"/>
   <g s:x="50" s:y="10" s:pid="-" s:position="right"/>
@@ -182,7 +182,7 @@ text {
 <g s:type="diode_v" s:width="20" s:height="50" transform="translate(20,280)">
   <s:alias val="d_v"/>
   <text x="25" y="25" s:attribute="ref" class="$cell_id">X1</text>
-  <path d="M0,15 H20 L10,35 Z M0,35 H20" class="symbol $cell_id"/>
+  <path d="M0,15 H20 L10,35 Z M0,35 H20" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M10,0 V15 M10,35 V50" class="connect $cell_id"/>
   <g s:x="10" s:y="0" s:pid="+" s:position="top"/>
   <g s:x="10" s:y="50" s:pid="-" s:position="bottom"/>
@@ -191,7 +191,7 @@ text {
 <g s:type="diode_schottky_h" s:width="50" s:height="20" transform="translate(60,250)">
   <s:alias val="d_sk_h"/>
   <text class="nodelabel $cell_id" x="25" y="-5" s:attribute="ref">X1</text>
-  <path d="M15,0 V20 L35,10 Z M35,0 V20" class="symbol $cell_id"/>
+  <path d="M15,0 V20 L35,10 Z M35,0 V20" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M0,10 H15 M35,10 H50" class="connect $cell_id"/>
   <!-- schottky -->
   <path d="M35,0 H40 M35,20 H30" class="symbol $cell_id"/>
@@ -202,7 +202,7 @@ text {
 <g s:type="diode_schottky_v" s:width="20" s:height="50" transform="translate(75,280)">
   <s:alias val="d_sk_v"/>
   <text x="25" y="25" s:attribute="ref" class="$cell_id">X1</text>
-  <path d="M0,15 H20 L10,35 Z M0,35 H20" class="symbol $cell_id"/>
+  <path d="M0,15 H20 L10,35 Z M0,35 H20" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M10,0 V15 M10,35 V50" class="connect $cell_id"/>
   <!-- schottky -->
   <path d="M0,35 V40 M20,35 V30" class="symbol $cell_id"/>
@@ -213,7 +213,7 @@ text {
 <g s:type="diode_led_h" s:width="50" s:height="20" transform="translate(115,250)">
   <s:alias val="d_led_h"/>
   <text class="nodelabel $cell_id" x="10" y="-5" s:attribute="ref">X1</text>
-  <path d="M15,0 V20 L35,10 Z M35,0 V20" class="symbol $cell_id"/>
+  <path d="M15,0 V20 L35,10 Z M35,0 V20" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M0,10 H15 M35,10 H50" class="connect $cell_id"/>
   <!-- led -->
   <path d="m20,-5 7,-7" class="detail $cell_id"/>
@@ -227,7 +227,7 @@ text {
 <g s:type="diode_led_v" s:width="20" s:height="50" transform="translate(130,280)">
   <s:alias val="d_led_v"/>
   <text x="25" y="25" s:attribute="ref" class="$cell_id">X1</text>
-  <path d="M0,15 H20 L10,35 Z M0,35 H20" class="symbol $cell_id"/>
+  <path d="M0,15 H20 L10,35 Z M0,35 H20" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M10,0 V15 M10,35 V50" class="connect $cell_id"/>
   <!-- led -->
   <path d="m-5,20 -7,7" class="detail $cell_id"/>
@@ -243,7 +243,7 @@ text {
 <g s:type="transistor_npn" s:width="32" s:height="32" transform="translate(15,350)">
   <s:alias val="q_npn"/>
   <text x="35" y="20" s:attribute="ref" class="$cell_id">X1</text>
-  <circle r="16" cx="16" cy="16" class="symbol $cell_id"/>
+  <circle r="16" cx="16" cy="16" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M0,16 H12 M12,6 V26" class="detail $cell_id"/>
   <path d="m12,10 11,-8" class="detail $cell_id"/>
   <path d="m12,21 11,8" class="detail $cell_id"/>
@@ -257,7 +257,7 @@ text {
 <g s:type="transistor_pnp" s:width="32" s:height="32" transform="translate(85,350)">
   <s:alias val="q_pnp"/>
   <text x="35" y="20" s:attribute="ref" class="$cell_id">X1</text>
-  <circle r="16" cx="16" cy="16" class="symbol $cell_id"/>
+  <circle r="16" cx="16" cy="16" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M0,16 H12 M12,6 V26" class="detail $cell_id"/>
   <path d="m12,10 11,-8" class="detail $cell_id"/>
   <path d="m12,21 11,8" class="detail $cell_id"/>
@@ -272,7 +272,7 @@ text {
 <!-- builtin -->
 <g s:type="generic" s:width="30" s:height="40" transform="translate(150, 400)">
   <text x="15" y="-4" class="nodelabel $cell_id" s:attribute="ref">generic</text>
-  <rect width="30" height="40" x="0" y="0" s:generic="body" class="$cell_id"/>
+  <rect width="30" height="40" x="0" y="0" s:generic="body" fill="#ffffff" rx="0" class="$cell_id"/>
   <g transform="translate(30,10)"
      s:x="30" s:y="10" s:pid="out0" s:position="right">
     <text x="5" y="-4" class="$cell_id">out0</text>
@@ -296,7 +296,7 @@ text {
 <g s:type="opamp" s:width="60" s:height="40" transform="translate(20,450)">
   <s:alias val="op"/>
   <text x="40" y="35" s:attribute="ref" class="$cell_id">X1</text>
-  <path d="M10,0 V40 L50,20 Z" class="symbol $cell_id"/>
+  <path d="M10,0 V40 L50,20 Z" fill="#ffffff" class="symbol $cell_id"/>
   <path d="M0,10 H10 M0,30 H10 M50,20 H60 M30,0 V10 M30,40 V30" class="connect $cell_id"/>
   <path d="m15,10 5,0 m-2.5,-2.5 0,5" class="detail $cell_id"/>
   <path d="m15,30 5,0" class="detail $cell_id"/>
@@ -310,7 +310,7 @@ text {
 <g s:type="xtal" s:width="40" s:height="30" transform="translate(90,450)">
   <s:alias val="xtal"/>
   <text class="nodelabel $cell_id" x="20" y="45" s:attribute="ref">X1</text>
-  <rect x="15" y="0" width="10" height="30" class="symbol $cell_id" />
+  <rect x="15" y="0" width="10" height="30" fill="#ffffff" class="symbol $cell_id" />
   <path d="M0,15 H10 M10,5 V25 M30,5 V25 M30,15 H40" class="$cell_id"/>
   <g s:x="0" s:y="15" s:pid="A" s:position="left"/>
   <g s:x="40" s:y="15" s:pid="B" s:position="right"/>
