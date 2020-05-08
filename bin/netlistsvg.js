@@ -14,7 +14,7 @@ require('ajv-errors')(ajv);
 if (require.main === module) {
     var argv = yargs
         .demand(1)
-        .usage('usage: $0 input_json_file [-o output_svg_file] [--skin skin_file] [--layout elk_json_file] [--config config_json_file')
+        .usage('usage: $0 input_json_file [-o output_svg_file] [--skin skin_file] [--layout elk_json_file] [--config config_json_file]')
         .argv;
     main(argv._[0], argv.o, argv.skin, argv.layout, argv.config);
 }
