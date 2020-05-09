@@ -60,7 +60,7 @@ netlistsvg.render(netlistsvg.digitalSkin, netlistsvg.exampleDigital, (err, resul
 To turn Verilog into YosysJSON in the browser, you can use [YosysJS](http://www.clifford.at/yosys/yosysjs.html)
 
 ## Skin File
-It pulls the node icons and configuration options from a SVG skin file. This our default digital skin file.
+The node icons and elkjs layout properties are obtained from a SVG skin file. This our default digital skin file.
 
 <img src="./lib/default.svg?sanitize=true" width="800" height="300">
 
@@ -105,7 +105,7 @@ ELK is using a layered approach (Sugiyama, Ganser), similar to dot in the Graphv
 ## Input JSON
 Yosys JSON includes more information than we need. Only the modules specified in the configuration file are rendered. If the cell name matches one of the aliases of a template from the skin, then it will use it as a template for the SVG file. Port directions are optional for cells that are defined in the skin (not generic cells).
 
-It should look something like this:
+You can also write out the JSON by hand, of course. We support [JSON5](https://json5.org) syntax. The input JSON should look something like this:
 ```json
 {
   "modules": {
@@ -157,7 +157,7 @@ You can give it the `-flatten` argument to  [the `prep` command](http://www.clif
 yosys -p "prep -top my_top_module -flatten; write_json output.json" input.v
 ```
 
-### Generate AND (or not) and inverter (NOT) JSON
+#### Generate AND (or not) and inverter (NOT) JSON
 
 It is also frequently common that you want to create a JSON file for a diagram which only uses AND and NOT (or NAND and NOT) cells. ([This is called an AIG](https://en.wikipedia.org/wiki/And-inverter_graph).) This can be done with Yosys' [`aigmap` command](http://www.clifford.at/yosys/cmd_proc.html).
 
@@ -639,9 +639,7 @@ Here's an digital netlist produced by Yosys along with the hierarchical diagram 
 
 ![example](./doc/hierarchy.svg?sanitize=true)
 
-You can also write out the JSON by hand, of course. We support [JSON5](https://json5.org) syntax.
-
-Here's an analog example.
+Here is an analog example.
 
 <details>
   <summary>JSON Source</summary>
