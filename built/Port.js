@@ -23,14 +23,14 @@ var Port = /** @class */ (function () {
     Port.prototype.valString = function () {
         return ',' + this.value.join() + ',';
     };
-    Port.prototype.findConstants = function (sigsByConstantName, maxNum, constantCollector) {
+    Port.prototype.findConstants = function (sigsByConstantName, maxNum, constantCollector, parent) {
         var _this = this;
         var constNameCollector = '';
         var constNumCollector = [];
         var portSigs = this.value;
         portSigs.forEach(function (portSig, portSigIndex) {
             // is constant?
-            if (portSig === '0' || portSig === '1') {
+            if (portSig === '0' || portSig === '1' || portSig === 'x') {
                 maxNum += 1;
                 constNameCollector += portSig;
                 // replace the constant with new signal num
@@ -39,19 +39,19 @@ var Port = /** @class */ (function () {
                 // string of constants ended before end of p.value
             }
             else if (constNumCollector.length > 0) {
-                _this.assignConstant(constNameCollector, constNumCollector, portSigIndex, sigsByConstantName, constantCollector);
+                _this.assignConstant(constNameCollector, constNumCollector, portSigIndex, sigsByConstantName, constantCollector, parent);
                 // reset name and num collectors
                 constNameCollector = '';
                 constNumCollector = [];
             }
         });
         if (constNumCollector.length > 0) {
-            this.assignConstant(constNameCollector, constNumCollector, portSigs.length, sigsByConstantName, constantCollector);
+            this.assignConstant(constNameCollector, constNumCollector, portSigs.length, sigsByConstantName, constantCollector, parent);
         }
         return maxNum;
     };
     Port.prototype.getGenericElkPort = function (index, templatePorts, dir) {
-        var nkey = this.parentNode.Key;
+        var nkey = this.parentNode.parent + '.' + this.parentNode.Key;
         var type = this.parentNode.getTemplate()[1]['s:type'];
         if (index === 0) {
             var ret = {
@@ -70,6 +70,9 @@ var Port = /** @class */ (function () {
                         width: (6 * this.key.length),
                         height: 11,
                     }];
+                if (type === 'generic') {
+                    ret.layoutOptions = { 'org.eclipse.elk.port.side': 'WEST' };
+                }
             }
             if ((type === 'generic' || type === 'split') && dir === 'out') {
                 ret.labels = [{
@@ -80,6 +83,13 @@ var Port = /** @class */ (function () {
                         width: (6 * this.key.length),
                         height: 11,
                     }];
+                if (type === 'generic') {
+                    ret.layoutOptions = { 'org.eclipse.elk.port.side': 'EAST' };
+                }
+            }
+            if (type === 'generic' && this.parentNode.subModule !== null) {
+                delete ret.x;
+                delete ret.y;
             }
             return ret;
         }
@@ -101,11 +111,21 @@ var Port = /** @class */ (function () {
                         width: (6 * this.key.length),
                         height: 11,
                     }];
+                if (dir === 'in') {
+                    ret.layoutOptions = { 'org.eclipse.elk.port.side': 'WEST' };
+                }
+                if (dir === 'out') {
+                    ret.layoutOptions = { 'org.eclipse.elk.port.side': 'EAST' };
+                }
+            }
+            if (type === 'generic' && this.parentNode.subModule !== null) {
+                delete ret.x;
+                delete ret.y;
             }
             return ret;
         }
     };
-    Port.prototype.assignConstant = function (nameCollector, constants, currIndex, signalsByConstantName, constantCollector) {
+    Port.prototype.assignConstant = function (nameCollector, constants, currIndex, signalsByConstantName, constantCollector, parent) {
         var _this = this;
         // we've been appending to nameCollector, so reverse to get const name
         var constName = nameCollector.split('').reverse().join('');
@@ -121,7 +141,7 @@ var Port = /** @class */ (function () {
             });
         }
         else {
-            constantCollector.push(Cell_1.default.fromConstantInfo(constName, constants));
+            constantCollector.push(Cell_1.default.fromConstantInfo(constName, constants, parent));
             signalsByConstantName[constName] = constants;
         }
     };

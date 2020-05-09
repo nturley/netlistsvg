@@ -13,7 +13,7 @@ enum WireDirection {
 
 export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
     const nodes: onml.Element[] = module.nodes.map((n: Cell) => {
-        const kchild: ElkModel.Cell = _.find(g.children, (c) => c.id === n.Key);
+        const kchild: ElkModel.Cell = _.find(g.children, (c) => c.id === n.parent + '.' + n.Key);
         return n.render(kchild);
     });
     removeDummyEdges(g);
@@ -72,6 +72,62 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
     return onml.s(ret);
 }
 
+export function drawSubModule(c: ElkModel.Cell, subModule: FlatModule) {
+    const nodes: onml.Element[] = [];
+    _.forEach(subModule.nodes, (n: Cell) => {
+        const kchild: ElkModel.Cell = _.find(c.children, (child) => child.id === n.parent + '.' + n.Key);
+        if (kchild) {
+            nodes.push(n.render(kchild));
+        }
+    });
+    removeDummyEdges(c);
+    const lines: onml.Element[] = _.flatMap(c.edges, (e: ElkModel.Edge) => {
+        const netId = ElkModel.wireNameLookup[e.id];
+        const netName = 'net_' + netId.slice(1, netId.length - 1);
+        return _.flatMap(e.sections, (s: ElkModel.Section) => {
+            let startPoint = s.startPoint;
+            s.bendPoints = s.bendPoints || [];
+            let bends: any[] = s.bendPoints.map((b) => {
+                const l = ['line', {
+                    x1: startPoint.x,
+                    x2: b.x,
+                    y1: startPoint.y,
+                    y2: b.y,
+                    class: netName,
+                }];
+                startPoint = b;
+                return l;
+            });
+            if (e.junctionPoints) {
+                const circles: any[] = e.junctionPoints.map((j: ElkModel.WirePoint) =>
+                    ['circle', {
+                        cx: j.x,
+                        cy: j.y,
+                        r: 2,
+                        style: 'fill:#000',
+                        class: netName,
+                    }]);
+                bends = bends.concat(circles);
+            }
+            const line = [['line', {
+                x1: startPoint.x,
+                x2: s.endPoint.x,
+                y1: startPoint.y,
+                y2: s.endPoint.y,
+                class: netName,
+            }]];
+            return bends.concat(line);
+        });
+    });
+    const svgAttrs: onml.Attributes = Skin.skin[1];
+    svgAttrs.width = c.width.toString();
+    svgAttrs.height = c.height.toString();
+
+    const elements: onml.Element[] = [...nodes, ...lines];
+    const ret: onml.Element = ['svg', svgAttrs, ...elements];
+    return ret;
+}
+
 function which_dir(start: ElkModel.WirePoint, end: ElkModel.WirePoint): WireDirection {
     if (end.x === start.x && end.y === start.y) {
         throw new Error('start and end are the same');
@@ -111,7 +167,7 @@ function findBendNearDummy(
     });
 }
 
-export function removeDummyEdges(g: ElkModel.Graph) {
+export function removeDummyEdges(g: ElkModel.Graph|ElkModel.Cell) {
     // go through each edge group for each dummy
     let dummyNum: number = 0;
     // loop until we can't find an edge group or we hit 10,000

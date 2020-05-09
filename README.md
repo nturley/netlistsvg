@@ -5,7 +5,7 @@
 ![npm](https://img.shields.io/npm/dm/netlistsvg.svg)
 
 # netlistsvg
-draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSON netlist. This can be generated [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html). It uses [elkjs](https://github.com/OpenKieler/elkjs) for layout.
+Netlistsvg draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSON netlist. This can be generated with [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html). It uses [elkjs](https://github.com/OpenKieler/elkjs) for layout.
 
 You can see an online demo [here](https://nturley.github.io/netlistsvg)
 
@@ -17,26 +17,26 @@ Install nodejs if isn't already installed
 npm install -g netlistsvg
 ```
 
-You can execute netlistsvg like this.
+You can execute netlistsvg like this:
 ```
-netlistsvg input_json_file [-o output_svg_file] [--skin skin_file]
+netlistsvg input_json_file [-o output_svg_file] [--skin skin_file] [--layout elk_json_file] [--config config_json_file]
 ```
 The default value for the output file is out.svg.
 
-Should work on Linux, OSX, and Windows. Running the build scripts (makefiles and the web demo) is easiest on Linux and OSX.
+This hould work on Linux, OSX, and Windows. Running the build scripts (makefiles and the web demo) is easiest on Linux and OSX.
 
 ## Web bundle
 
 I have a web bundle hosted on github pages here: https://nturley.github.io/netlistsvg/built/netlistsvg.bundle.js
 It doesn't wrap ELKjs, so you'll need to include it separately. ELK creates a global variable, so you'll need to include ELKjs before netlistsvg.
 
-In HTML it would look something like this
+In HTML it would look something like this:
 ```html
 <script type="text/javascript" src="https://nturley.github.io/netlistsvg/elk.bundled.js"></script>
 <script type="text/javascript" src="https://nturley.github.io/netlistsvg/built/netlistsvg.bundle.js"></script>
 ```
 
-On ObservableHQ, you can require it like this.
+On ObservableHQ, you can require it like this:
 
 ```javascript
 netlistsvg = {
@@ -48,7 +48,7 @@ netlistsvg = {
 
 You may want to download and host your own copy.
 
-The web bundle includes both the analog and digital skin and an example netlist for each. Using a promise would look like this.
+The web bundle includes both the analog and digital skin and an example netlist for each. Using a promise would look like this:
 ```javascript
 await netlistsvg.render(netlistsvg.digitalSkin, netlistsvg.exampleDigital);
 ```
@@ -58,6 +58,142 @@ netlistsvg.render(netlistsvg.digitalSkin, netlistsvg.exampleDigital, (err, resul
 ```
 
 To turn Verilog into YosysJSON in the browser, you can use [YosysJS](http://www.clifford.at/yosys/yosysjs.html)
+
+## Skin File
+The node icons and elkjs layout properties are obtained from a SVG skin file. This our default digital skin file.
+
+<img src="./lib/default.svg?sanitize=true" width="800" height="300">
+
+This is our analog skin file.
+
+<img src="./lib/analog.svg?sanitize=true" width="400" height="525">
+
+A skin file can use style tags or inline CSS to style the elements. That will be copied onto the output file. A skin file also defines a library of components to use. Each component has an alias list. It will use that component as a template for any cell with that type that it encounters. Each component defines the position and id of each of its ports so we know where to attach the wires to.
+
+For example, here is a mux definition. It has two aliases: "$pmux" and "$mux". It defines a type name, and a width and height, as well as the position and id of each of it's ports. In general you can rearrange them however you like, and add whatever SVG elements you like inside the template.
+
+```XML
+<g s:type="mux" transform="translate(50, 50)" s:width="20" s:height="40">
+  <s:alias val="$pmux"/>
+  <s:alias val="$mux"/>
+
+  <path d="M0,0 L20,10 L20,30 L0,40 Z"/>
+
+  <g s:x="0" s:y="10" s:pid="A"/>
+  <g s:x="0" s:y="30" s:pid="B"/>
+  <g s:x="10" s:y="35" s:pid="S"/>
+  <g s:x="20" s:y="20" s:pid="Y"/>
+</g>
+```
+
+In addition to the library of components that are matched to cells, a skin file defines some special nodes. Input/Output ports, constants, Splits/Joins, and the generic node. Splits/Joins and the generic nodes are resized and ports are added or removed to adjust to the cell. The generic node is also used as a template for displaying submodules in a hierarchical schematic.
+
+The elkjs layout properties are also defined in the skin file.
+
+```XML
+<s:layoutEngine
+      org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="35"
+      org.eclipse.elk.spacing.nodeNode= "35"
+      org.eclipse.elk.direction="DOWN"
+/>
+```
+Any properties specified here will get passed along to the layout engine. Node and edge properties aren't configurable (yet).
+
+## ElkJS
+ELK is using a layered approach (Sugiyama, Ganser), similar to dot in the Graphviz package. You can read about their algorithm here: https://rtsys.informatik.uni-kiel.de/%7Ebiblio/downloads/papers/jvlc13.pdf
+
+## Input JSON
+Yosys JSON includes more information than we need. Only the modules specified in the configuration file are rendered. If the cell name matches one of the aliases of a template from the skin, then it will use it as a template for the SVG file. Port directions are optional for cells that are defined in the skin (not generic cells).
+
+You can also write out the JSON by hand, of course. We support [JSON5](https://json5.org) syntax. The input JSON should look something like this:
+```json
+{
+  "modules": {
+    "<dont care>": {
+      "ports": {
+        "<port name>": {
+          "direction": "<input|output",
+          "bits": [ 2, "1", ... ]
+        },
+        ...
+      },
+      "cells": {
+        "<cell name>": {
+          "type": "<type name",
+          "port_directions": {
+            "<port name>": "<input|output>",
+            ...
+          },
+          "connections": {
+            "<port name>": [ 3, "0", ... ],
+            ...
+          }
+      },
+      ...
+    }
+  }
+}
+```
+
+## Generating `input_json_file` with Yosys
+
+[Yosys from Clifford Wolf](https://github.com/cliffordwolf/yosys) can be used to generate the `input_json_file` using [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html).
+
+Unless you are doing something special you will want to use [the `prep` command](http://www.clifford.at/yosys/cmd_prep.html). Some examples are provided below and you can find some runnable examples which go from Verilog to diagrams in the [examples directory](./examples) (with example Makefile).
+
+#### Generate top level JSON
+
+This command will generate a JSON file for a diagram of the top module with all the inner modules shown as boxes.
+
+```
+yosys -p "prep -top my_top_module; write_json output.json" input.v
+```
+
+#### Generate logic JSON
+
+You can give it the `-flatten` argument to  [the `prep` command](http://www.clifford.at/yosys/cmd_prep.html) if you want Yosys to convert everything into low level logic. Only basic logic cells and black boxes will exist after flattening.
+
+```
+yosys -p "prep -top my_top_module -flatten; write_json output.json" input.v
+```
+
+#### Generate AND (or not) and inverter (NOT) JSON
+
+It is also frequently common that you want to create a JSON file for a diagram which only uses AND and NOT (or NAND and NOT) cells. ([This is called an AIG](https://en.wikipedia.org/wiki/And-inverter_graph).) This can be done with Yosys' [`aigmap` command](http://www.clifford.at/yosys/cmd_proc.html).
+
+```
+yosys -p "prep -top my_top_module; aigmap; write_json output.json" input.v
+```
+
+## Configuration file
+
+The configuration contains multiple options to customize the layout. The default configuration file turns off hierarchy and uses the top defined in the input JSON file. The default configuration file can be found in the [lib directory](./lib/config.json) and looks like this:
+
+```json
+{
+  "hierarchy": {
+    "enable": "off",
+    "expandLevel": 0,
+    "expandModules": {
+      "types": [],
+      "ids": []
+    },
+    "colour": ["#e9e9e9"]
+  },
+  "top": {
+    "enable": false,
+    "module": ""
+  }
+}
+```
+
+In the `"hierarchy"` subsection, hierarchical schematics can be enabled and configured. The options contained in this subsection are:
+* `"enable"`: In this option the hierarchy can be enabled. There are four different options. `"off"` turns of the hierarchy, `"all"` expands all submodules, `"level"` expands all submodules until a specified level of hierarchy and `"modules"` expands all specified submodules.
+* `"expandLevel"`: The maximum level until which submodules are expanded for the `"level"` option.
+* `"expandModules"`: The modules which will be expanded for the `"modules"` option. Through the suboptions, it is possible to expand based on the module type using `"types"` and on the module name using `"ids"`.
+* `"colour"`: This option defines the background colour used for the submodules. If there are more colours in the list, each colour is used for deeper level of hierarchy.
+
+The `"top"` subsection can be used to define a different top module. If `"enable"` is true, then the module defined in `"module"` will be used as top module, instead of the top module defined in the input JSON file.
 
 # Examples
 
@@ -280,11 +416,230 @@ Here's an digital netlist produced by Yosys along with the diagram that netlists
 ```
 </details>
 
-![example](https://raw.githubusercontent.com/nturley/netlistsvg/master/doc/up3down5.svg?sanitize=true)
+![example](./doc/up3down5.svg?sanitize=true)
 
-You can also write out the JSON by hand, of course. We support [JSON5](https://json5.org) syntax.
+Here's an digital netlist produced by Yosys along with the hierarchical diagram that netlistsvg created from it using a different configuration file.
 
-Here's an analog example.
+<details>
+  <summary>JSON Source</summary>
+
+```json
+{
+  "creator": "Yosys 0.9+1706 (git sha1 e069259a, clang 6.0.0-1ubuntu2 -fPIC -Os)",
+  "modules": {
+    "$paramod\\submod\\c=3'111\\d=3'111": {
+      "attributes": {
+        "gentb_skip": "00000000000000000000000000000001",
+        "src": "hierarchy.v:17"
+      },
+      "ports": {
+        "a": {
+          "direction": "input",
+          "bits": [ 2, 3, 4, 5 ]
+        },
+        "b": {
+          "direction": "input",
+          "bits": [ 6, 7, 8, 9 ]
+        },
+        "y1": {
+          "direction": "output",
+          "bits": [ 2, 3, 4, 5, "0", "0", "0", "0" ]
+        },
+        "y2": {
+          "direction": "output",
+          "bits": [ 6, 7, 8, 9, "0", "0", "0", "0" ]
+        },
+        "y3": {
+          "direction": "output",
+          "bits": [ "1", "1", "1", "1", "1", "1", "1", "1" ]
+        },
+        "y4": {
+          "direction": "output",
+          "bits": [ "1", "1", "1", "1", "1", "1", "1", "1" ]
+        }
+      },
+      "cells": {
+      },
+      "netnames": {
+        "a": {
+          "hide_name": 0,
+          "bits": [ 2, 3, 4, 5 ],
+          "attributes": {
+            "src": "hierarchy.v:20"
+          }
+        },
+        "b": {
+          "hide_name": 0,
+          "bits": [ 6, 7, 8, 9 ],
+          "attributes": {
+            "src": "hierarchy.v:20"
+          }
+        },
+        "y1": {
+          "hide_name": 0,
+          "bits": [ 2, 3, 4, 5, "0", "0", "0", "0" ],
+          "attributes": {
+            "src": "hierarchy.v:21"
+          }
+        },
+        "y2": {
+          "hide_name": 0,
+          "bits": [ 6, 7, 8, 9, "0", "0", "0", "0" ],
+          "attributes": {
+            "src": "hierarchy.v:21"
+          }
+        },
+        "y3": {
+          "hide_name": 0,
+          "bits": [ "1", "1", "1", "1", "1", "1", "1", "1" ],
+          "attributes": {
+            "src": "hierarchy.v:21"
+          }
+        },
+        "y4": {
+          "hide_name": 0,
+          "bits": [ "1", "1", "1", "1", "1", "1", "1", "1" ],
+          "attributes": {
+            "src": "hierarchy.v:21"
+          }
+        }
+      }
+    },
+    "top": {
+      "attributes": {
+        "top": "00000000000000000000000000000001",
+        "src": "hierarchy.v:3"
+      },
+      "ports": {
+        "a": {
+          "direction": "input",
+          "bits": [ 2, 3, 4, 5 ]
+        },
+        "b": {
+          "direction": "input",
+          "bits": [ 6, 7, 8, 9 ]
+        },
+        "y1": {
+          "direction": "output",
+          "bits": [ 10, 11, 12, 13, 14, 15, 16, 17 ]
+        },
+        "y2": {
+          "direction": "output",
+          "bits": [ 18, 19, 20, 21, 22, 23, 24, 25 ]
+        },
+        "y3": {
+          "direction": "output",
+          "bits": [ 26, 27, 28, 29, 30, 31, 32, 33 ]
+        },
+        "y4": {
+          "direction": "output",
+          "bits": [ 34, 35, 36, 37, 38, 39, 40, 41 ]
+        }
+      },
+      "cells": {
+        "foo": {
+          "hide_name": 0,
+          "type": "$paramod\\submod\\c=3'111\\d=3'111",
+          "parameters": {
+          },
+          "attributes": {
+            "src": "hierarchy.v:12"
+          },
+          "port_directions": {
+            "a": "input",
+            "b": "input",
+            "y1": "output",
+            "y2": "output",
+            "y3": "output",
+            "y4": "output"
+          },
+          "connections": {
+            "a": [ 2, 3, 4, 5 ],
+            "b": [ 6, 7, 8, 9 ],
+            "y1": [ 10, 11, 12, 13, 14, 15, 16, 17 ],
+            "y2": [ 18, 19, 20, 21, 22, 23, 24, 25 ],
+            "y3": [ 26, 27, 28, 29, 30, 31, 32, 33 ],
+            "y4": [ 34, 35, 36, 37, 38, 39, 40, 41 ]
+          }
+        }
+      },
+      "netnames": {
+        "a": {
+          "hide_name": 0,
+          "bits": [ 2, 3, 4, 5 ],
+          "attributes": {
+            "src": "hierarchy.v:4"
+          }
+        },
+        "b": {
+          "hide_name": 0,
+          "bits": [ 6, 7, 8, 9 ],
+          "attributes": {
+            "src": "hierarchy.v:5"
+          }
+        },
+        "y1": {
+          "hide_name": 0,
+          "bits": [ 10, 11, 12, 13, 14, 15, 16, 17 ],
+          "attributes": {
+            "src": "hierarchy.v:6"
+          }
+        },
+        "y2": {
+          "hide_name": 0,
+          "bits": [ 18, 19, 20, 21, 22, 23, 24, 25 ],
+          "attributes": {
+            "src": "hierarchy.v:6"
+          }
+        },
+        "y3": {
+          "hide_name": 0,
+          "bits": [ 26, 27, 28, 29, 30, 31, 32, 33 ],
+          "attributes": {
+            "src": "hierarchy.v:6"
+          }
+        },
+        "y4": {
+          "hide_name": 0,
+          "bits": [ 34, 35, 36, 37, 38, 39, 40, 41 ],
+          "attributes": {
+            "src": "hierarchy.v:6"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+  <summary>Configuration file</summary>
+
+```json
+{
+  "hierarchy": {
+    "enable": "modules",
+    "expandLevel": 0,
+    "expandModules": {
+      "types": [],
+      "ids": ["foo"]
+    },
+    "colour": ["#e9e9e9"]
+  },
+  "top": {
+    "enable": false,
+    "module": ""
+  }
+}
+```
+
+</details>
+
+![example](./doc/hierarchy.svg?sanitize=true)
+
+Here is an analog example.
 
 <details>
   <summary>JSON Source</summary>
@@ -433,113 +788,8 @@ Here's an analog example.
 ```
 </details>
 
-![example](https://raw.githubusercontent.com/nturley/netlistsvg/master/doc/and.svg?sanitize=true)
+![example](./doc/and.svg?sanitize=true)
 
-## Skin File
-It pulls the node icons and configuration options from a SVG skin file. This our default digital skin file.
-
-<img src="https://raw.githubusercontent.com/nturley/netlistsvg/master/lib/default.svg?sanitize=true" width="800" height="300">
-
-This is our analog skin file.
-
-<img src="https://raw.githubusercontent.com/nturley/netlistsvg/master/lib/analog.svg?sanitize=true" width="400" height="525">
-
-A skin file can use style tags or inline CSS to style the elements. That will be copied onto the output file. A skin file also defines a library of components to use. Each component has an alias list. It will use that component as a template for any cell with that type that it encounters. Each component defines the position and id of each of its ports so we know where to attach the wires to.
-
-For example, here is a mux definition. It has two aliases: "$pmux" and "$mux". It defines a type name, and a width and height, as well as the position and id of each of it's ports. In general you can rearrange them however you like, and add whatever SVG elements you like inside the template.
-
-```XML
-<g s:type="mux" transform="translate(50, 50)" s:width="20" s:height="40">
-  <s:alias val="$pmux"/>
-  <s:alias val="$mux"/>
-
-  <path d="M0,0 L20,10 L20,30 L0,40 Z"/>
-
-  <g s:x="0" s:y="10" s:pid="A"/>
-  <g s:x="0" s:y="30" s:pid="B"/>
-  <g s:x="10" s:y="35" s:pid="S"/>
-  <g s:x="20" s:y="20" s:pid="Y"/>
-</g>
-```
-
-In addition to the library of components that are matched to cells, a skin file defines some special nodes. Input/Output ports, constants, Splits/Joins, and the generic node. Splits/Joins and the generic nodes are resized and ports are added or removed to adjust to the cell.
-
-The elkjs layout properties are also defined in the skin file.
-
-```XML
-<s:layoutEngine
-      org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="5"
-      org.eclipse.elk.spacing.nodeNode= "35"
-      org.eclipse.elk.direction="DOWN"
-    />
-```
-Any properties specified here will get passed along to the layout engine. Node and edge properties aren't configurable (yet).
-
-## Input JSON
-Yosys JSON includes more information than we need. We only render one module (either the first or the module with an attribute "top"). If the cell name matches one of the aliases of a template from the skin, then it will use it as a template for the SVG file. Port directions are optional for cells that are defined in the skin (not generic cells).
-
-So it should look something like this.
-```json
-{
-  "modules": {
-    "<dont care>": {
-      "ports": {
-        "<port name>": {
-          "direction": "<input|output",
-          "bits": [ 2, "1", ... ]
-        },
-        ...
-      },
-      "cells": {
-        "<cell name>": {
-          "type": "<type name",
-          "port_directions": {
-            "<port name>": "<input|output>",
-            ...
-          },
-          "connections": {
-            "<port name>": [ 3, "0", ... ],
-            ...
-          }
-      },
-      ...
-    }
-  }
-}
-```
-
-## ElkJS
-ELK is using a layered approach (Sugiyama, Ganser), similar to dot in the Graphviz package. You can read about their algorithm here: https://rtsys.informatik.uni-kiel.de/%7Ebiblio/downloads/papers/jvlc13.pdf
 
 # Status
 We are getting close to the 1.0 release. At that point, the skin file format will be considered specified and breaking changes will only happen on major version bumps.
-
-## Generating `input_json_file` with Yosys
-
-[Yosys from Clifford Wolf](https://github.com/cliffordwolf/yosys) can be used to generate the `input_json_file` using [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html).
-
-Unless you are doing something special you will want to use [the `prep` command](http://www.clifford.at/yosys/cmd_prep.html). Some examples are provided below and you can find some runnable examples which go from Verilog to diagrams in the [examples directory](./examples) (with example Makefile).
-
-#### Generate top level diagram
-
-This command will generate a diagram of the top module with all the inner modules shown as boxes.
-
-```
-yosys -p "prep -top my_top_module; write_json output.json" input.v
-```
-
-#### Generate logic diagram
-
-You can give it the `-flatten` argument to  [the `prep` command](http://www.clifford.at/yosys/cmd_prep.html) if you want Yosys to convert everything into low level logic. Only basic logic cells and black boxes will exist after flattening.
-
-```
-yosys -p "prep -top my_top_module -flatten; write_json output.json" input.v
-```
-
-### Generate AND (or not) and inverter (NOT) diagram
-
-It is also frequently common that you want to create a diagram only using AND and NOT (or NAND and NOT) cells. ([This is called an AIG](https://en.wikipedia.org/wiki/And-inverter_graph).) This can be done with Yosys' [`aigmap` command](http://www.clifford.at/yosys/cmd_proc.html).
-
-```
-yosys -p "prep -top my_top_module; aigmap; write_json output.json" input.v
-```

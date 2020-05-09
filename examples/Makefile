@@ -19,11 +19,12 @@ endif
 NETLISTSVG = ../bin/netlistsvg
 NETLISTSVG_SKIN ?= ../lib/default.svg
 NETLISTSVG_DPI  ?= 300
+NETLISTSVG_CONFIG = ./config/config.json
 
 # Simple files are the same flattened as not
 SIMPLE_FILES=dff.v muxcy.v xorcy.v
 # Complex files are different when flattened
-COMPLEX_FILES=carry4bits.v carry4whole.v
+COMPLEX_FILES=carry4bits.v carry4whole.v hierarchy.v
 
 ALL_TARGETS= \
 	     $(foreach v,$(SIMPLE_FILES) ,$(basename $(v)).simple.all) \
@@ -57,7 +58,7 @@ GET_TOP ?= export TOP=$$(echo $(basename $<) | tr a-z A-Z);
 
 # Use netlistsvg to generate SVG files
 %.svg: %.json $(NETLISTSVG_SKIN)
-	$(NODE) $(NETLISTSVG) $< -o $@ --skin $(NETLISTSVG_SKIN)
+	$(NODE) $(NETLISTSVG) $< -o $@ --skin $(NETLISTSVG_SKIN) --config $(NETLISTSVG_CONFIG)
 
 # Use inkscape to render the SVG files into PNG files.
 %.png: %.svg
@@ -91,5 +92,5 @@ all:
 	make view.all
 
 .DEFAULT_GOAL := all
-.PRECIOUS: %.png
+.PRECIOUS: %.png config.json
 .PHONY: view clean all

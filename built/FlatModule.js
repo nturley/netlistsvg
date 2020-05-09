@@ -4,25 +4,96 @@ var Skin_1 = require("./Skin");
 var Cell_1 = require("./Cell");
 var _ = require("lodash");
 var FlatModule = /** @class */ (function () {
-    function FlatModule(netlist) {
+    function FlatModule(mod, name, depth, parent) {
         var _this = this;
-        this.moduleName = null;
-        _.forEach(netlist.modules, function (mod, name) {
-            if (mod.attributes && mod.attributes.top === 1) {
-                _this.moduleName = name;
+        if (parent === void 0) { parent = null; }
+        this.parent = parent;
+        this.moduleName = name;
+        var colour;
+        if (FlatModule.config.hierarchy.colour[depth]) {
+            colour = FlatModule.config.hierarchy.colour[depth];
+        }
+        else {
+            colour = FlatModule.config.hierarchy.colour[FlatModule.config.hierarchy.colour.length - 1];
+        }
+        var ports = _.map(mod.ports, function (port, portName) { return Cell_1.default.fromPort(port, portName, _this.moduleName); });
+        var cells = _.map(mod.cells, function (c, key) {
+            switch (FlatModule.config.hierarchy.enable) {
+                case 'level': {
+                    if (FlatModule.config.hierarchy.expandLevel > depth) {
+                        if (_.includes(FlatModule.modNames, c.type)) {
+                            return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth, colour);
+                        }
+                        else {
+                            return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
+                        }
+                    }
+                    else {
+                        return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
+                    }
+                }
+                case 'all': {
+                    if (_.includes(FlatModule.modNames, c.type)) {
+                        return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth, colour);
+                    }
+                    else {
+                        return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
+                    }
+                }
+                case 'modules': {
+                    if (_.includes(FlatModule.config.hierarchy.expandModules.types, c.type) ||
+                        _.includes(FlatModule.config.hierarchy.expandModules.ids, key)) {
+                        if (!_.includes(FlatModule.modNames, c.type)) {
+                            throw new Error('Submodule in config file not defined in input json file.');
+                        }
+                        return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth, colour);
+                    }
+                    else {
+                        return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
+                    }
+                }
+                default: {
+                    return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
+                }
             }
         });
-        // Otherwise default the first one in the file...
-        if (this.moduleName == null) {
-            this.moduleName = Object.keys(netlist.modules)[0];
-        }
-        var top = netlist.modules[this.moduleName];
-        var ports = _.map(top.ports, Cell_1.default.fromPort);
-        var cells = _.map(top.cells, function (c, key) { return Cell_1.default.fromYosysCell(c, key); });
         this.nodes = cells.concat(ports);
-        // populated by createWires
-        this.wires = [];
+        // this can be skipped if there are no 0's or 1's
+        if (FlatModule.layoutProps.constants !== false) {
+            this.addConstants();
+        }
+        // this can be skipped if there are no splits or joins
+        if (FlatModule.layoutProps.splitsAndJoins !== false) {
+            this.addSplitsJoins();
+        }
+        this.createWires();
     }
+    FlatModule.fromNetlist = function (netlist, config) {
+        this.layoutProps = Skin_1.default.getProperties();
+        this.modNames = Object.keys(netlist.modules);
+        this.netlist = netlist;
+        this.config = config;
+        var topName = null;
+        if (this.config.top.enable) {
+            topName = this.config.top.module;
+            if (!_.includes(this.modNames, topName)) {
+                throw new Error('Top module in config file not defined in input json file.');
+            }
+        }
+        else {
+            _.forEach(netlist.modules, function (mod, name) {
+                if (mod.attributes && Number(mod.attributes.top) === 1) {
+                    topName = name;
+                }
+            });
+            // Otherwise default the first one in the file...
+            if (topName == null) {
+                topName = this.modNames[0];
+            }
+        }
+        var top = netlist.modules[topName];
+        return new FlatModule(top, topName, 0);
+    };
     // converts input ports with constant assignments to constant nodes
     FlatModule.prototype.addConstants = function () {
         // find the maximum signal number
@@ -37,6 +108,7 @@ var FlatModule = /** @class */ (function () {
     };
     // solves for minimal bus splits and joins and adds them to module
     FlatModule.prototype.addSplitsJoins = function () {
+        var _this = this;
         var allInputs = _.flatMap(this.nodes, function (n) { return n.inputPortVals(); });
         var allOutputs = _.flatMap(this.nodes, function (n) { return n.outputPortVals(); });
         var allInputsCopy = allInputs.slice();
@@ -46,19 +118,18 @@ var FlatModule = /** @class */ (function () {
             gather(allOutputs, allInputsCopy, input, 0, input.length, splits, joins);
         });
         this.nodes = this.nodes.concat(_.map(joins, function (joinOutput, joinInputs) {
-            return Cell_1.default.fromJoinInfo(joinInputs, joinOutput);
+            return Cell_1.default.fromJoinInfo(joinInputs, joinOutput, _this.moduleName);
         })).concat(_.map(splits, function (splitOutputs, splitInput) {
-            return Cell_1.default.fromSplitInfo(splitInput, splitOutputs);
+            return Cell_1.default.fromSplitInfo(splitInput, splitOutputs, _this.moduleName);
         }));
     };
     // search through all the ports to find all of the wires
     FlatModule.prototype.createWires = function () {
-        var layoutProps = Skin_1.default.getProperties();
         var ridersByNet = {};
         var driversByNet = {};
         var lateralsByNet = {};
         this.nodes.forEach(function (n) {
-            n.collectPortsByDirection(ridersByNet, driversByNet, lateralsByNet, layoutProps.genericsLaterals);
+            n.collectPortsByDirection(ridersByNet, driversByNet, lateralsByNet, FlatModule.layoutProps.genericsLaterals);
         });
         // list of unique nets
         var nets = removeDups(_.keys(ridersByNet).concat(_.keys(driversByNet)).concat(_.keys(lateralsByNet)));
