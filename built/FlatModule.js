@@ -8,7 +8,7 @@ var FlatModule = /** @class */ (function () {
         var _this = this;
         this.moduleName = null;
         _.forEach(netlist.modules, function (mod, name) {
-            if (mod.attributes && mod.attributes.top === 1) {
+            if (mod.attributes && Number(mod.attributes.top) === 1) {
                 _this.moduleName = name;
             }
         });
