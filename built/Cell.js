@@ -21,10 +21,10 @@ var elkGraph_1 = require("./elkGraph");
 var clone = require("clone");
 var onml = require("onml");
 var Cell = /** @class */ (function () {
-    function Cell(key, type, inputPorts, outputPorts, attributes, parent, subModule, subColour) {
+    function Cell(key, type, inputPorts, outputPorts, attributes, parent, subModule, depth) {
         var _this = this;
         if (subModule === void 0) { subModule = null; }
-        if (subColour === void 0) { subColour = null; }
+        if (depth === void 0) { depth = null; }
         this.key = key;
         this.type = type;
         this.inputPorts = inputPorts;
@@ -32,7 +32,7 @@ var Cell = /** @class */ (function () {
         this.attributes = attributes || {};
         this.parent = parent;
         this.subModule = subModule;
-        this.colour = subColour;
+        this.depth = depth;
         inputPorts.forEach(function (ip) {
             ip.parentNode = _this;
         });
@@ -104,7 +104,7 @@ var Cell = /** @class */ (function () {
         });
         return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {}, parent);
     };
-    Cell.createSubModule = function (yCell, name, parent, subModule, depth, colour) {
+    Cell.createSubModule = function (yCell, name, parent, subModule, depth) {
         var template = Skin_1.default.findSkinType(yCell.type);
         var templateInputPids = Skin_1.default.getInputPids(template);
         var templateOutputPids = Skin_1.default.getOutputPids(template);
@@ -120,7 +120,7 @@ var Cell = /** @class */ (function () {
             outputPorts = ports.filter(function (port) { return port.keyIn(outputPids_2); });
         }
         var mod = new FlatModule_1.FlatModule(subModule, name, depth + 1, parent);
-        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod, colour);
+        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod, depth);
     };
     Object.defineProperty(Cell.prototype, "Type", {
         get: function () {
@@ -197,7 +197,7 @@ var Cell = /** @class */ (function () {
         return null;
     };
     Cell.prototype.getTemplate = function () {
-        return Skin_1.default.findSkinType(this.type);
+        return Skin_1.default.findSkinType(this.type, this.depth);
     };
     Cell.prototype.buildElkChild = function () {
         var _this = this;
@@ -221,7 +221,7 @@ var Cell = /** @class */ (function () {
         }
         if (type === 'join' ||
             type === 'split' ||
-            (type === 'generic' && this.subModule === null)) {
+            type === 'generic') {
             var inTemplates_1 = Skin_1.default.getPortsWithPrefix(template, 'in');
             var outTemplates_1 = Skin_1.default.getPortsWithPrefix(template, 'out');
             var inPorts = this.inputPorts.map(function (ip, i) {
@@ -253,7 +253,7 @@ var Cell = /** @class */ (function () {
             this.addLabels(template, cell);
             return cell;
         }
-        if (type === 'generic' && this.subModule !== null) {
+        if (type === 'sub_odd' || type === 'sub_even') {
             var inTemplates_2 = Skin_1.default.getPortsWithPrefix(template, 'in');
             var outTemplates_2 = Skin_1.default.getPortsWithPrefix(template, 'out');
             var inPorts_1 = this.inputPorts.map(function (ip, i) {
@@ -425,7 +425,7 @@ var Cell = /** @class */ (function () {
                 tempclone.push(portClone);
             });
         }
-        else if (template[1]['s:type'] === 'generic' && this.subModule === null) {
+        else if (template[1]['s:type'] === 'generic') {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
             var inPorts_3 = Skin_1.default.getPortsWithPrefix(template, 'in');
             var ingap_1 = Number(inPorts_3[1][1]['s:y']) - Number(inPorts_3[0][1]['s:y']);
@@ -456,12 +456,10 @@ var Cell = /** @class */ (function () {
             // first child of generic must be a text node.
             tempclone[2][2] = this.type;
         }
-        else if (template[1]['s:type'] === 'generic' && this.subModule !== null) {
+        else if (template[1]['s:type'] === 'sub_odd' || template[1]['s:type'] === 'sub_even') {
             var subModule = drawModule_1.drawSubModule(cell, this.subModule);
             tempclone[3][1].width = subModule[1].width;
             tempclone[3][1].height = subModule[1].height;
-            tempclone[3][1].fill = this.colour;
-            tempclone[3][1].rx = '4';
             tempclone[2][1].x = tempclone[3][1].width / 2;
             tempclone[2][2] = this.type;
             tempclone.pop();

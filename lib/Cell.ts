@@ -79,7 +79,7 @@ export default class Cell {
     }
 
     public static createSubModule(yCell: Yosys.Cell, name: string, parent: string,
-                                  subModule: Yosys.Module, depth: number, colour: string): Cell {
+                                  subModule: Yosys.Module, depth: number): Cell {
         const template = Skin.findSkinType(yCell.type);
         const templateInputPids = Skin.getInputPids(template);
         const templateOutputPids = Skin.getOutputPids(template);
@@ -95,12 +95,12 @@ export default class Cell {
             outputPorts = ports.filter((port) => port.keyIn(outputPids));
         }
         const mod = new FlatModule(subModule, name, depth + 1, parent);
-        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod, colour);
+        return new Cell(name, yCell.type, inputPorts, outputPorts, yCell.attributes, parent, mod, depth);
     }
 
     public parent: string;
     public subModule: FlatModule;
-    public colour: string;
+    public depth: number;
     protected key: string;
     protected type: string;
     protected inputPorts: Port[];
@@ -114,7 +114,7 @@ export default class Cell {
                 attributes: Yosys.CellAttributes,
                 parent: string,
                 subModule: FlatModule = null,
-                subColour: string = null) {
+                depth: number = null) {
         this.key = key;
         this.type = type;
         this.inputPorts = inputPorts;
@@ -122,7 +122,7 @@ export default class Cell {
         this.attributes = attributes || {};
         this.parent = parent;
         this.subModule = subModule;
-        this.colour = subColour;
+        this.depth = depth;
         inputPorts.forEach((ip) => {
             ip.parentNode = this;
         });
@@ -202,7 +202,7 @@ export default class Cell {
     }
 
     public getTemplate(): any {
-        return Skin.findSkinType(this.type);
+        return Skin.findSkinType(this.type, this.depth);
     }
 
     public buildElkChild(): ElkModel.Cell {
@@ -226,7 +226,7 @@ export default class Cell {
         }
         if (type === 'join' ||
             type === 'split' ||
-            (type === 'generic' && this.subModule === null)) {
+            type === 'generic') {
             const inTemplates: any[] = Skin.getPortsWithPrefix(template, 'in');
             const outTemplates: any[] = Skin.getPortsWithPrefix(template, 'out');
             const inPorts = this.inputPorts.map((ip, i) =>
@@ -256,7 +256,7 @@ export default class Cell {
             this.addLabels(template, cell);
             return cell;
         }
-        if (type === 'generic' && this.subModule !== null) {
+        if (type === 'sub_odd' || type === 'sub_even') {
             const inTemplates: any[] = Skin.getPortsWithPrefix(template, 'in');
             const outTemplates: any[] = Skin.getPortsWithPrefix(template, 'out');
             const inPorts = this.inputPorts.map((ip, i) =>
@@ -422,7 +422,7 @@ export default class Cell {
                     + (startY + i * gap) + ')';
                 tempclone.push(portClone);
             });
-        } else if (template[1]['s:type'] === 'generic' && this.subModule === null) {
+        } else if (template[1]['s:type'] === 'generic') {
             setGenericSize(tempclone, Number(this.getGenericHeight()));
             const inPorts = Skin.getPortsWithPrefix(template, 'in');
             const ingap = Number(inPorts[1][1]['s:y']) - Number(inPorts[0][1]['s:y']);
@@ -452,12 +452,10 @@ export default class Cell {
             });
             // first child of generic must be a text node.
             tempclone[2][2] = this.type;
-        } else if (template[1]['s:type'] === 'generic' && this.subModule !== null) {
+        } else if (template[1]['s:type'] === 'sub_odd' || template[1]['s:type'] === 'sub_even') {
             const subModule = drawSubModule(cell, this.subModule);
             tempclone[3][1].width = subModule[1].width;
             tempclone[3][1].height = subModule[1].height;
-            tempclone[3][1].fill = this.colour;
-            tempclone[3][1].rx = '4';
             tempclone[2][1].x = tempclone[3][1].width / 2;
             tempclone[2][2] = this.type;
             tempclone.pop();

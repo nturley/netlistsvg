@@ -7,7 +7,6 @@ interface Hierarchy {
     enable: 'off' | 'level' | 'all' | 'modules';
     expandLevel: number;
     expandModules: ExpandModules;
-    colour: string[];
 }
 
 interface ExpandModules {

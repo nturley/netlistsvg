@@ -60,7 +60,7 @@ export namespace Skin {
         });
     }
 
-    export function findSkinType(type: string) {
+    export function findSkinType(type: string, depth: number = null) {
         let ret = null;
         onml.traverse(skin, {
             enter: (node, parent) => {
@@ -70,13 +70,24 @@ export namespace Skin {
             },
         });
         if (ret == null) {
-            onml.traverse(skin, {
-                enter: (node) => {
-                    if (node.attr['s:type'] === 'generic') {
-                        ret = node;
-                    }
-                },
-            });
+            if (depth == null) {
+                onml.traverse(skin, {
+                    enter: (node) => {
+                        if (node.attr['s:type'] === 'generic') {
+                            ret = node;
+                        }
+                    },
+                });
+            } else {
+                const sub: string[] = ['sub_odd', 'sub_even'];
+                onml.traverse(skin, {
+                    enter: (node) => {
+                        if (node.attr['s:type'] === sub[depth % 2]) {
+                            ret = node;
+                        }
+                    },
+                });
+            }
         }
         return ret.full;
     }

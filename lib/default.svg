@@ -1,7 +1,7 @@
 <svg  xmlns="http://www.w3.org/2000/svg"
   xmlns:xlink="http://www.w3.org/1999/xlink"
   xmlns:s="https://github.com/nturley/netlistsvg"
-  width="800" height="300">
+  width="800" height="400">
   <s:properties>
     <s:layoutEngine
       org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="35"
@@ -297,9 +297,45 @@ text {
     </g>
   </g>
 
-  <g s:type="generic" transform="translate(550,250)" s:width="30" s:height="40">
+  <g s:type="generic" transform="translate(50,300)" s:width="30" s:height="40">
     <text x="15" y="-4" class="nodelabel $cell_id" s:attribute="ref">generic</text>
     <rect width="30" height="40" s:generic="body" fill="#ffffff" rx="0" class="$cell_id"/>
+
+    <g transform="translate(30, 10)" s:x="30" s:y="10" s:pid="out0">
+      <text x="5" y="-4" style="fill:#000; stroke:none" class="$cell_id">out0</text>
+    </g>
+    <g transform="translate(30, 30)" s:x="30" s:y="30" s:pid="out1">
+      <text x="5" y="-4" style="fill:#000;stroke:none" class="$cell_id">out1</text>
+    </g>
+    <g transform="translate(0, 10)" s:x="0" s:y="10" s:pid="in0">
+      <text x="-3" y="-4" class="inputPortLabel $cell_id">in0</text>
+    </g>
+    <g transform="translate(0, 30)" s:x="0" s:y="30" s:pid="in1">
+      <text x="-3" y="-4" class="inputPortLabel $cell_id">in1</text>
+    </g>
+  </g>
+
+  <g s:type="sub_odd" transform="translate(150,300)" s:width="30" s:height="40">
+    <text x="15" y="-4" class="nodelabel $cell_id" s:attribute="ref">sub_odd</text>
+    <rect width="30" height="40" s:generic="body" fill="#e9e9e9" rx="4" class="$cell_id"/>
+
+    <g transform="translate(30, 10)" s:x="30" s:y="10" s:pid="out0">
+      <text x="5" y="-4" style="fill:#000; stroke:none" class="$cell_id">out0</text>
+    </g>
+    <g transform="translate(30, 30)" s:x="30" s:y="30" s:pid="out1">
+      <text x="5" y="-4" style="fill:#000;stroke:none" class="$cell_id">out1</text>
+    </g>
+    <g transform="translate(0, 10)" s:x="0" s:y="10" s:pid="in0">
+      <text x="-3" y="-4" class="inputPortLabel $cell_id">in0</text>
+    </g>
+    <g transform="translate(0, 30)" s:x="0" s:y="30" s:pid="in1">
+      <text x="-3" y="-4" class="inputPortLabel $cell_id">in1</text>
+    </g>
+  </g>
+
+  <g s:type="sub_even" transform="translate(250,300)" s:width="30" s:height="40">
+    <text x="15" y="-4" class="nodelabel $cell_id" s:attribute="ref">sub_even</text>
+    <rect width="30" height="40" s:generic="body" fill="#ffffff" rx="4" class="$cell_id"/>
 
     <g transform="translate(30, 10)" s:x="30" s:y="10" s:pid="out0">
       <text x="5" y="-4" style="fill:#000; stroke:none" class="$cell_id">out0</text>

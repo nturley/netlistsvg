@@ -59,12 +59,6 @@ export class FlatModule {
     constructor(mod: Yosys.Module, name: string, depth: number, parent: string = null) {
         this.parent = parent;
         this.moduleName = name;
-        let colour: string;
-        if (FlatModule.config.hierarchy.colour[depth]) {
-            colour = FlatModule.config.hierarchy.colour[depth];
-        } else {
-            colour = FlatModule.config.hierarchy.colour[FlatModule.config.hierarchy.colour.length - 1];
-        }
         const ports = _.map(mod.ports, (port, portName) => Cell.fromPort(port, portName, this.moduleName));
         const cells = _.map(mod.cells, (c, key) => {
             switch (FlatModule.config.hierarchy.enable) {
@@ -72,7 +66,7 @@ export class FlatModule {
                     if (FlatModule.config.hierarchy.expandLevel > depth) {
                         if (_.includes(FlatModule.modNames, c.type)) {
                             return Cell.createSubModule(c, key, this.moduleName, FlatModule.netlist.modules[c.type],
-                                                        depth, colour);
+                                                        depth);
                         } else {
                             return Cell.fromYosysCell(c, key, this.moduleName);
                         }
@@ -83,7 +77,7 @@ export class FlatModule {
                 case 'all': {
                     if (_.includes(FlatModule.modNames, c.type)) {
                         return Cell.createSubModule(c, key, this.moduleName, FlatModule.netlist.modules[c.type],
-                                                    depth, colour);
+                                                    depth);
                     } else {
                         return Cell.fromYosysCell(c, key, this.moduleName);
                     }
@@ -95,7 +89,7 @@ export class FlatModule {
                             throw new Error('Submodule in config file not defined in input json file.');
                         }
                         return Cell.createSubModule(c, key, this.moduleName, FlatModule.netlist.modules[c.type],
-                                                    depth, colour);
+                                                    depth);
                     } else {
                         return Cell.fromYosysCell(c, key, this.moduleName);
                     }

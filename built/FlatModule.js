@@ -9,20 +9,13 @@ var FlatModule = /** @class */ (function () {
         if (parent === void 0) { parent = null; }
         this.parent = parent;
         this.moduleName = name;
-        var colour;
-        if (FlatModule.config.hierarchy.colour[depth]) {
-            colour = FlatModule.config.hierarchy.colour[depth];
-        }
-        else {
-            colour = FlatModule.config.hierarchy.colour[FlatModule.config.hierarchy.colour.length - 1];
-        }
         var ports = _.map(mod.ports, function (port, portName) { return Cell_1.default.fromPort(port, portName, _this.moduleName); });
         var cells = _.map(mod.cells, function (c, key) {
             switch (FlatModule.config.hierarchy.enable) {
                 case 'level': {
                     if (FlatModule.config.hierarchy.expandLevel > depth) {
                         if (_.includes(FlatModule.modNames, c.type)) {
-                            return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth, colour);
+                            return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth);
                         }
                         else {
                             return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
@@ -34,7 +27,7 @@ var FlatModule = /** @class */ (function () {
                 }
                 case 'all': {
                     if (_.includes(FlatModule.modNames, c.type)) {
-                        return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth, colour);
+                        return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth);
                     }
                     else {
                         return Cell_1.default.fromYosysCell(c, key, _this.moduleName);
@@ -46,7 +39,7 @@ var FlatModule = /** @class */ (function () {
                         if (!_.includes(FlatModule.modNames, c.type)) {
                             throw new Error('Submodule in config file not defined in input json file.');
                         }
-                        return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth, colour);
+                        return Cell_1.default.createSubModule(c, key, _this.moduleName, FlatModule.netlist.modules[c.type], depth);
                     }
                     else {
                         return Cell_1.default.fromYosysCell(c, key, _this.moduleName);

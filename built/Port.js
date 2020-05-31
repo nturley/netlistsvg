@@ -61,7 +61,7 @@ var Port = /** @class */ (function () {
                 x: Number(templatePorts[0][1]['s:x']),
                 y: Number(templatePorts[0][1]['s:y']),
             };
-            if ((type === 'generic' || type === 'join') && dir === 'in') {
+            if ((type === 'generic' || type === 'sub_even' || type === 'sub_odd' || type === 'join') && dir === 'in') {
                 ret.labels = [{
                         id: nkey + '.' + this.key + '.label',
                         text: this.key,
@@ -70,11 +70,12 @@ var Port = /** @class */ (function () {
                         width: (6 * this.key.length),
                         height: 11,
                     }];
-                if (type === 'generic') {
+                if (type === 'sub_even' || type === 'sub_odd') {
                     ret.layoutOptions = { 'org.eclipse.elk.port.side': 'WEST' };
                 }
             }
-            if ((type === 'generic' || type === 'split') && dir === 'out') {
+            if ((type === 'generic' || type === 'sub_even' || type === 'sub_odd' || type === 'split')
+                && dir === 'out') {
                 ret.labels = [{
                         id: nkey + '.' + this.key + '.label',
                         text: this.key,
@@ -83,11 +84,11 @@ var Port = /** @class */ (function () {
                         width: (6 * this.key.length),
                         height: 11,
                     }];
-                if (type === 'generic') {
+                if (type === 'sub_even' || type === 'sub_odd') {
                     ret.layoutOptions = { 'org.eclipse.elk.port.side': 'EAST' };
                 }
             }
-            if (type === 'generic' && this.parentNode.subModule !== null) {
+            if (type === 'sub_even' || type === 'sub_odd') {
                 delete ret.x;
                 delete ret.y;
             }
@@ -102,7 +103,7 @@ var Port = /** @class */ (function () {
                 x: Number(templatePorts[0][1]['s:x']),
                 y: (index) * gap + Number(templatePorts[0][1]['s:y']),
             };
-            if (type === 'generic') {
+            if (type === 'generic' || type === 'sub_even' || type === 'sub_odd') {
                 ret.labels = [{
                         id: nkey + '.' + this.key + '.label',
                         text: this.key,
@@ -118,7 +119,7 @@ var Port = /** @class */ (function () {
                     ret.layoutOptions = { 'org.eclipse.elk.port.side': 'EAST' };
                 }
             }
-            if (type === 'generic' && this.parentNode.subModule !== null) {
+            if (type === 'sub_even' || type === 'sub_odd') {
                 delete ret.x;
                 delete ret.y;
             }

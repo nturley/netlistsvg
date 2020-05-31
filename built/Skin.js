@@ -58,7 +58,8 @@ var Skin;
         });
     }
     Skin.getLateralPortPids = getLateralPortPids;
-    function findSkinType(type) {
+    function findSkinType(type, depth) {
+        if (depth === void 0) { depth = null; }
         var ret = null;
         onml.traverse(Skin.skin, {
             enter: function (node, parent) {
@@ -68,13 +69,25 @@ var Skin;
             },
         });
         if (ret == null) {
-            onml.traverse(Skin.skin, {
-                enter: function (node) {
-                    if (node.attr['s:type'] === 'generic') {
-                        ret = node;
-                    }
-                },
-            });
+            if (depth == null) {
+                onml.traverse(Skin.skin, {
+                    enter: function (node) {
+                        if (node.attr['s:type'] === 'generic') {
+                            ret = node;
+                        }
+                    },
+                });
+            }
+            else {
+                var sub_1 = ['sub_odd', 'sub_even'];
+                onml.traverse(Skin.skin, {
+                    enter: function (node) {
+                        if (node.attr['s:type'] === sub_1[depth % 2]) {
+                            ret = node;
+                        }
+                    },
+                });
+            }
         }
         return ret.full;
     }
