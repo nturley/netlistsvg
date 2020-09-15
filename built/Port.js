@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Port = void 0;
 var Cell_1 = require("./Cell");
 var _ = require("lodash");
 var Port = /** @class */ (function () {
@@ -11,7 +12,7 @@ var Port = /** @class */ (function () {
         get: function () {
             return this.key;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Port.prototype.keyIn = function (pids) {

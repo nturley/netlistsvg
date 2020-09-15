@@ -90,28 +90,28 @@ var Cell = /** @class */ (function () {
         get: function () {
             return this.type;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "Key", {
         get: function () {
             return this.key;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "InputPorts", {
         get: function () {
             return this.inputPorts;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "OutputPorts", {
         get: function () {
             return this.outputPorts;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Cell.prototype.maxOutVal = function (atLeast) {

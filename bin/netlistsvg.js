@@ -2,11 +2,11 @@
 'use strict';
 
 var lib = require('../built'),
-    fs = require('fs'),
-    path = require('path'),
-    json5 = require('json5'),
-    yargs = require('yargs'),
-    Ajv = require('ajv');
+fs = require('fs'),
+path = require('path'),
+json5 = require('json5'),
+yargs = require('yargs'),
+Ajv = require('ajv');
 
 var ajv = new Ajv({allErrors: true, jsonPointers: true});
 require('ajv-errors')(ajv);
