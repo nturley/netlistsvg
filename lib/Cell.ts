@@ -252,7 +252,8 @@ export default class Cell {
         const template = this.getTemplate();
         const tempclone = clone(template);
         for (const label of cell.labels) {
-            const attrName = label.id.split('.')[2];
+            const labelIDSplit = label.id.split('.');
+            const attrName = labelIDSplit[labelIDSplit.length - 1];
             setTextAttribute(tempclone, attrName, label.text);
         }
         for (let i = 2; i < tempclone.length; i++) {
