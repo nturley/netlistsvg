@@ -14,7 +14,7 @@ var Skin;
                 }
             }
             catch (exception) {
-                ; // Do nothing if the SVG group doesn't have a pin id.
+                // Do nothing if the SVG group doesn't have a pin id.
             }
         });
         return ports;
