@@ -35,6 +35,7 @@ var Cell = /** @class */ (function () {
         return new Cell(name, '$_outputExt_', [new Port_1.Port('A', yPort.bits)], [], {});
     };
     Cell.fromYosysCell = function (yCell, name) {
+        this.setAlternateCellType(yCell);
         var template = Skin_1.default.findSkinType(yCell.type);
         var templateInputPids = Skin_1.default.getInputPids(template);
         var templateOutputPids = Skin_1.default.getOutputPids(template);
@@ -85,6 +86,16 @@ var Cell = /** @class */ (function () {
             return new Port_1.Port(name, sigs);
         });
         return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {});
+    };
+    // Set cells to alternate types/tags based on their parameters
+    Cell.setAlternateCellType = function (yCell) {
+        // if its a mux that has a bus width greater than 1
+        // turn into a multimux
+        if (['$pmux', '$mux', '$_MUX_', 'mux'].includes(yCell.type)) {
+            if ('WIDTH' in yCell.parameters && yCell.parameters.WIDTH > 1) {
+                yCell.type = '$multimux';
+            }
+        }
     };
     Object.defineProperty(Cell.prototype, "Type", {
         get: function () {
