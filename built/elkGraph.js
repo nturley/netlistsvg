@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.buildElkGraph = exports.ElkModel = void 0;
 var _ = require("lodash");
 var ElkModel;
 (function (ElkModel) {
