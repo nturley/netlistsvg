@@ -90,28 +90,28 @@ var Cell = /** @class */ (function () {
         get: function () {
             return this.type;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "Key", {
         get: function () {
             return this.key;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "InputPorts", {
         get: function () {
             return this.inputPorts;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "OutputPorts", {
         get: function () {
             return this.outputPorts;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Cell.prototype.maxOutVal = function (atLeast) {
@@ -242,7 +242,8 @@ var Cell = /** @class */ (function () {
         var tempclone = clone(template);
         for (var _i = 0, _a = cell.labels; _i < _a.length; _i++) {
             var label = _a[_i];
-            var attrName = label.id.split('.')[2];
+            var labelIDSplit = label.id.split('.');
+            var attrName = labelIDSplit[labelIDSplit.length - 1];
             setTextAttribute(tempclone, attrName, label.text);
         }
         for (var i = 2; i < tempclone.length; i++) {

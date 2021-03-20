@@ -7,6 +7,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.removeDummyEdges = void 0;
 var elkGraph_1 = require("./elkGraph");
 var Skin_1 = require("./Skin");
 var _ = require("lodash");
