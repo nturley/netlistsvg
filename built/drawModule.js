@@ -68,6 +68,49 @@ function drawModule(g, module) {
             return bends.concat(line);
         });
     });
+    var labels;
+    for (var index in g.edges) {
+        if (g.edges.hasOwnProperty(index)) {
+            var e = g.edges[index];
+            var netId = elkGraph_1.ElkModel.wireNameLookup[e.id];
+            var numWires = netId.split(',').length - 2;
+            var netName = 'net_' + netId.slice(1, netId.length - 1) +
+                ' width_' + numWires +
+                ' busLabel_' + numWires;
+            if (e.labels !== undefined &&
+                e.labels[0] !== undefined &&
+                e.labels[0].text !== undefined) {
+                var label = [
+                    ['rect',
+                        {
+                            x: e.labels[0].x + 1,
+                            y: e.labels[0].y - 1,
+                            width: (e.labels[0].text.length + 2) * 6 - 2,
+                            height: 9,
+                            class: netName,
+                            style: 'fill: white; stroke: none',
+                        },
+                    ], ['text',
+                        {
+                            x: e.labels[0].x,
+                            y: e.labels[0].y + 7,
+                            class: netName,
+                        },
+                        '/' + e.labels[0].text + '/',
+                    ],
+                ];
+                if (labels !== undefined) {
+                    labels = labels.concat(label);
+                }
+                else {
+                    labels = label;
+                }
+            }
+        }
+    }
+    if (labels !== undefined && labels.length > 0) {
+        lines = lines.concat(labels);
+    }
     var svgAttrs = Skin_1.default.skin[1];
     svgAttrs.width = g.width.toString();
     svgAttrs.height = g.height.toString();
