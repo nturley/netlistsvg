@@ -22,6 +22,7 @@ export default class Cell {
     }
 
     public static fromYosysCell(yCell: Yosys.Cell, name: string) {
+        this.setAlternateCellType(yCell);
         const template = Skin.findSkinType(yCell.type);
         const templateInputPids = Skin.getInputPids(template);
         const templateOutputPids = Skin.getOutputPids(template);
@@ -75,6 +76,17 @@ export default class Cell {
             return new Port(name, sigs);
         });
         return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {});
+    }
+
+    // Set cells to alternate types/tags based on their parameters
+    private static setAlternateCellType(yCell: Yosys.Cell) {
+        // if its a mux that has a bus width greater than 1
+        // turn into a multimux
+        if (['$pmux', '$mux', '$_MUX_', 'mux'].includes(yCell.type)) {
+            if ('WIDTH' in yCell.parameters && yCell.parameters.WIDTH > 1) {
+                yCell.type = '$multimux';
+            }
+        }
     }
 
     protected key: string;
