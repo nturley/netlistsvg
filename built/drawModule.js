@@ -27,7 +27,9 @@ function drawModule(g, module) {
     removeDummyEdges(g);
     var lines = _.flatMap(g.edges, function (e) {
         var netId = elkGraph_1.ElkModel.wireNameLookup[e.id];
-        var netName = 'net_' + netId.slice(1, netId.length - 1);
+        var numWires = netId.split(',').length - 2;
+        var lineStyle = 'stroke-width: ' + (numWires > 1 ? 2 : 1);
+        var netName = 'net_' + netId.slice(1, netId.length - 1) + ' width_' + numWires;
         return _.flatMap(e.sections, function (s) {
             var startPoint = s.startPoint;
             s.bendPoints = s.bendPoints || [];
@@ -38,6 +40,7 @@ function drawModule(g, module) {
                         y1: startPoint.y,
                         y2: b.y,
                         class: netName,
+                        style: lineStyle,
                     }];
                 startPoint = b;
                 return l;
@@ -47,7 +50,7 @@ function drawModule(g, module) {
                     return ['circle', {
                             cx: j.x,
                             cy: j.y,
-                            r: 2,
+                            r: (numWires > 1 ? 3 : 2),
                             style: 'fill:#000',
                             class: netName,
                         }];
@@ -60,6 +63,7 @@ function drawModule(g, module) {
                         y1: startPoint.y,
                         y2: s.endPoint.y,
                         class: netName,
+                        style: lineStyle,
                     }]];
             return bends.concat(line);
         });
