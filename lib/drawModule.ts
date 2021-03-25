@@ -17,9 +17,11 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
         return n.render(kchild);
     });
     removeDummyEdges(g);
-    const lines: onml.Element[] = _.flatMap(g.edges, (e: ElkModel.Edge) => {
+    let lines: onml.Element[] = _.flatMap(g.edges, (e: ElkModel.Edge) => {
         const netId = ElkModel.wireNameLookup[e.id];
-        const netName = 'net_' + netId.slice(1, netId.length - 1);
+        const numWires = netId.split(',').length - 2;
+        const lineStyle = 'stroke-width: ' + (numWires > 1 ? 2 : 1);
+        const netName = 'net_' + netId.slice(1, netId.length - 1) + ' width_' + numWires;
         return _.flatMap(e.sections, (s: ElkModel.Section) => {
             let startPoint = s.startPoint;
             s.bendPoints = s.bendPoints || [];
@@ -30,6 +32,7 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
                     y1: startPoint.y,
                     y2: b.y,
                     class: netName,
+                    style: lineStyle,
                 }];
                 startPoint = b;
                 return l;
@@ -39,7 +42,7 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
                     ['circle', {
                         cx: j.x,
                         cy: j.y,
-                        r: 2,
+                        r: (numWires > 1 ? 3 : 2),
                         style: 'fill:#000',
                         class: netName,
                     }]);
@@ -51,10 +54,53 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
                 y1: startPoint.y,
                 y2: s.endPoint.y,
                 class: netName,
+                style: lineStyle,
             }]];
             return bends.concat(line);
         });
     });
+    let labels: any[];
+    for (const index in g.edges) {
+        if (g.edges.hasOwnProperty(index)) {
+            const e = g.edges[index];
+            const netId = ElkModel.wireNameLookup[e.id];
+            const numWires = netId.split(',').length - 2;
+            const netName = 'net_' + netId.slice(1, netId.length - 1) +
+                ' width_' + numWires +
+                ' busLabel_' + numWires;
+            if ((e as ElkModel.ExtendedEdge).labels !== undefined &&
+                (e as ElkModel.ExtendedEdge).labels[0] !== undefined &&
+                (e as ElkModel.ExtendedEdge).labels[0].text !== undefined) {
+                const label = [
+                        ['rect',
+                            {
+                                x: e.labels[0].x + 1,
+                                y: e.labels[0].y - 1,
+                                width: (e.labels[0].text.length + 2) * 6 - 2,
+                                height: 9,
+                                class: netName,
+                                style: 'fill: white; stroke: none',
+                            },
+                        ], ['text',
+                            {
+                                x: e.labels[0].x,
+                                y: e.labels[0].y + 7,
+                                class: netName,
+                            },
+                            '/' + e.labels[0].text + '/',
+                        ],
+                    ];
+                if (labels !== undefined) {
+                    labels = labels.concat(label);
+                } else {
+                    labels = label;
+                }
+            }
+        }
+    }
+    if (labels !== undefined && labels.length > 0) {
+        lines = lines.concat(labels);
+    }
     const svgAttrs: onml.Attributes = Skin.skin[1];
     svgAttrs.width = g.width.toString();
     svgAttrs.height = g.height.toString();

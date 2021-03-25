@@ -7,6 +7,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.removeDummyEdges = void 0;
 var elkGraph_1 = require("./elkGraph");
 var Skin_1 = require("./Skin");
 var _ = require("lodash");
@@ -26,7 +27,9 @@ function drawModule(g, module) {
     removeDummyEdges(g);
     var lines = _.flatMap(g.edges, function (e) {
         var netId = elkGraph_1.ElkModel.wireNameLookup[e.id];
-        var netName = 'net_' + netId.slice(1, netId.length - 1);
+        var numWires = netId.split(',').length - 2;
+        var lineStyle = 'stroke-width: ' + (numWires > 1 ? 2 : 1);
+        var netName = 'net_' + netId.slice(1, netId.length - 1) + ' width_' + numWires;
         return _.flatMap(e.sections, function (s) {
             var startPoint = s.startPoint;
             s.bendPoints = s.bendPoints || [];
@@ -37,6 +40,7 @@ function drawModule(g, module) {
                         y1: startPoint.y,
                         y2: b.y,
                         class: netName,
+                        style: lineStyle,
                     }];
                 startPoint = b;
                 return l;
@@ -46,7 +50,7 @@ function drawModule(g, module) {
                     return ['circle', {
                             cx: j.x,
                             cy: j.y,
-                            r: 2,
+                            r: (numWires > 1 ? 3 : 2),
                             style: 'fill:#000',
                             class: netName,
                         }];
@@ -59,10 +63,54 @@ function drawModule(g, module) {
                         y1: startPoint.y,
                         y2: s.endPoint.y,
                         class: netName,
+                        style: lineStyle,
                     }]];
             return bends.concat(line);
         });
     });
+    var labels;
+    for (var index in g.edges) {
+        if (g.edges.hasOwnProperty(index)) {
+            var e = g.edges[index];
+            var netId = elkGraph_1.ElkModel.wireNameLookup[e.id];
+            var numWires = netId.split(',').length - 2;
+            var netName = 'net_' + netId.slice(1, netId.length - 1) +
+                ' width_' + numWires +
+                ' busLabel_' + numWires;
+            if (e.labels !== undefined &&
+                e.labels[0] !== undefined &&
+                e.labels[0].text !== undefined) {
+                var label = [
+                    ['rect',
+                        {
+                            x: e.labels[0].x + 1,
+                            y: e.labels[0].y - 1,
+                            width: (e.labels[0].text.length + 2) * 6 - 2,
+                            height: 9,
+                            class: netName,
+                            style: 'fill: white; stroke: none',
+                        },
+                    ], ['text',
+                        {
+                            x: e.labels[0].x,
+                            y: e.labels[0].y + 7,
+                            class: netName,
+                        },
+                        '/' + e.labels[0].text + '/',
+                    ],
+                ];
+                if (labels !== undefined) {
+                    labels = labels.concat(label);
+                }
+                else {
+                    labels = label;
+                }
+            }
+        }
+    }
+    if (labels !== undefined && labels.length > 0) {
+        lines = lines.concat(labels);
+    }
     var svgAttrs = Skin_1.default.skin[1];
     svgAttrs.width = g.width.toString();
     svgAttrs.height = g.height.toString();

@@ -475,6 +475,20 @@ The elkjs layout properties are also defined in the skin file.
 ```
 Any properties specified here will get passed along to the layout engine. Node and edge properties aren't configurable (yet).
 
+Using the classes `.busLabel_*` and `.width_*` (where * indicates the bus width) in the `<style>` tag at the top of the skin file (or the resulting svg), styling based on bus width can be added to lines and labels.
+
+For instance, to turn off bus width labels for buses of two wires, simply add:
+```svg
+.busLabel_2 {
+    fill-opacity: 0;
+}
+```
+To change the color of all lines of width 4 to red, simply add:
+```svg
+line.width_4 {
+    stroke: red;
+}
+```
 ## Input JSON
 Yosys JSON includes more information than we need. We only render one module (either the first or the module with an attribute "top"). If the cell name matches one of the aliases of a template from the skin, then it will use it as a template for the SVG file. Port directions are optional for cells that are defined in the skin (not generic cells).
 

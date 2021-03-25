@@ -91,28 +91,28 @@ var Cell = /** @class */ (function () {
         get: function () {
             return this.type;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "Key", {
         get: function () {
             return this.key;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "InputPorts", {
         get: function () {
             return this.inputPorts;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "OutputPorts", {
         get: function () {
             return this.outputPorts;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Cell.prototype.maxOutVal = function (atLeast) {
@@ -167,6 +167,22 @@ var Cell = /** @class */ (function () {
         var _this = this;
         var template = this.getTemplate();
         var type = template[1]['s:type'];
+        var layoutAttrs = { 'org.eclipse.elk.portConstraints': 'FIXED_POS' };
+        var fixedPosX = null;
+        var fixedPosY = null;
+        for (var attr in this.attributes) {
+            if (attr.startsWith('org.eclipse.elk')) {
+                if (attr === 'org.eclipse.elk.x') {
+                    fixedPosX = this.attributes[attr];
+                    continue;
+                }
+                if (attr === 'org.eclipse.elk.y') {
+                    fixedPosY = this.attributes[attr];
+                    continue;
+                }
+                layoutAttrs[attr] = this.attributes[attr];
+            }
+        }
         if (type === 'join' ||
             type === 'split' ||
             type === 'generic') {
@@ -183,9 +199,15 @@ var Cell = /** @class */ (function () {
                 width: Number(template[1]['s:width']),
                 height: Number(this.getGenericHeight()),
                 ports: inPorts.concat(outPorts),
-                layoutOptions: { 'de.cau.cs.kieler.portConstraints': 'FIXED_POS' },
+                layoutOptions: layoutAttrs,
                 labels: [],
             };
+            if (fixedPosX) {
+                cell.x = fixedPosX;
+            }
+            if (fixedPosY) {
+                cell.y = fixedPosY;
+            }
             this.addLabels(template, cell);
             return cell;
         }
@@ -204,9 +226,15 @@ var Cell = /** @class */ (function () {
             width: nodeWidth,
             height: Number(template[1]['s:height']),
             ports: ports,
-            layoutOptions: { 'de.cau.cs.kieler.portConstraints': 'FIXED_POS' },
+            layoutOptions: layoutAttrs,
             labels: [],
         };
+        if (fixedPosX) {
+            ret.x = fixedPosX;
+        }
+        if (fixedPosY) {
+            ret.y = fixedPosY;
+        }
         this.addLabels(template, ret);
         return ret;
     };
@@ -215,7 +243,8 @@ var Cell = /** @class */ (function () {
         var tempclone = clone(template);
         for (var _i = 0, _a = cell.labels; _i < _a.length; _i++) {
             var label = _a[_i];
-            var attrName = label.id.split('.')[2];
+            var labelIDSplit = label.id.split('.');
+            var attrName = labelIDSplit[labelIDSplit.length - 1];
             setTextAttribute(tempclone, attrName, label.text);
         }
         for (var i = 2; i < tempclone.length; i++) {
@@ -387,9 +416,10 @@ function getBits(signals, indicesString) {
     }
 }
 
-},{"./FlatModule":2,"./Port":3,"./Skin":4,"./YosysModel":5,"clone":56,"lodash":67,"onml":68}],2:[function(require,module,exports){
+},{"./FlatModule":2,"./Port":3,"./Skin":4,"./YosysModel":5,"clone":57,"lodash":68,"onml":69}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.removeDups = exports.addToDefaultDict = exports.arrayToBitstring = exports.FlatModule = void 0;
 var Skin_1 = require("./Skin");
 var Cell_1 = require("./Cell");
 var _ = require("lodash");
@@ -398,7 +428,7 @@ var FlatModule = /** @class */ (function () {
         var _this = this;
         this.moduleName = null;
         _.forEach(netlist.modules, function (mod, name) {
-            if (mod.attributes && mod.attributes.top === 1) {
+            if (mod.attributes && Number(mod.attributes.top) === 1) {
                 _this.moduleName = name;
             }
         });
@@ -413,15 +443,6 @@ var FlatModule = /** @class */ (function () {
         // populated by createWires
         this.wires = [];
     }
-    FlatModule.prototype.getNodes = function () {
-        return this.nodes;
-    };
-    FlatModule.prototype.getWires = function () {
-        return this.wires;
-    };
-    FlatModule.prototype.getName = function () {
-        return this.moduleName;
-    };
     // converts input ports with constant assignments to constant nodes
     FlatModule.prototype.addConstants = function () {
         // find the maximum signal number
@@ -586,9 +607,10 @@ function removeDups(inStrs) {
 }
 exports.removeDups = removeDups;
 
-},{"./Cell":1,"./Skin":4,"lodash":67}],3:[function(require,module,exports){
+},{"./Cell":1,"./Skin":4,"lodash":68}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Port = void 0;
 var Cell_1 = require("./Cell");
 var _ = require("lodash");
 var Port = /** @class */ (function () {
@@ -600,7 +622,7 @@ var Port = /** @class */ (function () {
         get: function () {
             return this.key;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Port.prototype.keyIn = function (pids) {
@@ -718,9 +740,10 @@ var Port = /** @class */ (function () {
 }());
 exports.Port = Port;
 
-},{"./Cell":1,"lodash":67}],4:[function(require,module,exports){
+},{"./Cell":1,"lodash":68}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Skin = void 0;
 var onml = require("onml");
 var _ = require("lodash");
 var Skin;
@@ -800,33 +823,51 @@ var Skin;
         return ret.full;
     }
     Skin.findSkinType = findSkinType;
+    function getLowPriorityAliases() {
+        var ret = [];
+        onml.t(Skin.skin, {
+            enter: function (node) {
+                if (node.name === 's:low_priority_alias') {
+                    ret.push(node.attr.value);
+                }
+            },
+        });
+        return ret;
+    }
+    Skin.getLowPriorityAliases = getLowPriorityAliases;
     function getProperties() {
-        var properties = _.find(Skin.skin, function (el) {
-            return el[0] === 's:properties';
+        var vals;
+        onml.t(Skin.skin, {
+            enter: function (node) {
+                if (node.name === 's:properties') {
+                    vals = _.mapValues(node.attr, function (val) {
+                        if (!isNaN(Number(val))) {
+                            return Number(val);
+                        }
+                        if (val === 'true') {
+                            return true;
+                        }
+                        if (val === 'false') {
+                            return false;
+                        }
+                        return val;
+                    });
+                }
+                else if (node.name === 's:layoutEngine') {
+                    vals.layoutEngine = node.attr;
+                }
+            },
         });
-        var vals = _.mapValues(properties[1], function (val) {
-            if (!isNaN(val)) {
-                return Number(val);
-            }
-            if (val === 'true') {
-                return true;
-            }
-            if (val === 'false') {
-                return false;
-            }
-            return val;
-        });
-        var layoutEngine = _.find(properties, function (el) {
-            return el[0] === 's:layoutEngine';
-        }) || {};
-        vals.layoutEngine = layoutEngine[1];
+        if (!vals.layoutEngine) {
+            vals.layoutEngine = {};
+        }
         return vals;
     }
     Skin.getProperties = getProperties;
 })(Skin = exports.Skin || (exports.Skin = {}));
 exports.default = Skin;
 
-},{"lodash":67,"onml":68}],5:[function(require,module,exports){
+},{"lodash":68,"onml":69}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Yosys;
@@ -870,7 +911,15 @@ exports.default = Yosys;
 
 },{}],6:[function(require,module,exports){
 "use strict";
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.removeDummyEdges = void 0;
 var elkGraph_1 = require("./elkGraph");
 var Skin_1 = require("./Skin");
 var _ = require("lodash");
@@ -883,14 +932,16 @@ var WireDirection;
     WireDirection[WireDirection["Right"] = 3] = "Right";
 })(WireDirection || (WireDirection = {}));
 function drawModule(g, module) {
-    var nodes = module.getNodes().map(function (n) {
+    var nodes = module.nodes.map(function (n) {
         var kchild = _.find(g.children, function (c) { return c.id === n.Key; });
         return n.render(kchild);
     });
     removeDummyEdges(g);
     var lines = _.flatMap(g.edges, function (e) {
         var netId = elkGraph_1.ElkModel.wireNameLookup[e.id];
-        var netName = 'net_' + netId.slice(1, netId.length - 1);
+        var numWires = netId.split(',').length - 2;
+        var lineStyle = 'stroke-width: ' + (numWires > 1 ? 2 : 1);
+        var netName = 'net_' + netId.slice(1, netId.length - 1) + ' width_' + numWires;
         return _.flatMap(e.sections, function (s) {
             var startPoint = s.startPoint;
             s.bendPoints = s.bendPoints || [];
@@ -901,6 +952,7 @@ function drawModule(g, module) {
                         y1: startPoint.y,
                         y2: b.y,
                         class: netName,
+                        style: lineStyle,
                     }];
                 startPoint = b;
                 return l;
@@ -910,7 +962,7 @@ function drawModule(g, module) {
                     return ['circle', {
                             cx: j.x,
                             cy: j.y,
-                            r: 2,
+                            r: (numWires > 1 ? 3 : 2),
                             style: 'fill:#000',
                             class: netName,
                         }];
@@ -923,17 +975,67 @@ function drawModule(g, module) {
                         y1: startPoint.y,
                         y2: s.endPoint.y,
                         class: netName,
+                        style: lineStyle,
                     }]];
             return bends.concat(line);
         });
     });
-    var svg = Skin_1.default.skin.slice(0, 2);
-    svg[1].width = g.width;
-    svg[1].height = g.height;
-    var styles = _.filter(Skin_1.default.skin, function (el) {
-        return el[0] === 'style';
+    var labels;
+    for (var index in g.edges) {
+        if (g.edges.hasOwnProperty(index)) {
+            var e = g.edges[index];
+            var netId = elkGraph_1.ElkModel.wireNameLookup[e.id];
+            var numWires = netId.split(',').length - 2;
+            var netName = 'net_' + netId.slice(1, netId.length - 1) +
+                ' width_' + numWires +
+                ' busLabel_' + numWires;
+            if (e.labels !== undefined &&
+                e.labels[0] !== undefined &&
+                e.labels[0].text !== undefined) {
+                var label = [
+                    ['rect',
+                        {
+                            x: e.labels[0].x + 1,
+                            y: e.labels[0].y - 1,
+                            width: (e.labels[0].text.length + 2) * 6 - 2,
+                            height: 9,
+                            class: netName,
+                            style: 'fill: white; stroke: none',
+                        },
+                    ], ['text',
+                        {
+                            x: e.labels[0].x,
+                            y: e.labels[0].y + 7,
+                            class: netName,
+                        },
+                        '/' + e.labels[0].text + '/',
+                    ],
+                ];
+                if (labels !== undefined) {
+                    labels = labels.concat(label);
+                }
+                else {
+                    labels = label;
+                }
+            }
+        }
+    }
+    if (labels !== undefined && labels.length > 0) {
+        lines = lines.concat(labels);
+    }
+    var svgAttrs = Skin_1.default.skin[1];
+    svgAttrs.width = g.width.toString();
+    svgAttrs.height = g.height.toString();
+    var styles = ['style', {}, ''];
+    onml.t(Skin_1.default.skin, {
+        enter: function (node) {
+            if (node.name === 'style') {
+                styles[2] += node.full[2];
+            }
+        },
     });
-    var ret = svg.concat(styles).concat(nodes).concat(lines);
+    var elements = __spreadArrays([styles], nodes, lines);
+    var ret = __spreadArrays(['svg', svgAttrs], elements);
     return onml.s(ret);
 }
 exports.default = drawModule;
@@ -986,18 +1088,20 @@ function removeDummyEdges(g) {
         }
         var dummyIsSource;
         var dummyLoc = void 0;
-        if (edgeGroup[0].source === dummyId) {
+        var firstEdge = edgeGroup[0];
+        if (firstEdge.source === dummyId) {
             dummyIsSource = true;
-            dummyLoc = edgeGroup[0].sections[0].startPoint;
+            dummyLoc = firstEdge.sections[0].startPoint;
         }
         else {
             dummyIsSource = false;
-            dummyLoc = edgeGroup[0].sections[0].endPoint;
+            dummyLoc = firstEdge.sections[0].endPoint;
         }
         var newEnd = findBendNearDummy(edgeGroup, dummyIsSource, dummyLoc);
         for (var _i = 0, edgeGroup_1 = edgeGroup; _i < edgeGroup_1.length; _i++) {
             var edge = edgeGroup_1[_i];
-            var section = edge.sections[0];
+            var e = edge;
+            var section = e.sections[0];
             if (dummyIsSource) {
                 section.startPoint = newEnd;
                 if (section.bendPoints) {
@@ -1016,13 +1120,13 @@ function removeDummyEdges(g) {
             var section = edge.sections[0];
             if (dummyIsSource) {
                 // get first bend or endPoint
-                if (section.bendPoints) {
+                if (section.bendPoints && section.bendPoints.length > 0) {
                     return [section.bendPoints[0]];
                 }
                 return section.endPoint;
             }
             else {
-                if (section.bendPoints) {
+                if (section.bendPoints && section.bendPoints.length > 0) {
                     return [_.last(section.bendPoints)];
                 }
                 return section.startPoint;
@@ -1060,43 +1164,47 @@ function removeDummyEdges(g) {
 }
 exports.removeDummyEdges = removeDummyEdges;
 
-},{"./Skin":4,"./elkGraph":7,"lodash":67,"onml":68}],7:[function(require,module,exports){
+},{"./Skin":4,"./elkGraph":7,"lodash":68,"onml":69}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.buildElkGraph = exports.ElkModel = void 0;
 var _ = require("lodash");
 var ElkModel;
 (function (ElkModel) {
     ElkModel.wireNameLookup = {};
+    ElkModel.dummyNum = 0;
+    ElkModel.edgeIndex = 0;
 })(ElkModel = exports.ElkModel || (exports.ElkModel = {}));
 function buildElkGraph(module) {
-    var children = module.getNodes().map(function (n) {
+    var children = module.nodes.map(function (n) {
         return n.buildElkChild();
     });
-    var i = 0;
-    var dummies = 0;
-    var edges = _.flatMap(module.getWires(), function (w) {
+    ElkModel.edgeIndex = 0;
+    ElkModel.dummyNum = 0;
+    var edges = _.flatMap(module.wires, function (w) {
+        var numWires = w.netName.split(',').length - 2;
         // at least one driver and at least one rider and no laterals
         if (w.drivers.length > 0 && w.riders.length > 0 && w.laterals.length === 0) {
             var ret = [];
-            i = route(w.drivers, w.riders, i, ret);
+            route(w.drivers, w.riders, ret, numWires);
             return ret;
             // at least one driver or rider and at least one lateral
         }
         else if (w.drivers.concat(w.riders).length > 0 && w.laterals.length > 0) {
             var ret = [];
-            i = route(w.drivers, w.laterals, i, ret);
-            i = route(w.laterals, w.riders, i, ret);
+            route(w.drivers, w.laterals, ret, numWires);
+            route(w.laterals, w.riders, ret, numWires);
             return ret;
             // at least two drivers and no riders
         }
         else if (w.riders.length === 0 && w.drivers.length > 1) {
             // create a dummy node and add it to children
-            var dummyId_1 = addDummy(children, dummies);
-            dummies += 1;
+            var dummyId_1 = addDummy(children);
+            ElkModel.dummyNum += 1;
             var dummyEdges = w.drivers.map(function (driver) {
                 var sourceParentKey = driver.parentNode.Key;
-                var id = 'e' + String(i);
-                i += 1;
+                var id = 'e' + String(ElkModel.edgeIndex);
+                ElkModel.edgeIndex += 1;
                 var d = {
                     id: id,
                     source: sourceParentKey,
@@ -1112,12 +1220,12 @@ function buildElkGraph(module) {
         }
         else if (w.riders.length > 1 && w.drivers.length === 0) {
             // create a dummy node and add it to children
-            var dummyId_2 = addDummy(children, dummies);
-            dummies += 1;
+            var dummyId_2 = addDummy(children);
+            ElkModel.dummyNum += 1;
             var dummyEdges = w.riders.map(function (rider) {
                 var sourceParentKey = rider.parentNode.Key;
-                var id = 'e' + String(i);
-                i += 1;
+                var id = 'e' + String(ElkModel.edgeIndex);
+                ElkModel.edgeIndex += 1;
                 var edge = {
                     id: id,
                     source: dummyId_2,
@@ -1135,8 +1243,8 @@ function buildElkGraph(module) {
             var sourceParentKey_1 = source_1.parentNode.Key;
             var lateralEdges = w.laterals.slice(1).map(function (lateral) {
                 var lateralParentKey = lateral.parentNode.Key;
-                var id = 'e' + String(i);
-                i += 1;
+                var id = 'e' + String(ElkModel.edgeIndex);
+                ElkModel.edgeIndex += 1;
                 var edge = {
                     id: id,
                     source: sourceParentKey_1,
@@ -1153,14 +1261,14 @@ function buildElkGraph(module) {
         return [];
     });
     return {
-        id: module.getName(),
+        id: module.moduleName,
         children: children,
         edges: edges,
     };
 }
 exports.buildElkGraph = buildElkGraph;
-function addDummy(children, dummyNum) {
-    var dummyId = '$d_' + String(dummyNum);
+function addDummy(children) {
+    var dummyId = '$d_' + String(ElkModel.dummyNum);
     var child = {
         id: dummyId,
         width: 0,
@@ -1175,37 +1283,54 @@ function addDummy(children, dummyNum) {
     children.push(child);
     return dummyId;
 }
-function route(sourcePorts, targetPorts, edgeIndex, edges) {
+function route(sourcePorts, targetPorts, edges, numWires) {
     var newEdges = (_.flatMap(sourcePorts, function (sourcePort) {
         var sourceParentKey = sourcePort.parentNode.key;
         var sourceKey = sourceParentKey + '.' + sourcePort.key;
+        var edgeLabel;
+        if (numWires > 1) {
+            edgeLabel = [{
+                    id: '',
+                    text: String(numWires),
+                    width: 4,
+                    height: 6,
+                    x: 0,
+                    y: 0,
+                    layoutOptions: {
+                        'org.eclipse.elk.edgeLabels.inline': true,
+                    },
+                }];
+        }
         return targetPorts.map(function (targetPort) {
             var targetParentKey = targetPort.parentNode.key;
             var targetKey = targetParentKey + '.' + targetPort.key;
-            var id = 'e' + edgeIndex;
+            var id = 'e' + ElkModel.edgeIndex;
             var edge = {
                 id: id,
-                source: sourceParentKey,
-                sourcePort: sourceKey,
-                target: targetParentKey,
-                targetPort: targetKey,
+                labels: edgeLabel,
+                sources: [sourceKey],
+                targets: [targetKey],
             };
             ElkModel.wireNameLookup[id] = targetPort.wire.netName;
             if (sourcePort.parentNode.type !== '$dff') {
-                edge.layoutOptions = { 'org.eclipse.elk.layered.priority.direction': 10 };
+                edge.layoutOptions = { 'org.eclipse.elk.layered.priority.direction': 10,
+                    'org.eclipse.elk.edge.thickness': (numWires > 1 ? 2 : 1) };
             }
-            edgeIndex += 1;
+            else {
+                edge.layoutOptions = { 'org.eclipse.elk.edge.thickness': (numWires > 1 ? 2 : 1) };
+            }
+            ElkModel.edgeIndex += 1;
             return edge;
         });
     }));
     edges.push.apply(edges, newEdges);
-    return edgeIndex;
 }
 
-},{"lodash":67}],8:[function(require,module,exports){
-(function (global){
+},{"lodash":68}],8:[function(require,module,exports){
+(function (global){(function (){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.render = exports.dumpLayout = void 0;
 var ELK = (typeof window !== "undefined" ? window['ELK'] : typeof global !== "undefined" ? global['ELK'] : null);
 var onml = require("onml");
 var FlatModule_1 = require("./FlatModule");
@@ -1213,7 +1338,7 @@ var Skin_1 = require("./Skin");
 var elkGraph_1 = require("./elkGraph");
 var drawModule_1 = require("./drawModule");
 var elk = new ELK();
-function render(skinData, yosysNetlist, done) {
+function createFlatModule(skinData, yosysNetlist) {
     Skin_1.default.skin = onml.p(skinData);
     var layoutProps = Skin_1.default.getProperties();
     var flatModule = new FlatModule_1.FlatModule(yosysNetlist);
@@ -1226,11 +1351,43 @@ function render(skinData, yosysNetlist, done) {
         flatModule.addSplitsJoins();
     }
     flatModule.createWires();
+    return flatModule;
+}
+function dumpLayout(skinData, yosysNetlist, prelayout, done) {
+    var flatModule = createFlatModule(skinData, yosysNetlist);
     var kgraph = elkGraph_1.buildElkGraph(flatModule);
-    var promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine })
-        .then(function (g) { return drawModule_1.default(g, flatModule); })
-        // tslint:disable-next-line:no-console
-        .catch(function (e) { console.error(e); });
+    if (prelayout) {
+        done(null, JSON.stringify(kgraph, null, 2));
+        return;
+    }
+    var layoutProps = Skin_1.default.getProperties();
+    var promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine });
+    promise.then(function (graph) {
+        done(null, JSON.stringify(graph, null, 2));
+    }).catch(function (reason) {
+        throw Error(reason);
+    });
+}
+exports.dumpLayout = dumpLayout;
+function render(skinData, yosysNetlist, done, elkData) {
+    var flatModule = createFlatModule(skinData, yosysNetlist);
+    var kgraph = elkGraph_1.buildElkGraph(flatModule);
+    var layoutProps = Skin_1.default.getProperties();
+    var promise;
+    // if we already have a layout then use it
+    if (elkData) {
+        promise = new Promise(function (resolve) {
+            drawModule_1.default(elkData, flatModule);
+            resolve();
+        });
+    }
+    else {
+        // otherwise use ELK to generate the layout
+        promise = elk.layout(kgraph, { layoutOptions: layoutProps.layoutEngine })
+            .then(function (g) { return drawModule_1.default(g, flatModule); })
+            // tslint:disable-next-line:no-console
+            .catch(function (e) { console.error(e); });
+    }
     // support legacy callback style
     if (typeof done === 'function') {
         promise.then(function (output) {
@@ -1244,9 +1401,9 @@ function render(skinData, yosysNetlist, done) {
 }
 exports.render = render;
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./FlatModule":2,"./Skin":4,"./drawModule":6,"./elkGraph":7,"onml":68}],9:[function(require,module,exports){
-(function (Buffer){
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./FlatModule":2,"./Skin":4,"./drawModule":6,"./elkGraph":7,"onml":69}],9:[function(require,module,exports){
+(function (Buffer){(function (){
 const lib = require('../built');
 
 const json5 = require('json5');
@@ -1254,11 +1411,11 @@ const Ajv = require('ajv');
 var ajv = new Ajv({allErrors: true, jsonPointers: true});
 require('ajv-errors')(ajv);
 
-const digital = "<svg  xmlns=\"http://www.w3.org/2000/svg\"\n  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n  xmlns:s=\"https://github.com/nturley/netlistsvg\">\n  <s:properties>\n    <s:layoutEngine\n      org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers=\"35\"\n      org.eclipse.elk.spacing.nodeNode= \"35\"\n      org.eclipse.elk.layered.layering.strategy= \"LONGEST_PATH\"\n    />\n    <s:low_priority_alias val=\"$dff\" />\n  </s:properties>\n<style>\nsvg {\n  stroke:#000;\n  fill:none;\n}\ntext {\n  fill:#000;\n  stroke:none;\n  font-size:10px;\n  font-weight: bold;\n  font-family: \"Courier New\", monospace;\n}\n.nodelabel {\n  text-anchor: middle;\n}\n.inputPortLabel {\n  text-anchor: end;\n}\n.splitjoinBody {\n  fill:#000;\n}\n</style>\n  <g s:type=\"mux\" transform=\"translate(50, 50)\" s:width=\"20\" s:height=\"40\">\n    <s:alias val=\"$pmux\"/>\n    <s:alias val=\"$mux\"/>\n    <s:alias val=\"$_MUX_\"/>\n\n    <path d=\"M0,0 L20,10 L20,30 L0,40 Z\" class=\"$cell_id\"/>\n\n    <g s:x=\"0\" s:y=\"10\" s:pid=\"A\"/>\n    <g s:x=\"0\" s:y=\"30\" s:pid=\"B\"/>\n    <g s:x=\"10\" s:y=\"35\" s:pid=\"S\"/>\n    <g s:x=\"20\" s:y=\"20\" s:pid=\"Y\"/>\n  </g>\n\n  <!-- and -->\n  <g s:type=\"and\" transform=\"translate(150,50)\" s:width=\"30\" s:height=\"25\">\n    <s:alias val=\"$and\"/>\n    <s:alias val=\"$logic_and\"/>\n    <s:alias val=\"$_AND_\"/>\n\n    <path d=\"M0,0 L0,25 L15,25 A15 12.5 0 0 0 15,0 Z\" class=\"$cell_id\"/>\n\n    <g s:x=\"0\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"0\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"30\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n  <g s:type=\"nand\" transform=\"translate(150,100)\" s:width=\"30\" s:height=\"25\">\n    <s:alias val=\"$nand\"/>\n    <s:alias val=\"$logic_nand\"/>\n    <s:alias val=\"$_NAND_\"/>\n\n    <path d=\"M0,0 L0,25 L15,25 A15 12.5 0 0 0 15,0 Z\" class=\"$cell_id\"/>\n    <circle cx=\"34\" cy=\"12.5\" r=\"3\" class=\"$cell_id\"/>\n\n    <g s:x=\"0\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"0\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"36\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <!-- or -->\n  <g s:type=\"or\" transform=\"translate(250,50)\" s:width=\"30\" s:height=\"25\">\n    <s:alias val=\"$or\"/>\n    <s:alias val=\"$logic_or\"/>\n    <s:alias val=\"$_OR_\"/>\n\n    <path d=\"M0,25 L0,25 L15,25 A15 12.5 0 0 0 15,0 L0,0\" class=\"$cell_id\"/>\n    <path d=\"M0,0 A30 25 0 0 1 0,25\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"30\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n  <g s:type=\"reduce_nor\" transform=\"translate(250, 100)\" s:width=\"33\" s:height=\"25\">\n    <s:alias val=\"$nor\"/>\n    <s:alias val=\"$reduce_nor\"/>\n    <s:alias val=\"$_NOR_\"/>\n\n    <path d=\"M0,25 L0,25 L15,25 A15 12.5 0 0 0 15,0 L0,0\" class=\"$cell_id\"/>\n    <path d=\"M0,0 A30 25 0 0 1 0,25\" class=\"$cell_id\"/>\n    <circle cx=\"34\" cy=\"12.5\" r=\"3\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"36\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <!--xor -->\n  <g s:type=\"reduce_xor\" transform=\"translate(350, 50)\" s:width=\"33\" s:height=\"25\">\n    <s:alias val=\"$xor\"/>\n    <s:alias val=\"$reduce_xor\"/>\n    <s:alias val=\"$_XOR_\"/>\n\n    <path d=\"M3,0 A30 25 0 0 1 3,25 A30 25 0 0 0 33,12.5 A30 25 0 0 0 3,0\" class=\"$cell_id\"/>\n    <path d=\"M0,0 A30 25 0 0 1 0,25\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"33\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n  <g s:type=\"reduce_nxor\" transform=\"translate(350, 100)\" s:width=\"33\" s:height=\"25\">\n    <s:alias val=\"$xnor\"/>\n    <s:alias val=\"$reduce_xnor\"/>\n    <s:alias val=\"$_XNOR_\"/>\n\n    <path d=\"M3,0 A30 25 0 0 1 3,25 A30 25 0 0 0 33,12.5 A30 25 0 0 0 3,0\" class=\"$cell_id\"/>\n    <path d=\"M0,0 A30 25 0 0 1 0,25\" class=\"$cell_id\"/>\n    <circle cx=\"35\" cy=\"12.5\" r=\"3\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"38\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <!--buffer -->\n  <g s:type=\"not\" transform=\"translate(450,100)\" s:width=\"30\" s:height=\"20\">\n    <s:alias val=\"$_NOT_\"/>\n    <s:alias val=\"$not\"/>\n\n    <path d=\"M0,0 L0,20 L20,10 Z\" class=\"$cell_id\"/>\n    <circle cx=\"23\" cy=\"10\" r=\"3\" class=\"$cell_id\"/>\n\n    <g s:x=\"0\" s:y=\"10\" s:pid=\"A\"/>\n    <g s:x=\"25\" s:y=\"10\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"add\" transform=\"translate(50, 150)\" s:width=\"25\" s:height=\"25\">\n    <s:alias val=\"$add\"/>\n\n    <circle r=\"12.5\" cx=\"12.5\" cy=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"12.5\" y2=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"12.5\" x2=\"12.5\" y1=\"7.5\" y2=\"17.5\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"25\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"sub\" transform=\"translate(150,150)\" s:width=\"25\" s:height=\"25\">\n    <s:alias val=\"$sub\"/>\n\n    <circle r=\"12.5\" cx=\"12.5\" cy=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"12.5\" y2=\"12.5\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"25\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n  <g s:type=\"eq\" transform=\"translate(250,150)\" s:width=\"25\" s:height=\"25\">\n    <s:alias val=\"$eq\"/>\n\n    <circle r=\"12.5\" cx=\"12.5\" cy=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"10\" y2=\"10\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"15\" y2=\"15\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"25\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"dff\" transform=\"translate(350,150)\" s:width=\"30\" s:height=\"40\">\n    <s:alias val=\"$dff\"/>\n    <s:alias val=\"$_DFF_\"/>\n\n    <rect width=\"30\" height=\"40\" x=\"0\" y=\"0\" class=\"$cell_id\"/>\n    <path d=\"M0,35 L5,30 L0,25\" class=\"$cell_id\"/>\n\n    <g s:x=\"30\" s:y=\"10\" s:pid=\"Q\"/>\n    <g s:x=\"0\" s:y=\"30\" s:pid=\"CLK\"/>\n    <g s:x=\"0\" s:y=\"10\" s:pid=\"D\"/>\n  </g>\n\n  <g s:type=\"inputExt\" transform=\"translate(50,200)\" s:width=\"30\" s:height=\"20\">\n    <text x=\"15\" y=\"-4\" class=\"nodelabel $cell_id\" s:attribute=\"ref\">input</text>\n    <s:alias val=\"$_inputExt_\"/>\n    <path d=\"M0,0 L0,20 L15,20 L30,10 L15,0 Z\" class=\"$cell_id\"/>\n    <g s:x=\"28\" s:y=\"10\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"constant\" transform=\"translate(150,200)\" s:width=\"30\" s:height=\"20\">\n    <text x=\"15\" y=\"-4\" class=\"nodelabel $cell_id\" s:attribute=\"ref\">constant</text>\n\n    <s:alias val=\"$_constant_\"/>\n    <rect width=\"30\" height=\"20\" class=\"$cell_id\"/>\n\n    <g s:x=\"30\" s:y=\"10\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"outputExt\" transform=\"translate(250,200)\" s:width=\"30\" s:height=\"20\">\n    <text x=\"15\" y=\"-4\" class=\"nodelabel $cell_id\" s:attribute=\"ref\">output</text>\n    <s:alias val=\"$_outputExt_\"/>\n    <path d=\"M30,0 L30,20 L15,20 L0,10 L15,0 Z\" class=\"$cell_id\"/>\n\n    <g s:x=\"0\" s:y=\"10\" s:pid=\"A\"/>\n  </g>\n\n  <g s:type=\"split\" transform=\"translate(350,200)\" s:width=\"5\" s:height=\"40\">\n    <rect width=\"5\" height=\"40\" class=\"splitjoinBody\" s:generic=\"body\"/>\n    <s:alias val=\"$_split_\"/>\n\n    <g s:x=\"0\" s:y=\"20\" s:pid=\"in\"/>\n    <g transform=\"translate(5, 10)\" s:x=\"4\" s:y=\"10\" s:pid=\"out0\">\n      <text x=\"5\" y=\"-4\">hi:lo</text>\n    </g>\n    <g transform=\"translate(5, 30)\" s:x=\"4\" s:y=\"30\" s:pid=\"out1\">\n      <text x=\"5\" y=\"-4\">hi:lo</text>\n    </g>\n  </g>\n\n  <g s:type=\"join\" transform=\"translate(450,200)\" s:width=\"4\" s:height=\"40\">\n    <rect width=\"5\" height=\"40\" class=\"splitjoinBody\" s:generic=\"body\"/>\n    <s:alias val=\"$_join_\"/>\n    <g s:x=\"5\" s:y=\"20\"  s:pid=\"out\"/>\n    <g transform=\"translate(0, 10)\" s:x=\"0\" s:y=\"10\" s:pid=\"in0\">\n      <text x=\"-3\" y=\"-4\" class=\"inputPortLabel\">hi:lo</text>\n    </g>\n    <g transform=\"translate(0, 30)\" s:x=\"0\" s:y=\"30\" s:pid=\"in1\">\n      <text x=\"-3\" y=\"-4\" class=\"inputPortLabel\">hi:lo</text>\n    </g>\n  </g>\n\n  <g s:type=\"generic\" transform=\"translate(550,200)\" s:width=\"30\" s:height=\"40\">\n    <text x=\"15\" y=\"-4\" class=\"nodelabel $cell_id\" s:attribute=\"ref\">generic</text>\n    <rect width=\"30\" height=\"40\" s:generic=\"body\" class=\"$cell_id\"/>\n\n    <g transform=\"translate(30, 10)\" s:x=\"30\" s:y=\"10\" s:pid=\"out0\">\n      <text x=\"5\" y=\"-4\" style=\"fill:#000; stroke:none\" class=\"$cell_id\">out0</text>\n    </g>\n    <g transform=\"translate(30, 30)\" s:x=\"30\" s:y=\"30\" s:pid=\"out1\">\n      <text x=\"5\" y=\"-4\" style=\"fill:#000;stroke:none\" class=\"$cell_id\">out1</text>\n    </g>\n    <g transform=\"translate(0, 10)\" s:x=\"0\" s:y=\"10\" s:pid=\"in0\">\n      <text x=\"-3\" y=\"-4\" class=\"inputPortLabel $cell_id\">in0</text>\n    </g>\n    <g transform=\"translate(0, 30)\" s:x=\"0\" s:y=\"30\" s:pid=\"in1\">\n      <text x=\"-3\" y=\"-4\" class=\"inputPortLabel $cell_id\">in1</text>\n    </g>\n  </g>\n\n</svg>\n";
+const digital = "<svg  xmlns=\"http://www.w3.org/2000/svg\"\n  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n  xmlns:s=\"https://github.com/nturley/netlistsvg\"\n  width=\"800\" height=\"300\">\n  <s:properties>\n    <s:layoutEngine\n      org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers=\"35\"\n      org.eclipse.elk.spacing.nodeNode= \"35\"\n      org.eclipse.elk.layered.layering.strategy= \"LONGEST_PATH\"\n    />\n    <s:low_priority_alias val=\"$dff\" />\n  </s:properties>\n<style>\nsvg {\n  stroke:#000;\n  fill:none;\n}\ntext {\n  fill:#000;\n  stroke:none;\n  font-size:10px;\n  font-weight: bold;\n  font-family: \"Courier New\", monospace;\n}\n.nodelabel {\n  text-anchor: middle;\n}\n.inputPortLabel {\n  text-anchor: end;\n}\n.splitjoinBody {\n  fill:#000;\n}\n</style>\n  <g s:type=\"mux\" transform=\"translate(50, 50)\" s:width=\"20\" s:height=\"40\">\n    <s:alias val=\"$pmux\"/>\n    <s:alias val=\"$mux\"/>\n    <s:alias val=\"$_MUX_\"/>\n\n    <path d=\"M0,0 L20,10 L20,30 L0,40 Z\" class=\"$cell_id\"/>\n\n    <g s:x=\"0\" s:y=\"10\" s:pid=\"A\"/>\n    <g s:x=\"0\" s:y=\"30\" s:pid=\"B\"/>\n    <g s:x=\"10\" s:y=\"35\" s:pid=\"S\"/>\n    <g s:x=\"20\" s:y=\"20\" s:pid=\"Y\"/>\n  </g>\n\n  <!-- and -->\n  <g s:type=\"and\" transform=\"translate(150,50)\" s:width=\"30\" s:height=\"25\">\n    <s:alias val=\"$and\"/>\n    <s:alias val=\"$logic_and\"/>\n    <s:alias val=\"$_AND_\"/>\n\n    <path d=\"M0,0 L0,25 L15,25 A15 12.5 0 0 0 15,0 Z\" class=\"$cell_id\"/>\n\n    <g s:x=\"0\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"0\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"30\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n  <g s:type=\"nand\" transform=\"translate(150,100)\" s:width=\"30\" s:height=\"25\">\n    <s:alias val=\"$nand\"/>\n    <s:alias val=\"$logic_nand\"/>\n    <s:alias val=\"$_NAND_\"/>\n    <s:alias val=\"$_ANDNOT_\"/>\n\n    <path d=\"M0,0 L0,25 L15,25 A15 12.5 0 0 0 15,0 Z\" class=\"$cell_id\"/>\n    <circle cx=\"34\" cy=\"12.5\" r=\"3\" class=\"$cell_id\"/>\n\n    <g s:x=\"0\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"0\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"36\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <!-- or -->\n  <g s:type=\"or\" transform=\"translate(250,50)\" s:width=\"30\" s:height=\"25\">\n    <s:alias val=\"$or\"/>\n    <s:alias val=\"$logic_or\"/>\n    <s:alias val=\"$_OR_\"/>\n\n    <path d=\"M0,25 L0,25 L15,25 A15 12.5 0 0 0 15,0 L0,0\" class=\"$cell_id\"/>\n    <path d=\"M0,0 A30 25 0 0 1 0,25\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"30\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n  <g s:type=\"reduce_nor\" transform=\"translate(250, 100)\" s:width=\"33\" s:height=\"25\">\n    <s:alias val=\"$nor\"/>\n    <s:alias val=\"$reduce_nor\"/>\n    <s:alias val=\"$_NOR_\"/>\n    <s:alias val=\"$_ORNOT_\"/>\n\n    <path d=\"M0,25 L0,25 L15,25 A15 12.5 0 0 0 15,0 L0,0\" class=\"$cell_id\"/>\n    <path d=\"M0,0 A30 25 0 0 1 0,25\" class=\"$cell_id\"/>\n    <circle cx=\"34\" cy=\"12.5\" r=\"3\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"36\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <!--xor -->\n  <g s:type=\"reduce_xor\" transform=\"translate(350, 50)\" s:width=\"33\" s:height=\"25\">\n    <s:alias val=\"$xor\"/>\n    <s:alias val=\"$reduce_xor\"/>\n    <s:alias val=\"$_XOR_\"/>\n\n    <path d=\"M3,0 A30 25 0 0 1 3,25 A30 25 0 0 0 33,12.5 A30 25 0 0 0 3,0\" class=\"$cell_id\"/>\n    <path d=\"M0,0 A30 25 0 0 1 0,25\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"33\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n  <g s:type=\"reduce_nxor\" transform=\"translate(350, 100)\" s:width=\"33\" s:height=\"25\">\n    <s:alias val=\"$xnor\"/>\n    <s:alias val=\"$reduce_xnor\"/>\n    <s:alias val=\"$_XNOR_\"/>\n\n    <path d=\"M3,0 A30 25 0 0 1 3,25 A30 25 0 0 0 33,12.5 A30 25 0 0 0 3,0\" class=\"$cell_id\"/>\n    <path d=\"M0,0 A30 25 0 0 1 0,25\" class=\"$cell_id\"/>\n    <circle cx=\"35\" cy=\"12.5\" r=\"3\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"38\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <!--buffer -->\n  <g s:type=\"not\" transform=\"translate(450,100)\" s:width=\"30\" s:height=\"20\">\n    <s:alias val=\"$_NOT_\"/>\n    <s:alias val=\"$not\"/>\n    <s:alias val=\"$logic_not\"/>\n\n    <path d=\"M0,0 L0,20 L20,10 Z\" class=\"$cell_id\"/>\n    <circle cx=\"23\" cy=\"10\" r=\"3\" class=\"$cell_id\"/>\n\n    <g s:x=\"0\" s:y=\"10\" s:pid=\"A\"/>\n    <g s:x=\"25\" s:y=\"10\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"add\" transform=\"translate(50, 150)\" s:width=\"25\" s:height=\"25\">\n    <s:alias val=\"$add\"/>\n\n    <circle r=\"12.5\" cx=\"12.5\" cy=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"12.5\" y2=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"12.5\" x2=\"12.5\" y1=\"7.5\" y2=\"17.5\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"25\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"sub\" transform=\"translate(150,150)\" s:width=\"25\" s:height=\"25\">\n    <s:alias val=\"$sub\"/>\n\n    <circle r=\"12.5\" cx=\"12.5\" cy=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"12.5\" y2=\"12.5\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"25\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n  <g s:type=\"eq\" transform=\"translate(250,150)\" s:width=\"25\" s:height=\"25\">\n    <s:alias val=\"$eq\"/>\n\n    <circle r=\"12.5\" cx=\"12.5\" cy=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"10\" y2=\"10\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"15\" y2=\"15\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"25\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"dff\" transform=\"translate(350,150)\" s:width=\"30\" s:height=\"40\">\n    <s:alias val=\"$dff\"/>\n    <s:alias val=\"$_DFF_\"/>\n    <s:alias val=\"$_DFF_P_\"/>\n\n    <rect width=\"30\" height=\"40\" x=\"0\" y=\"0\" class=\"$cell_id\"/>\n    <path d=\"M0,35 L5,30 L0,25\" class=\"$cell_id\"/>\n\n    <g s:x=\"30\" s:y=\"10\" s:pid=\"Q\"/>\n    <g s:x=\"0\" s:y=\"30\" s:pid=\"CLK\"/>\n    <g s:x=\"0\" s:y=\"30\" s:pid=\"C\"/>\n    <g s:x=\"0\" s:y=\"10\" s:pid=\"D\"/>\n  </g>\n\n  <g s:type=\"dffn\" transform=\"translate(450,150)\" s:width=\"30\" s:height=\"40\">\n    <s:alias val=\"$_DFF_N_\"/>\n\n    <rect width=\"30\" height=\"40\" x=\"0\" y=\"0\" class=\"$cell_id\"/>\n    <path d=\"M0,35 L5,30 L0,25\" class=\"$cell_id\"/>\n    <circle cx=\"-3\" cy=\"30\" r=\"3\" class=\"$cell_id\"/>\n\n    <g s:x=\"30\" s:y=\"10\" s:pid=\"Q\"/>\n    <g s:x=\"-6\" s:y=\"30\" s:pid=\"CLK\"/>\n    <g s:x=\"-6\" s:y=\"30\" s:pid=\"C\"/>\n    <g s:x=\"0\" s:y=\"10\" s:pid=\"D\"/>\n  </g>\n\n  <g s:type=\"lt\" transform=\"translate(50,200)\" s:width=\"25\" s:height=\"25\">\n    <s:alias val=\"$lt\"/>\n\n    <circle r=\"12.5\" cx=\"12.5\" cy=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"12.5\" y2=\"7.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"12.5\" y2=\"17.5\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"25\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"le\" transform=\"translate(150,200)\" s:width=\"25\" s:height=\"25\">\n    <s:alias val=\"$le\"/>\n\n    <circle r=\"12.5\" cx=\"12.5\" cy=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"12.5\" y2=\"7.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"12.5\" y2=\"17.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"15\" y2=\"20\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"25\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"ge\" transform=\"translate(250,200)\" s:width=\"25\" s:height=\"25\">\n    <s:alias val=\"$ge\"/>\n\n    <circle r=\"12.5\" cx=\"12.5\" cy=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"7.5\" y2=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"17.5\" y2=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"20\" y2=\"15\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"25\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"gt\" transform=\"translate(350,200)\" s:width=\"25\" s:height=\"25\">\n    <s:alias val=\"$gt\"/>\n\n    <circle r=\"12.5\" cx=\"12.5\" cy=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"7.5\" y2=\"12.5\" class=\"$cell_id\"/>\n    <line x1=\"7.5\" x2=\"17.5\" y1=\"17.5\" y2=\"12.5\" class=\"$cell_id\"/>\n\n    <g s:x=\"3\" s:y=\"5\" s:pid=\"A\"/>\n    <g s:x=\"3\" s:y=\"20\" s:pid=\"B\"/>\n    <g s:x=\"25\" s:y=\"12.5\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"inputExt\" transform=\"translate(50,250)\" s:width=\"30\" s:height=\"20\">\n    <text x=\"15\" y=\"-4\" class=\"nodelabel $cell_id\" s:attribute=\"ref\">input</text>\n    <s:alias val=\"$_inputExt_\"/>\n    <path d=\"M0,0 L0,20 L15,20 L30,10 L15,0 Z\" class=\"$cell_id\"/>\n    <g s:x=\"28\" s:y=\"10\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"constant\" transform=\"translate(150,250)\" s:width=\"30\" s:height=\"20\">\n    <text x=\"15\" y=\"-4\" class=\"nodelabel $cell_id\" s:attribute=\"ref\">constant</text>\n\n    <s:alias val=\"$_constant_\"/>\n    <rect width=\"30\" height=\"20\" class=\"$cell_id\"/>\n\n    <g s:x=\"30\" s:y=\"10\" s:pid=\"Y\"/>\n  </g>\n\n  <g s:type=\"outputExt\" transform=\"translate(250,250)\" s:width=\"30\" s:height=\"20\">\n    <text x=\"15\" y=\"-4\" class=\"nodelabel $cell_id\" s:attribute=\"ref\">output</text>\n    <s:alias val=\"$_outputExt_\"/>\n    <path d=\"M30,0 L30,20 L15,20 L0,10 L15,0 Z\" class=\"$cell_id\"/>\n\n    <g s:x=\"0\" s:y=\"10\" s:pid=\"A\"/>\n  </g>\n\n  <g s:type=\"split\" transform=\"translate(350,250)\" s:width=\"5\" s:height=\"40\">\n    <rect width=\"5\" height=\"40\" class=\"splitjoinBody\" s:generic=\"body\"/>\n    <s:alias val=\"$_split_\"/>\n\n    <g s:x=\"0\" s:y=\"20\" s:pid=\"in\"/>\n    <g transform=\"translate(5, 10)\" s:x=\"4\" s:y=\"10\" s:pid=\"out0\">\n      <text x=\"5\" y=\"-4\">hi:lo</text>\n    </g>\n    <g transform=\"translate(5, 30)\" s:x=\"4\" s:y=\"30\" s:pid=\"out1\">\n      <text x=\"5\" y=\"-4\">hi:lo</text>\n    </g>\n  </g>\n\n  <g s:type=\"join\" transform=\"translate(450,250)\" s:width=\"4\" s:height=\"40\">\n    <rect width=\"5\" height=\"40\" class=\"splitjoinBody\" s:generic=\"body\"/>\n    <s:alias val=\"$_join_\"/>\n    <g s:x=\"5\" s:y=\"20\"  s:pid=\"out\"/>\n    <g transform=\"translate(0, 10)\" s:x=\"0\" s:y=\"10\" s:pid=\"in0\">\n      <text x=\"-3\" y=\"-4\" class=\"inputPortLabel\">hi:lo</text>\n    </g>\n    <g transform=\"translate(0, 30)\" s:x=\"0\" s:y=\"30\" s:pid=\"in1\">\n      <text x=\"-3\" y=\"-4\" class=\"inputPortLabel\">hi:lo</text>\n    </g>\n  </g>\n\n  <g s:type=\"generic\" transform=\"translate(550,250)\" s:width=\"30\" s:height=\"40\">\n    <text x=\"15\" y=\"-4\" class=\"nodelabel $cell_id\" s:attribute=\"ref\">generic</text>\n    <rect width=\"30\" height=\"40\" s:generic=\"body\" class=\"$cell_id\"/>\n\n    <g transform=\"translate(30, 10)\" s:x=\"30\" s:y=\"10\" s:pid=\"out0\">\n      <text x=\"5\" y=\"-4\" style=\"fill:#000; stroke:none\" class=\"$cell_id\">out0</text>\n    </g>\n    <g transform=\"translate(30, 30)\" s:x=\"30\" s:y=\"30\" s:pid=\"out1\">\n      <text x=\"5\" y=\"-4\" style=\"fill:#000;stroke:none\" class=\"$cell_id\">out1</text>\n    </g>\n    <g transform=\"translate(0, 10)\" s:x=\"0\" s:y=\"10\" s:pid=\"in0\">\n      <text x=\"-3\" y=\"-4\" class=\"inputPortLabel $cell_id\">in0</text>\n    </g>\n    <g transform=\"translate(0, 30)\" s:x=\"0\" s:y=\"30\" s:pid=\"in1\">\n      <text x=\"-3\" y=\"-4\" class=\"inputPortLabel $cell_id\">in1</text>\n    </g>\n  </g>\n\n</svg>\n";
 const analog = "<svg xmlns=\"http://www.w3.org/2000/svg\"\n     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n     xmlns:s=\"https://github.com/nturley/netlistsvg\">\n  <s:properties\n    constants=\"false\"\n    splitsAndJoins=\"false\"\n    genericsLaterals=\"true\">\n    <s:layoutEngine\n        org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers=\"5\"\n        org.eclipse.elk.layered.compaction.postCompaction.strategy=\"4\"\n        org.eclipse.elk.spacing.nodeNode= \"35\"\n        org.eclipse.elk.direction=\"DOWN\"/>\n  </s:properties>\n<style>\nsvg {\n  stroke: #000;\n  fill: none;\n}\ntext {\n  fill: #000;\n  stroke: none;\n  font-size: 10px;\n  font-weight: bold;\n  font-family: \"Courier New\", monospace;\n}\n.nodelabel {\n  text-anchor: middle;\n}\n.inputPortLabel {\n  text-anchor: end;\n}\n.splitjoinBody {\n  fill: #000;\n}\n.symbol {\n  stroke-linejoin: round;\n  stroke-linecap: round;\n  stroke-width: 2;\n}\n.detail {\n  stroke-linejoin: round;\n  stroke-linecap: round;\n  fill: #000;\n}\n</style>\n\n<!-- power -->\n<g s:type=\"vcc\" s:width=\"20\" s:height=\"30\" transform=\"translate(5,20)\">\n  <s:alias val=\"vcc\" />\n  <text x=\"10\" y=\"-4\" class=\"nodelabel $cell_id\" s:attribute=\"name\">name</text>\n  <path d=\"M0,0 H20 L10,15 Z M10,15 V30\" class=\"$cell_id\"/>\n  <g s:x=\"10\" s:y=\"30\" s:pid=\"A\" s:position=\"bottom\"/>\n</g>\n\n<g s:type=\"vee\" s:width=\"20\" s:height=\"30\" transform=\"translate(40,35)\">\n\t  <s:alias val=\"vee\" />\n\t  <text x=\"10\" y=\"10\" class=\"nodelabel $cell_id\" s:attribute=\"name\">name</text>\n\t  <path d=\"M0,0 H20 L10,-15 Z M10,-15 V-30\" class=\"$cell_id\"/>\n\t  <g s:x=\"10\" s:y=\"-30\" s:pid=\"A\" s:position=\"top\"/>\n\t</g>\n\n<g s:type=\"gnd\" s:width=\"20\" s:height=\"30\" transform=\"translate(80,35)\">\n  <s:alias val=\"gnd\"/>\n  <text x=\"30\" y=\"20\" class=\"nodelabel $cell_id\" s:attribute=\"name\">name</text>\n  <path d=\"M0,0 H20 M3,5 H17 M7,10 H13 M10,0 V-15\" class=\"$cell_id\"/>\n  <g s:x=\"10\" s:y=\"-15\" s:pid=\"A\" s:position=\"top\"/>\n</g>\n<!-- power -->\n\n<!-- signal -->\n<g s:type=\"inputExt\" s:width=\"30\" s:height=\"20\" transform=\"translate(5,70)\">\n  <text x=\"15\" y=\"-4\" class=\"$cell_id\" s:attribute=\"ref\">input</text>\n  <s:alias val=\"$_inputExt_\"/>\n  <path d=\"M0,0 V20 H15 L30,10 15,0 Z\" class=\"$cell_id\"/>\n  <g s:x=\"30\" s:y=\"10\" s:pid=\"Y\" s:position=\"right\"/>\n</g>\n\n<g s:type=\"outputExt\" s:width=\"30\" s:height=\"20\" transform=\"translate(60,70)\">\n  <text x=\"15\" y=\"-4\" class=\"$cell_id\" s:attribute=\"ref\">output</text>\n  <s:alias val=\"$_outputExt_\"/>\n  <path d=\"M30,0 V20 H15 L0,10 15,0 Z\" class=\"$cell_id\"/>\n  <g s:x=\"0\" s:y=\"10\" s:pid=\"A\" s:position=\"left\"/>\n</g>\n<!-- signal -->\n\n<!-- passives -->\n<g s:type=\"resistor_h\" s:width=\"50\" s:height=\"10\" transform=\"translate(5,110)\">\n  <s:alias val=\"r_h\"/>\n  <text class=\"nodelabel $cell_id\" x=\"25\" y=\"-5\" s:attribute=\"ref\">X1</text>\n  <text class=\"nodelabel $cell_id\" x=\"25\" y=\"20\" s:attribute=\"value\">Xk</text>\n  <path d=\"M10,0 H40 V10 H10 Z\" class=\"symbol $cell_id\"/>\n  <path d=\"M0,5 H10 M40,5 H50\" class=\"connect $cell_id\"/>\n  <g s:x=\"0\" s:y=\"5\" s:pid=\"A\" s:position=\"left\"/>\n  <g s:x=\"50\" s:y=\"5\" s:pid=\"B\" s:position=\"right\"/>\n</g>\n\n<g s:type=\"resistor_v\" s:width=\"10\" s:height=\"50\" transform=\"translate(25,130)\">\n  <s:alias val=\"r_v\"/>\n  <text x=\"15\"  y=\"15\" s:attribute=\"ref\" class=\"$cell_id\">X1</text>\n  <text x=\"15\" y=\"30\" s:attribute=\"value\" class=\"$cell_id\" >Xk</text>\n  <path d=\"M0,10 V40 H10 V10 Z\" class=\"symbol $cell_id\"/>\n  <path d=\"M5,0 V10 M5,40 V50\" class=\"connect $cell_id\"/>\n  <g s:x=\"5\" s:y=\"0\" s:pid=\"A\" s:position=\"top\"/>\n  <g s:x=\"5\" s:y=\"50\" s:pid=\"B\" s:position=\"bottom\"/>\n</g>\n\n<g s:type=\"capacitor_h\" s:width=\"50\" s:height=\"30\" transform=\"translate(60,100)\">\n  <s:alias val=\"c_h\"/>\n  <text x=\"35\" y=\"5\" s:attribute=\"ref\" class=\"$cell_id\">X1</text>\n  <text x=\"35\" y=\"30\" s:attribute=\"value\" class=\"$cell_id\">Xu</text>\n  <path d=\"M20,0 V30 M30,0 V30\" class=\"symbol $cell_id\"/>\n  <path d=\"M0,15 H20 M30,15 H50\" class=\"connect $cell_id\"/>\n  <g s:x=\"0\" s:y=\"15\" s:pid=\"A\" s:position=\"left\"/>\n  <g s:x=\"50\" s:y=\"15\" s:pid=\"B\" s:position=\"right\"/>\n</g>\n\n<g s:type=\"capacitor_v\" s:width=\"30\" s:height=\"50\" transform=\"translate(70,130)\">\n  <s:alias val=\"c_v\"/>\n  <text x=\"25\" y=\"10\" s:attribute=\"ref\" class=\"$cell_id\">X1</text>\n  <text x=\"25\" y=\"45\" s:attribute=\"value\" class=\"$cell_id\">Xu</text>\n  <path d=\"M0,20 H30 M0,30 H30\" class=\"symbol $cell_id\"/>\n  <path d=\"M15,0 V20 M15,30 V50\" class=\"connect $cell_id\"/>\n  <g s:x=\"15\" s:y=\"0\" s:pid=\"A\" s:position=\"top\"/>\n  <g s:x=\"15\" s:y=\"50\" s:pid=\"B\" s:position=\"bottom\"/>\n</g>\n\n<g s:type=\"inductor_h\" s:width=\"50\" s:height=\"10\" transform=\"translate(115,110)\">\n  <s:alias val=\"l_h\"/>\n  <text class=\"nodelabel $cell_id\" x=\"25\" y=\"-5\" s:attribute=\"ref\">X1</text>\n  <text class=\"nodelabel $cell_id\" x=\"25\" y=\"20\" s:attribute=\"value\">XpF</text>\n  <path d=\"M5,5 A5,5 0 0 1 15,5 A5,5 0 0 1 25,5 A5,5 0 0 1 35,5 A5,5 0 0 1 45,5\" class=\"$cell_id\"/>\n  <path d=\"M0,5 H5 M45,5 H50\" class=\"connect $cell_id\"/>\n  <g s:x=\"0\" s:y=\"5\" s:pid=\"A\" s:position=\"left\"/>\n  <g s:x=\"50\" s:y=\"5\" s:pid=\"B\" s:position=\"right\"/>\n</g>\n\n<g s:type=\"inductor_v\" s:width=\"10\" s:height=\"50\" transform=\"translate(135,130)\">\n  <s:alias val=\"l_v\"/>\n  <text x=\"15\" y=\"15\" s:attribute=\"ref\" class=\"$cell_id\">X1</text>\n  <text x=\"15\" y=\"35\" s:attribute=\"value\" class=\"$cell_id\">XpF</text>\n  <path d=\"M5,5 A5,5 0 0 1 5,15 A5,5 0 0 1 5,25 A5,5 0 0 1 5,35 A5,5 0 0 1 5,45\" class=\"$cell_id\"/>\n  <path d=\"M5,0 V5 M5,45 V50\" class=\"connect $cell_id\"/>\n  <g s:x=\"5\" s:y=\"0\" s:pid=\"A\" s:position=\"top\"/>\n  <g s:x=\"5\" s:y=\"50\" s:pid=\"B\" s:position=\"bottom\"/>\n</g>\n<!-- passives -->\n\n<!-- sources -->\n<g s:type=\"voltage_source\" s:width=\"32\" s:height=\"52\" transform=\"translate(20,180)\">\n  <s:alias val=\"v\"/>\n  <text x=\"35\" y=\"20\" s:attribute=\"ref\" class=\"$cell_id\">X1</text>\n  <text x=\"35\" y=\"35\" s:attribute=\"value\" class=\"$cell_id\">XV</text>\n  <circle cx=\"16\" cy=\"26\" r=\"16\" class=\"symbol $cell_id\"/>\n  <path d=\"M16,10 V42\" class=\"detail $cell_id\"/>\n  <path d=\"M16,0 V10 M16,42 V52\" class=\"connect $cell_id\"/>\n  <g s:x=\"16\" s:y=\"0\" s:pid=\"+\" s:position=\"top\"/>\n  <g s:x=\"16\" s:y=\"52\" s:pid=\"-\" s:position=\"bottom\"/>\n</g>\n\n<g s:type=\"current_source\" s:width=\"32\" s:height=\"52\" transform=\"translate(75,180)\">\n  <s:alias val=\"i\"/>\n  <text x=\"35\" y=\"20\" s:attribute=\"ref\" class=\"$cell_id\">X1</text>\n  <text x=\"35\" y=\"35\" s:attribute=\"value\" class=\"$cell_id\">XA</text>\n  <circle cx=\"16\" cy=\"26\" r=\"16\" class=\"symbol $cell_id\"/>\n  <path d=\"M0,26 H32\" class=\"detail $cell_id\"/>\n  <path d=\"M16,0 V10 M16,42 V52\" class=\"connect $cell_id\"/>\n  <g s:x=\"16\" s:y=\"0\" s:pid=\"+\" s:position=\"top\"/>\n  <g s:x=\"16\" s:y=\"52\" s:pid=\"-\" s:position=\"bottom\"/>\n</g>\n<!-- sources -->\n\n<!-- diodes -->\n<g s:type=\"diode_h\" s:width=\"50\" s:height=\"20\" transform=\"translate(5,250)\">\n  <s:alias val=\"d_h\"/>\n  <text class=\"nodelabel $cell_id\" x=\"25\" y=\"-5\" s:attribute=\"ref\">X1</text>\n  <path d=\"M15,0 V20 L35,10 Z M35,0 V20\" class=\"symbol $cell_id\"/>\n  <path d=\"M0,10 H15 M35,10 H50\" class=\"connect $cell_id\"/>\n  <g s:x=\"0\" s:y=\"10\" s:pid=\"+\" s:position=\"left\"/>\n  <g s:x=\"50\" s:y=\"10\" s:pid=\"-\" s:position=\"right\"/>\n</g>\n\n<g s:type=\"diode_v\" s:width=\"20\" s:height=\"50\" transform=\"translate(20,280)\">\n  <s:alias val=\"d_v\"/>\n  <text x=\"25\" y=\"25\" s:attribute=\"ref\" class=\"$cell_id\">X1</text>\n  <path d=\"M0,15 H20 L10,35 Z M0,35 H20\" class=\"symbol $cell_id\"/>\n  <path d=\"M10,0 V15 M10,35 V50\" class=\"connect $cell_id\"/>\n  <g s:x=\"10\" s:y=\"0\" s:pid=\"+\" s:position=\"top\"/>\n  <g s:x=\"10\" s:y=\"50\" s:pid=\"-\" s:position=\"bottom\"/>\n</g>\n\n<g s:type=\"diode_schottky_h\" s:width=\"50\" s:height=\"20\" transform=\"translate(60,250)\">\n  <s:alias val=\"d_sk_h\"/>\n  <text class=\"nodelabel $cell_id\" x=\"25\" y=\"-5\" s:attribute=\"ref\">X1</text>\n  <path d=\"M15,0 V20 L35,10 Z M35,0 V20\" class=\"symbol $cell_id\"/>\n  <path d=\"M0,10 H15 M35,10 H50\" class=\"connect $cell_id\"/>\n  <!-- schottky -->\n  <path d=\"M35,0 H40 M35,20 H30\" class=\"symbol $cell_id\"/>\n  <g s:x=\"0\" s:y=\"10\" s:pid=\"+\" s:position=\"left\"/>\n  <g s:x=\"50\" s:y=\"10\" s:pid=\"-\" s:position=\"right\"/>\n</g>\n\n<g s:type=\"diode_schottky_v\" s:width=\"20\" s:height=\"50\" transform=\"translate(75,280)\">\n  <s:alias val=\"d_sk_v\"/>\n  <text x=\"25\" y=\"25\" s:attribute=\"ref\" class=\"$cell_id\">X1</text>\n  <path d=\"M0,15 H20 L10,35 Z M0,35 H20\" class=\"symbol $cell_id\"/>\n  <path d=\"M10,0 V15 M10,35 V50\" class=\"connect $cell_id\"/>\n  <!-- schottky -->\n  <path d=\"M0,35 V40 M20,35 V30\" class=\"symbol $cell_id\"/>\n  <g s:x=\"10\" s:y=\"0\" s:pid=\"+\" s:position=\"top\"/>\n  <g s:x=\"10\" s:y=\"50\" s:pid=\"-\" s:position=\"bottom\"/>\n</g>\n\n<g s:type=\"diode_led_h\" s:width=\"50\" s:height=\"20\" transform=\"translate(115,250)\">\n  <s:alias val=\"d_led_h\"/>\n  <text class=\"nodelabel $cell_id\" x=\"10\" y=\"-5\" s:attribute=\"ref\">X1</text>\n  <path d=\"M15,0 V20 L35,10 Z M35,0 V20\" class=\"symbol $cell_id\"/>\n  <path d=\"M0,10 H15 M35,10 H50\" class=\"connect $cell_id\"/>\n  <!-- led -->\n  <path d=\"m20,-5 7,-7\" class=\"detail $cell_id\"/>\n  <path d=\"m24,-12 6,-3 -3,6 z\" class=\"detail $cell_id\"/>\n  <path d=\"m25,0 7,-7\" class=\"detail $cell_id\"/>\n  <path d=\"m29,-7 6,-3 -3,6 z\" class=\"detail $cell_id\"/>\n  <g s:x=\"0\" s:y=\"10\" s:pid=\"+\" s:position=\"top\"/>\n  <g s:x=\"50\" s:y=\"10\" s:pid=\"-\" s:position=\"bottom\"/>\n</g>\n\n<g s:type=\"diode_led_v\" s:width=\"20\" s:height=\"50\" transform=\"translate(130,280)\">\n  <s:alias val=\"d_led_v\"/>\n  <text x=\"25\" y=\"25\" s:attribute=\"ref\" class=\"$cell_id\">X1</text>\n  <path d=\"M0,15 H20 L10,35 Z M0,35 H20\" class=\"symbol $cell_id\"/>\n  <path d=\"M10,0 V15 M10,35 V50\" class=\"connect $cell_id\"/>\n  <!-- led -->\n  <path d=\"m-5,20 -7,7\" class=\"detail $cell_id\"/>\n  <path d=\"m-12,24 -3,6 6,-3 z\" class=\"detail $cell_id\"/>\n  <path d=\"m0,25 -7,7\" class=\"detail $cell_id\"/>\n  <path d=\"m-7,29 -3,6 6,-3 z\" class=\"detail $cell_id\"/>\n  <g s:x=\"10\" s:y=\"0\" s:pid=\"+\" s:position=\"top\"/>\n  <g s:x=\"10\" s:y=\"50\" s:pid=\"-\" s:position=\"bottom\"/>\n</g>\n<!-- diodes -->\n\n<!-- transistors -->\n<g s:type=\"transistor_npn\" s:width=\"32\" s:height=\"32\" transform=\"translate(15,350)\">\n  <s:alias val=\"q_npn\"/>\n  <text x=\"35\" y=\"20\" s:attribute=\"ref\" class=\"$cell_id\">X1</text>\n  <circle r=\"16\" cx=\"16\" cy=\"16\" class=\"symbol $cell_id\"/>\n  <path d=\"M0,16 H12 M12,6 V26\" class=\"detail $cell_id\"/>\n  <path d=\"m12,10 11,-8\" class=\"detail $cell_id\"/>\n  <path d=\"m12,21 11,8\" class=\"detail $cell_id\"/>\n  <!-- npn -->\n  <path d=\"m23,29 -6,-1 3,-5 z\" style=\"fill:#000000\" class=\"$cell_id\"/>\n  <g s:x=\"22\" s:y=\"2\" s:pid=\"C\" s:position=\"top\"/>\n  <g s:x=\"0\" s:y=\"16\" s:pid=\"B\" s:position=\"left\"/>\n  <g s:x=\"23\" s:y=\"29\" s:pid=\"E\" s:position=\"bottom\"/>\n</g>\n\n<g s:type=\"transistor_pnp\" s:width=\"32\" s:height=\"32\" transform=\"translate(85,350)\">\n  <s:alias val=\"q_pnp\"/>\n  <text x=\"35\" y=\"20\" s:attribute=\"ref\" class=\"$cell_id\">X1</text>\n  <circle r=\"16\" cx=\"16\" cy=\"16\" class=\"symbol $cell_id\"/>\n  <path d=\"M0,16 H12 M12,6 V26\" class=\"detail $cell_id\"/>\n  <path d=\"m12,10 11,-8\" class=\"detail $cell_id\"/>\n  <path d=\"m12,21 11,8\" class=\"detail $cell_id\"/>\n  <!-- pnp -->\n  <path d=\"m14,9 6,-1 -3,-5 z\" style=\"fill:#000000\" class=\"$cell_id\"/>\n  <g s:x=\"22\" s:y=\"2\" s:pid=\"C\" s:position=\"top\"/>\n  <g s:x=\"0\" s:y=\"16\" s:pid=\"B\" s:position=\"left\"/>\n  <g s:x=\"23\" s:y=\"29\" s:pid=\"E\" s:position=\"bottom\"/>\n</g>\n<!-- transistors -->\n\n<!-- builtin -->\n<g s:type=\"generic\" s:width=\"30\" s:height=\"40\" transform=\"translate(150, 400)\">\n  <text x=\"15\" y=\"-4\" class=\"nodelabel $cell_id\" s:attribute=\"ref\">generic</text>\n  <rect width=\"30\" height=\"40\" x=\"0\" y=\"0\" s:generic=\"body\" class=\"$cell_id\"/>\n  <g transform=\"translate(30,10)\"\n     s:x=\"30\" s:y=\"10\" s:pid=\"out0\" s:position=\"right\">\n    <text x=\"5\" y=\"-4\" class=\"$cell_id\">out0</text>\n  </g>\n  <g transform=\"translate(30,30)\"\n     s:x=\"30\" s:y=\"30\" s:pid=\"out1\" s:position=\"right\">\n    <text x=\"5\" y=\"-4\" class=\"$cell_id\">out1</text>\n  </g>\n  <g transform=\"translate(0,10)\"\n     s:x=\"0\" s:y=\"10\" s:pid=\"in0\" s:position=\"left\">\n      <text x=\"-3\" y=\"-4\" class=\"inputPortLabel $cell_id\">in0</text>\n  </g>\n  <g transform=\"translate(0,30)\"\n     s:x=\"0\" s:y=\"30\" s:pid=\"in1\" s:position=\"left\">\n    <text x=\"-3\" y=\"-4\" class=\"inputPortLabel $cell_id\">in1</text>\n  </g>\n</g>\n<!-- builtin -->\n\n<!-- misc -->\n<g s:type=\"opamp\" s:width=\"60\" s:height=\"40\" transform=\"translate(20,450)\">\n  <s:alias val=\"op\"/>\n  <text x=\"40\" y=\"35\" s:attribute=\"ref\" class=\"$cell_id\">X1</text>\n  <path d=\"M10,0 V40 L50,20 Z\" class=\"symbol $cell_id\"/>\n  <path d=\"M0,10 H10 M0,30 H10 M50,20 H60 M30,0 V10 M30,40 V30\" class=\"connect $cell_id\"/>\n  <path d=\"m15,10 5,0 m-2.5,-2.5 0,5\" class=\"detail $cell_id\"/>\n  <path d=\"m15,30 5,0\" class=\"detail $cell_id\"/>\n  <g s:x=\"0\" s:y=\"10\" s:pid=\"+\" s:position=\"left\"/>\n  <g s:x=\"0\" s:y=\"30\" s:pid=\"-\" s:position=\"left\"/>\n  <g s:x=\"60\" s:y=\"20\" s:pid=\"OUT\" s:position=\"right\"/>\n  <g s:x=\"30\" s:y=\"0\" s:pid=\"VCC\" s:position=\"top\"/>\n  <g s:x=\"30\" s:y=\"40\" s:pid=\"VEE\" s:position=\"bottom\"/>\n</g>\n\n<g s:type=\"xtal\" s:width=\"40\" s:height=\"30\" transform=\"translate(90,450)\">\n  <s:alias val=\"xtal\"/>\n  <text class=\"nodelabel $cell_id\" x=\"20\" y=\"45\" s:attribute=\"ref\">X1</text>\n  <rect x=\"15\" y=\"0\" width=\"10\" height=\"30\" class=\"symbol $cell_id\" />\n  <path d=\"M0,15 H10 M10,5 V25 M30,5 V25 M30,15 H40\" class=\"$cell_id\"/>\n  <g s:x=\"0\" s:y=\"15\" s:pid=\"A\" s:position=\"left\"/>\n  <g s:x=\"40\" s:y=\"15\" s:pid=\"B\" s:position=\"right\"/>\n</g>\n\n<g s:type=\"transformer_1p_1s\" s:width=\"35\" s:height=\"45\" transform=\"translate(140,450)\">\n  <s:alias val=\"transformer_1p_1s\"/>\n  <text class=\"nodelabel $cell_id\" x=\"25\" y=\"55\" s:attribute=\"ref\">X1</text>\n  <path d=\"M10,0 A5,5 0 0 1 10,10 A5,5 0 0 1 10,20 A5,5 0 0 1 10,30 A5,5 0 0 1 10,40\" class=\"$cell_id\"/>\n  <path d=\"M35,0 A5,5 0 0 0 35,10 A5,5 0 0 0 35,20 A5,5 0 0 0 35,30 A5,5 0 0 0 35,40\" class=\"$cell_id\"/>\n  <path d=\"M20,0 V40 M25,0 V40\" class=\"symbol $cell_id\"/>\n  <path d=\"M0,0 H10 M0,40 H10 M35,0 H45 M35,40 H45\" class=\"connect $cell_id\"/>\n  <g s:x=\"0\" s:y=\"0\" s:pid=\"L1.1\" s:position=\"left\"/>\n  <g s:x=\"0\" s:y=\"40\" s:pid=\"L1.2\" s:position=\"left\"/>\n  <g s:x=\"40\" s:y=\"0\" s:pid=\"L2.1\" s:position=\"right\"/>\n  <g s:x=\"40\" s:y=\"40\" s:pid=\"L2.2\" s:position=\"right\"/>\n</g>\n<!-- misc -->\n</svg>\n";
 const exampleDigital = Buffer("ewogICJjcmVhdG9yIjogIllvc3lzIDAuNSsyMjAgKGdpdCBzaGExIDk0ZmJhZmYsIGVtY2MgIC1PcykiLAogICJtb2R1bGVzIjogewogICAgInVwM2Rvd241IjogewogICAgICAicG9ydHMiOiB7CiAgICAgICAgImNsb2NrIjogewogICAgICAgICAgImRpcmVjdGlvbiI6ICJpbnB1dCIsCiAgICAgICAgICAiYml0cyI6IFsgMiBdCiAgICAgICAgfSwKICAgICAgICAiZGF0YV9pbiI6IHsKICAgICAgICAgICJkaXJlY3Rpb24iOiAiaW5wdXQiLAogICAgICAgICAgImJpdHMiOiBbIDMsIDQsIDUsIDYsIDcsIDgsIDksIDEwLCAxMSBdCiAgICAgICAgfSwKICAgICAgICAidXAiOiB7CiAgICAgICAgICAiZGlyZWN0aW9uIjogImlucHV0IiwKICAgICAgICAgICJiaXRzIjogWyAxMiBdCiAgICAgICAgfSwKICAgICAgICAiZG93biI6IHsKICAgICAgICAgICJkaXJlY3Rpb24iOiAiaW5wdXQiLAogICAgICAgICAgImJpdHMiOiBbIDEzIF0KICAgICAgICB9LAogICAgICAgICJjYXJyeV9vdXQiOiB7CiAgICAgICAgICAiZGlyZWN0aW9uIjogIm91dHB1dCIsCiAgICAgICAgICAiYml0cyI6IFsgMTQgXQogICAgICAgIH0sCiAgICAgICAgImJvcnJvd19vdXQiOiB7CiAgICAgICAgICAiZGlyZWN0aW9uIjogIm91dHB1dCIsCiAgICAgICAgICAiYml0cyI6IFsgMTUgXQogICAgICAgIH0sCiAgICAgICAgImNvdW50X291dCI6IHsKICAgICAgICAgICJkaXJlY3Rpb24iOiAib3V0cHV0IiwKICAgICAgICAgICJiaXRzIjogWyAxNiwgMTcsIDE4LCAxOSwgMjAsIDIxLCAyMiwgMjMsIDI0IF0KICAgICAgICB9LAogICAgICAgICJwYXJpdHlfb3V0IjogewogICAgICAgICAgImRpcmVjdGlvbiI6ICJvdXRwdXQiLAogICAgICAgICAgImJpdHMiOiBbIDI1IF0KICAgICAgICB9CiAgICAgIH0sCiAgICAgICJjZWxscyI6IHsKICAgICAgICAiJGFkZCRpbnB1dC52OjE3JDMiOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMSwKICAgICAgICAgICJ0eXBlIjogIiRhZGQiLAogICAgICAgICAgInBhcmFtZXRlcnMiOiB7CiAgICAgICAgICAgICJBX1NJR05FRCI6IDAsCiAgICAgICAgICAgICJBX1dJRFRIIjogOSwKICAgICAgICAgICAgIkJfU0lHTkVEIjogMCwKICAgICAgICAgICAgIkJfV0lEVEgiOiAyLAogICAgICAgICAgICAiWV9XSURUSCI6IDEwCiAgICAgICAgICB9LAogICAgICAgICAgImF0dHJpYnV0ZXMiOiB7CiAgICAgICAgICAgICJzcmMiOiAiaW5wdXQudjoxNyIKICAgICAgICAgIH0sCiAgICAgICAgICAicG9ydF9kaXJlY3Rpb25zIjogewogICAgICAgICAgICAiQSI6ICJpbnB1dCIsCiAgICAgICAgICAgICJCIjogImlucHV0IiwKICAgICAgICAgICAgIlkiOiAib3V0cHV0IgogICAgICAgICAgfSwKICAgICAgICAgICJjb25uZWN0aW9ucyI6IHsKICAgICAgICAgICAgIkEiOiBbIDE2LCAxNywgMTgsIDE5LCAyMCwgMjEsIDIyLCAyMywgMjQgXSwKICAgICAgICAgICAgIkIiOiBbICIxIiwgIjEiIF0sCiAgICAgICAgICAgICJZIjogWyAyNiwgMjcsIDI4LCAyOSwgMzAsIDMxLCAzMiwgMzMsIDM0LCAzNSBdCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAiJGFuZCRpbnB1dC52OjI4JDUiOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMSwKICAgICAgICAgICJ0eXBlIjogIiRhbmQiLAogICAgICAgICAgInBhcmFtZXRlcnMiOiB7CiAgICAgICAgICAgICJBX1NJR05FRCI6IDAsCiAgICAgICAgICAgICJBX1dJRFRIIjogMSwKICAgICAgICAgICAgIkJfU0lHTkVEIjogMCwKICAgICAgICAgICAgIkJfV0lEVEgiOiAxLAogICAgICAgICAgICAiWV9XSURUSCI6IDEKICAgICAgICAgIH0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInNyYyI6ICJpbnB1dC52OjI4IgogICAgICAgICAgfSwKICAgICAgICAgICJwb3J0X2RpcmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJBIjogImlucHV0IiwKICAgICAgICAgICAgIkIiOiAiaW5wdXQiLAogICAgICAgICAgICAiWSI6ICJvdXRwdXQiCiAgICAgICAgICB9LAogICAgICAgICAgImNvbm5lY3Rpb25zIjogewogICAgICAgICAgICAiQSI6IFsgMTIgXSwKICAgICAgICAgICAgIkIiOiBbIDM1IF0sCiAgICAgICAgICAgICJZIjogWyAzNiBdCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAiJGFuZCRpbnB1dC52OjI5JDYiOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMSwKICAgICAgICAgICJ0eXBlIjogIiRhbmQiLAogICAgICAgICAgInBhcmFtZXRlcnMiOiB7CiAgICAgICAgICAgICJBX1NJR05FRCI6IDAsCiAgICAgICAgICAgICJBX1dJRFRIIjogMSwKICAgICAgICAgICAgIkJfU0lHTkVEIjogMCwKICAgICAgICAgICAgIkJfV0lEVEgiOiAxLAogICAgICAgICAgICAiWV9XSURUSCI6IDEKICAgICAgICAgIH0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInNyYyI6ICJpbnB1dC52OjI5IgogICAgICAgICAgfSwKICAgICAgICAgICJwb3J0X2RpcmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJBIjogImlucHV0IiwKICAgICAgICAgICAgIkIiOiAiaW5wdXQiLAogICAgICAgICAgICAiWSI6ICJvdXRwdXQiCiAgICAgICAgICB9LAogICAgICAgICAgImNvbm5lY3Rpb25zIjogewogICAgICAgICAgICAiQSI6IFsgMTMgXSwKICAgICAgICAgICAgIkIiOiBbIDM3IF0sCiAgICAgICAgICAgICJZIjogWyAzOCBdCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAiJHByb2NkZmYkNDAiOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMSwKICAgICAgICAgICJ0eXBlIjogIiRkZmYiLAogICAgICAgICAgInBhcmFtZXRlcnMiOiB7CiAgICAgICAgICAgICJDTEtfUE9MQVJJVFkiOiAxLAogICAgICAgICAgICAiV0lEVEgiOiA5CiAgICAgICAgICB9LAogICAgICAgICAgImF0dHJpYnV0ZXMiOiB7CiAgICAgICAgICAgICJzcmMiOiAiaW5wdXQudjoxNCIKICAgICAgICAgIH0sCiAgICAgICAgICAicG9ydF9kaXJlY3Rpb25zIjogewogICAgICAgICAgICAiQ0xLIjogImlucHV0IiwKICAgICAgICAgICAgIkQiOiAiaW5wdXQiLAogICAgICAgICAgICAiUSI6ICJvdXRwdXQiCiAgICAgICAgICB9LAogICAgICAgICAgImNvbm5lY3Rpb25zIjogewogICAgICAgICAgICAiQ0xLIjogWyAyIF0sCiAgICAgICAgICAgICJEIjogWyAzOSwgNDAsIDQxLCA0MiwgNDMsIDQ0LCA0NSwgNDYsIDQ3IF0sCiAgICAgICAgICAgICJRIjogWyAxNiwgMTcsIDE4LCAxOSwgMjAsIDIxLCAyMiwgMjMsIDI0IF0KICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICIkcHJvY2RmZiQ0MSI6IHsKICAgICAgICAgICJoaWRlX25hbWUiOiAxLAogICAgICAgICAgInR5cGUiOiAiJGRmZiIsCiAgICAgICAgICAicGFyYW1ldGVycyI6IHsKICAgICAgICAgICAgIkNMS19QT0xBUklUWSI6IDEsCiAgICAgICAgICAgICJXSURUSCI6IDEKICAgICAgICAgIH0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInNyYyI6ICJpbnB1dC52OjE0IgogICAgICAgICAgfSwKICAgICAgICAgICJwb3J0X2RpcmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJDTEsiOiAiaW5wdXQiLAogICAgICAgICAgICAiRCI6ICJpbnB1dCIsCiAgICAgICAgICAgICJRIjogIm91dHB1dCIKICAgICAgICAgIH0sCiAgICAgICAgICAiY29ubmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJDTEsiOiBbIDIgXSwKICAgICAgICAgICAgIkQiOiBbIDM2IF0sCiAgICAgICAgICAgICJRIjogWyAxNCBdCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAiJHByb2NkZmYkNDIiOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMSwKICAgICAgICAgICJ0eXBlIjogIiRkZmYiLAogICAgICAgICAgInBhcmFtZXRlcnMiOiB7CiAgICAgICAgICAgICJDTEtfUE9MQVJJVFkiOiAxLAogICAgICAgICAgICAiV0lEVEgiOiAxCiAgICAgICAgICB9LAogICAgICAgICAgImF0dHJpYnV0ZXMiOiB7CiAgICAgICAgICAgICJzcmMiOiAiaW5wdXQudjoxNCIKICAgICAgICAgIH0sCiAgICAgICAgICAicG9ydF9kaXJlY3Rpb25zIjogewogICAgICAgICAgICAiQ0xLIjogImlucHV0IiwKICAgICAgICAgICAgIkQiOiAiaW5wdXQiLAogICAgICAgICAgICAiUSI6ICJvdXRwdXQiCiAgICAgICAgICB9LAogICAgICAgICAgImNvbm5lY3Rpb25zIjogewogICAgICAgICAgICAiQ0xLIjogWyAyIF0sCiAgICAgICAgICAgICJEIjogWyAzOCBdLAogICAgICAgICAgICAiUSI6IFsgMTUgXQogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgIiRwcm9jZGZmJDQzIjogewogICAgICAgICAgImhpZGVfbmFtZSI6IDEsCiAgICAgICAgICAidHlwZSI6ICIkZGZmIiwKICAgICAgICAgICJwYXJhbWV0ZXJzIjogewogICAgICAgICAgICAiQ0xLX1BPTEFSSVRZIjogMSwKICAgICAgICAgICAgIldJRFRIIjogMQogICAgICAgICAgfSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgICAic3JjIjogImlucHV0LnY6MTQiCiAgICAgICAgICB9LAogICAgICAgICAgInBvcnRfZGlyZWN0aW9ucyI6IHsKICAgICAgICAgICAgIkNMSyI6ICJpbnB1dCIsCiAgICAgICAgICAgICJEIjogImlucHV0IiwKICAgICAgICAgICAgIlEiOiAib3V0cHV0IgogICAgICAgICAgfSwKICAgICAgICAgICJjb25uZWN0aW9ucyI6IHsKICAgICAgICAgICAgIkNMSyI6IFsgMiBdLAogICAgICAgICAgICAiRCI6IFsgNDggXSwKICAgICAgICAgICAgIlEiOiBbIDI1IF0KICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICIkcHJvY211eCQzNiI6IHsKICAgICAgICAgICJoaWRlX25hbWUiOiAxLAogICAgICAgICAgInR5cGUiOiAiJHBtdXgiLAogICAgICAgICAgInBhcmFtZXRlcnMiOiB7CiAgICAgICAgICAgICJTX1dJRFRIIjogMywKICAgICAgICAgICAgIldJRFRIIjogOQogICAgICAgICAgfSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgfSwKICAgICAgICAgICJwb3J0X2RpcmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJBIjogImlucHV0IiwKICAgICAgICAgICAgIkIiOiAiaW5wdXQiLAogICAgICAgICAgICAiUyI6ICJpbnB1dCIsCiAgICAgICAgICAgICJZIjogIm91dHB1dCIKICAgICAgICAgIH0sCiAgICAgICAgICAiY29ubmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJBIjogWyAxNiwgMTcsIDE4LCAxOSwgMjAsIDIxLCAyMiwgMjMsIDI0IF0sCiAgICAgICAgICAgICJCIjogWyAyNiwgMjcsIDI4LCAyOSwgMzAsIDMxLCAzMiwgMzMsIDM0LCA0OSwgNTAsIDUxLCA1MiwgNTMsIDU0LCA1NSwgNTYsIDU3LCAzLCA0LCA1LCA2LCA3LCA4LCA5LCAxMCwgMTEgXSwKICAgICAgICAgICAgIlMiOiBbIDU4LCA1OSwgNjAgXSwKICAgICAgICAgICAgIlkiOiBbIDM5LCA0MCwgNDEsIDQyLCA0MywgNDQsIDQ1LCA0NiwgNDcgXQogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgIiRwcm9jbXV4JDM3X0NNUDAiOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMSwKICAgICAgICAgICJ0eXBlIjogIiRlcSIsCiAgICAgICAgICAicGFyYW1ldGVycyI6IHsKICAgICAgICAgICAgIkFfU0lHTkVEIjogMCwKICAgICAgICAgICAgIkFfV0lEVEgiOiAyLAogICAgICAgICAgICAiQl9TSUdORUQiOiAwLAogICAgICAgICAgICAiQl9XSURUSCI6IDIsCiAgICAgICAgICAgICJZX1dJRFRIIjogMQogICAgICAgICAgfSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgfSwKICAgICAgICAgICJwb3J0X2RpcmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJBIjogImlucHV0IiwKICAgICAgICAgICAgIkIiOiAiaW5wdXQiLAogICAgICAgICAgICAiWSI6ICJvdXRwdXQiCiAgICAgICAgICB9LAogICAgICAgICAgImNvbm5lY3Rpb25zIjogewogICAgICAgICAgICAiQSI6IFsgMTMsIDEyIF0sCiAgICAgICAgICAgICJCIjogWyAiMCIsICIxIiBdLAogICAgICAgICAgICAiWSI6IFsgNTggXQogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgIiRwcm9jbXV4JDM4X0NNUDAiOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMSwKICAgICAgICAgICJ0eXBlIjogIiRlcSIsCiAgICAgICAgICAicGFyYW1ldGVycyI6IHsKICAgICAgICAgICAgIkFfU0lHTkVEIjogMCwKICAgICAgICAgICAgIkFfV0lEVEgiOiAyLAogICAgICAgICAgICAiQl9TSUdORUQiOiAwLAogICAgICAgICAgICAiQl9XSURUSCI6IDIsCiAgICAgICAgICAgICJZX1dJRFRIIjogMQogICAgICAgICAgfSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgfSwKICAgICAgICAgICJwb3J0X2RpcmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJBIjogImlucHV0IiwKICAgICAgICAgICAgIkIiOiAiaW5wdXQiLAogICAgICAgICAgICAiWSI6ICJvdXRwdXQiCiAgICAgICAgICB9LAogICAgICAgICAgImNvbm5lY3Rpb25zIjogewogICAgICAgICAgICAiQSI6IFsgMTMsIDEyIF0sCiAgICAgICAgICAgICJCIjogWyAiMSIsICIwIiBdLAogICAgICAgICAgICAiWSI6IFsgNTkgXQogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgIiRwcm9jbXV4JDM5X0NNUDAiOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMSwKICAgICAgICAgICJ0eXBlIjogIiRlcSIsCiAgICAgICAgICAicGFyYW1ldGVycyI6IHsKICAgICAgICAgICAgIkFfU0lHTkVEIjogMCwKICAgICAgICAgICAgIkFfV0lEVEgiOiAyLAogICAgICAgICAgICAiQl9TSUdORUQiOiAwLAogICAgICAgICAgICAiQl9XSURUSCI6IDIsCiAgICAgICAgICAgICJZX1dJRFRIIjogMQogICAgICAgICAgfSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgfSwKICAgICAgICAgICJwb3J0X2RpcmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJBIjogImlucHV0IiwKICAgICAgICAgICAgIkIiOiAiaW5wdXQiLAogICAgICAgICAgICAiWSI6ICJvdXRwdXQiCiAgICAgICAgICB9LAogICAgICAgICAgImNvbm5lY3Rpb25zIjogewogICAgICAgICAgICAiQSI6IFsgMTMsIDEyIF0sCiAgICAgICAgICAgICJCIjogWyAiMCIsICIwIiBdLAogICAgICAgICAgICAiWSI6IFsgNjAgXQogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgIiRyZWR1Y2VfeG9yJGlucHV0LnY6MjckNCI6IHsKICAgICAgICAgICJoaWRlX25hbWUiOiAxLAogICAgICAgICAgInR5cGUiOiAiJHJlZHVjZV94b3IiLAogICAgICAgICAgInBhcmFtZXRlcnMiOiB7CiAgICAgICAgICAgICJBX1NJR05FRCI6IDAsCiAgICAgICAgICAgICJBX1dJRFRIIjogOSwKICAgICAgICAgICAgIllfV0lEVEgiOiAxCiAgICAgICAgICB9LAogICAgICAgICAgImF0dHJpYnV0ZXMiOiB7CiAgICAgICAgICAgICJzcmMiOiAiaW5wdXQudjoyNyIKICAgICAgICAgIH0sCiAgICAgICAgICAicG9ydF9kaXJlY3Rpb25zIjogewogICAgICAgICAgICAiQSI6ICJpbnB1dCIsCiAgICAgICAgICAgICJZIjogIm91dHB1dCIKICAgICAgICAgIH0sCiAgICAgICAgICAiY29ubmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJBIjogWyAzOSwgNDAsIDQxLCA0MiwgNDMsIDQ0LCA0NSwgNDYsIDQ3IF0sCiAgICAgICAgICAgICJZIjogWyA0OCBdCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAiJHN1YiRpbnB1dC52OjE2JDIiOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMSwKICAgICAgICAgICJ0eXBlIjogIiRzdWIiLAogICAgICAgICAgInBhcmFtZXRlcnMiOiB7CiAgICAgICAgICAgICJBX1NJR05FRCI6IDAsCiAgICAgICAgICAgICJBX1dJRFRIIjogOSwKICAgICAgICAgICAgIkJfU0lHTkVEIjogMCwKICAgICAgICAgICAgIkJfV0lEVEgiOiAzLAogICAgICAgICAgICAiWV9XSURUSCI6IDEwCiAgICAgICAgICB9LAogICAgICAgICAgImF0dHJpYnV0ZXMiOiB7CiAgICAgICAgICAgICJzcmMiOiAiaW5wdXQudjoxNiIKICAgICAgICAgIH0sCiAgICAgICAgICAicG9ydF9kaXJlY3Rpb25zIjogewogICAgICAgICAgICAiQSI6ICJpbnB1dCIsCiAgICAgICAgICAgICJCIjogImlucHV0IiwKICAgICAgICAgICAgIlkiOiAib3V0cHV0IgogICAgICAgICAgfSwKICAgICAgICAgICJjb25uZWN0aW9ucyI6IHsKICAgICAgICAgICAgIkEiOiBbIDE2LCAxNywgMTgsIDE5LCAyMCwgMjEsIDIyLCAyMywgMjQgXSwKICAgICAgICAgICAgIkIiOiBbICIxIiwgIjAiLCAiMSIgXSwKICAgICAgICAgICAgIlkiOiBbIDQ5LCA1MCwgNTEsIDUyLCA1MywgNTQsIDU1LCA1NiwgNTcsIDM3IF0KICAgICAgICAgIH0KICAgICAgICB9CiAgICAgIH0sCiAgICAgICJuZXRuYW1lcyI6IHsKICAgICAgICAiJDBcXGJvcnJvd19vdXRbMDowXSI6IHsKICAgICAgICAgICJoaWRlX25hbWUiOiAxLAogICAgICAgICAgImJpdHMiOiBbIDM4IF0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInNyYyI6ICJpbnB1dC52OjE0IgogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgIiQwXFxjYXJyeV9vdXRbMDowXSI6IHsKICAgICAgICAgICJoaWRlX25hbWUiOiAxLAogICAgICAgICAgImJpdHMiOiBbIDM2IF0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInNyYyI6ICJpbnB1dC52OjE0IgogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgIiQwXFxjbnRfZG5bOTowXSI6IHsKICAgICAgICAgICJoaWRlX25hbWUiOiAxLAogICAgICAgICAgImJpdHMiOiBbIDQ5LCA1MCwgNTEsIDUyLCA1MywgNTQsIDU1LCA1NiwgNTcsIDM3IF0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInNyYyI6ICJpbnB1dC52OjE0IgogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgIiQwXFxjbnRfdXBbOTowXSI6IHsKICAgICAgICAgICJoaWRlX25hbWUiOiAxLAogICAgICAgICAgImJpdHMiOiBbIDI2LCAyNywgMjgsIDI5LCAzMCwgMzEsIDMyLCAzMywgMzQsIDM1IF0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInNyYyI6ICJpbnB1dC52OjE0IgogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgIiQwXFxjb3VudF9vdXRbODowXSI6IHsKICAgICAgICAgICJoaWRlX25hbWUiOiAxLAogICAgICAgICAgImJpdHMiOiBbIDM5LCA0MCwgNDEsIDQyLCA0MywgNDQsIDQ1LCA0NiwgNDcgXSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgICAic3JjIjogImlucHV0LnY6MTQiCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAiJDBcXHBhcml0eV9vdXRbMDowXSI6IHsKICAgICAgICAgICJoaWRlX25hbWUiOiAxLAogICAgICAgICAgImJpdHMiOiBbIDQ4IF0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInNyYyI6ICJpbnB1dC52OjE0IgogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgIiRwcm9jbXV4JDM3X0NNUCI6IHsKICAgICAgICAgICJoaWRlX25hbWUiOiAxLAogICAgICAgICAgImJpdHMiOiBbIDU4IF0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICIkcHJvY211eCQzOF9DTVAiOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMSwKICAgICAgICAgICJiaXRzIjogWyA1OSBdLAogICAgICAgICAgImF0dHJpYnV0ZXMiOiB7CiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAiJHByb2NtdXgkMzlfQ01QIjogewogICAgICAgICAgImhpZGVfbmFtZSI6IDEsCiAgICAgICAgICAiYml0cyI6IFsgNjAgXSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgImJvcnJvd19vdXQiOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMCwKICAgICAgICAgICJiaXRzIjogWyAxNSBdLAogICAgICAgICAgImF0dHJpYnV0ZXMiOiB7CiAgICAgICAgICAgICJzcmMiOiAiaW5wdXQudjo5IgogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgImNhcnJ5X291dCI6IHsKICAgICAgICAgICJoaWRlX25hbWUiOiAwLAogICAgICAgICAgImJpdHMiOiBbIDE0IF0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInNyYyI6ICJpbnB1dC52OjkiCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAiY2xvY2siOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMCwKICAgICAgICAgICJiaXRzIjogWyAyIF0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInNyYyI6ICJpbnB1dC52OjYiCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAiY291bnRfb3V0IjogewogICAgICAgICAgImhpZGVfbmFtZSI6IDAsCiAgICAgICAgICAiYml0cyI6IFsgMTYsIDE3LCAxOCwgMTksIDIwLCAyMSwgMjIsIDIzLCAyNCBdLAogICAgICAgICAgImF0dHJpYnV0ZXMiOiB7CiAgICAgICAgICAgICJzcmMiOiAiaW5wdXQudjo4IgogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgImRhdGFfaW4iOiB7CiAgICAgICAgICAiaGlkZV9uYW1lIjogMCwKICAgICAgICAgICJiaXRzIjogWyAzLCA0LCA1LCA2LCA3LCA4LCA5LCAxMCwgMTEgXSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgICAic3JjIjogImlucHV0LnY6NSIKICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICJkb3duIjogewogICAgICAgICAgImhpZGVfbmFtZSI6IDAsCiAgICAgICAgICAiYml0cyI6IFsgMTMgXSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgICAic3JjIjogImlucHV0LnY6NiIKICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICJwYXJpdHlfb3V0IjogewogICAgICAgICAgImhpZGVfbmFtZSI6IDAsCiAgICAgICAgICAiYml0cyI6IFsgMjUgXSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgICAic3JjIjogImlucHV0LnY6OSIKICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICJ1cCI6IHsKICAgICAgICAgICJoaWRlX25hbWUiOiAwLAogICAgICAgICAgImJpdHMiOiBbIDEyIF0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInNyYyI6ICJpbnB1dC52OjYiCiAgICAgICAgICB9CiAgICAgICAgfQogICAgICB9CiAgICB9CiAgfQp9","base64");
 const exampleAnalog = Buffer("ewogICJtb2R1bGVzIjogewogICAgInJlc2lzdG9yX2RpdmlkZXIiOiB7CiAgICAgICJwb3J0cyI6IHsKICAgICAgICAiQSI6IHsKICAgICAgICAgICJkaXJlY3Rpb24iOiAiaW5wdXQiLAogICAgICAgICAgImJpdHMiOiBbMl0KICAgICAgICB9LAogICAgICAgICJCIjogewogICAgICAgICAgImRpcmVjdGlvbiI6ICJpbnB1dCIsCiAgICAgICAgICAiYml0cyI6IFszXQogICAgICAgIH0sCiAgICAgICAgIkEgQU5EIEIiOiB7CiAgICAgICAgICAiZGlyZWN0aW9uIjogIm91dHB1dCIsCiAgICAgICAgICAiYml0cyI6IFs0XQogICAgICAgIH0KICAgICAgfSwKICAgICAgImNlbGxzIjogewogICAgICAgICJSMSI6IHsKICAgICAgICAgICJ0eXBlIjogInJfdiIsCiAgICAgICAgICAiY29ubmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJBIjogWzJdLAogICAgICAgICAgICAiQiI6IFs1XQogICAgICAgICAgfSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgICAidmFsdWUiOiIxMGsiCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAiUjIiOiB7CiAgICAgICAgICAidHlwZSI6ICJyX3YiLAogICAgICAgICAgImNvbm5lY3Rpb25zIjogewogICAgICAgICAgICAiQSI6IFszXSwKICAgICAgICAgICAgIkIiOiBbNV0KICAgICAgICAgIH0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInZhbHVlIjoiMTBrIgogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgIlExIjogewogICAgICAgICAgInR5cGUiOiAicV9wbnAiLAogICAgICAgICAgInBvcnRfZGlyZWN0aW9ucyI6IHsKICAgICAgICAgICAgIkMiOiAiaW5wdXQiLAogICAgICAgICAgICAiQiI6ICJpbnB1dCIsCiAgICAgICAgICAgICJFIjogIm91dHB1dCIKICAgICAgICAgIH0sCiAgICAgICAgICAiY29ubmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJDIjogWzZdLAogICAgICAgICAgICAiQiI6IFs1XSwKICAgICAgICAgICAgIkUiOiBbN10KICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICJSMyI6IHsKICAgICAgICAgICJ0eXBlIjogInJfdiIsCiAgICAgICAgICAiY29ubmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJBIjogWzddLAogICAgICAgICAgICAiQiI6IFs4XQogICAgICAgICAgfSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgICAidmFsdWUiOiIxMGsiCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAiUjQiOiB7CiAgICAgICAgICAidHlwZSI6ICJyX3YiLAogICAgICAgICAgImNvbm5lY3Rpb25zIjogewogICAgICAgICAgICAiQSI6IFs3XSwKICAgICAgICAgICAgIkIiOiBbOV0KICAgICAgICAgIH0sCiAgICAgICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAgICAgInZhbHVlIjoiMTBrIgogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgIlI1IjogewogICAgICAgICAgInR5cGUiOiAicl92IiwKICAgICAgICAgICJjb25uZWN0aW9ucyI6IHsKICAgICAgICAgICAgIkEiOiBbNF0sCiAgICAgICAgICAgICJCIjogWzEyXQogICAgICAgICAgfSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgICAidmFsdWUiOiIxMGsiCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAiUTIiOiB7CiAgICAgICAgICAidHlwZSI6ICJxX3BucCIsCiAgICAgICAgICAicG9ydF9kaXJlY3Rpb25zIjogewogICAgICAgICAgICAiQyI6ICJpbnB1dCIsCiAgICAgICAgICAgICJCIjogImlucHV0IiwKICAgICAgICAgICAgIkUiOiAib3V0cHV0IgogICAgICAgICAgfSwKICAgICAgICAgICJjb25uZWN0aW9ucyI6IHsKICAgICAgICAgICAgIkMiOiBbMTBdLAogICAgICAgICAgICAiQiI6IFs5XSwKICAgICAgICAgICAgIkUiOiBbNF0KICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICJ2Y2MiOiB7CiAgICAgICAgICAidHlwZSI6ICJ2Y2MiLAogICAgICAgICAgImNvbm5lY3Rpb25zIjogewogICAgICAgICAgICAiQSI6IFs2XQogICAgICAgICAgfSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgICAibmFtZSI6IlZDQyIKICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICJ2Y2MyIjogewogICAgICAgICAgInR5cGUiOiAidmNjIiwKICAgICAgICAgICJjb25uZWN0aW9ucyI6IHsKICAgICAgICAgICAgIkEiOiBbMTBdCiAgICAgICAgICB9LAogICAgICAgICAgImF0dHJpYnV0ZXMiOiB7CiAgICAgICAgICAgICJuYW1lIjoiVkNDIgogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgImduZCI6IHsKICAgICAgICAgICJ0eXBlIjogImduZCIsCiAgICAgICAgICAicG9ydF9kaXJlY3Rpb25zIjogewogICAgICAgICAgICAiQSI6ICJpbnB1dCIKICAgICAgICAgIH0sCiAgICAgICAgICAiY29ubmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJBIjogWzhdCiAgICAgICAgICB9LAogICAgICAgICAgImF0dHJpYnV0ZXMiOiB7CiAgICAgICAgICAgICJuYW1lIjoiREdORCIKICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICJnbmQyIjogewogICAgICAgICAgInR5cGUiOiAiZ25kIiwKICAgICAgICAgICJwb3J0X2RpcmVjdGlvbnMiOiB7CiAgICAgICAgICAgICJBIjogImlucHV0IgogICAgICAgICAgfSwKICAgICAgICAgICJjb25uZWN0aW9ucyI6IHsKICAgICAgICAgICAgIkEiOiBbMTJdCiAgICAgICAgICB9LAogICAgICAgICAgImF0dHJpYnV0ZXMiOiB7CiAgICAgICAgICAgICJuYW1lIjoiREdORCIKICAgICAgICAgIH0KICAgICAgICB9CiAgICAgIH0KICAgIH0KICB9Cn0K","base64");
-const schema = Buffer("ewogICJkZXNjcmlwdGlvbiI6ICJKU09OIFNjaGVtYSBZb3N5cyBuZXRsaXN0cyBKU09OIGZvcm1hdCIsCiAgInR5cGUiOiAib2JqZWN0IiwKICAvLyBhbiBlbXB0eSBvYmplY3QgaXMgaW52YWxpZAogICJyZXF1aXJlZCI6IFsibW9kdWxlcyJdLAogICJlcnJvck1lc3NhZ2UiOiB7CiAgICAidHlwZSI6ICJuZXRsaXN0IG11c3QgYmUgYSBKU09OIG9iamVjdCIsCiAgICAicmVxdWlyZWQiOiAibmV0bGlzdCBtdXN0IGhhdmUgYSBtb2R1bGVzIHByb3BlcnR5IiwKICB9LAogICJwcm9wZXJ0aWVzIjogewogICAgIm1vZHVsZXMiOiB7CiAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgIC8vIHRoZXJlIG11c3QgYmUgYXQgbGVhc3Qgb25lIG1vZHVsZQogICAgICAibWluUHJvcGVydGllcyI6IDEsCiAgICAgICAgImVycm9yTWVzc2FnZSI6IHsKICAgICAgICAgICJ0eXBlIjogIm5ldGxpc3QgbW9kdWxlcyBtdXN0IGJlIG9iamVjdHMiLAogICAgICAgICAgIm1pblByb3BlcnRpZXMiOiAibmV0bGlzdCBtdXN0IGhhdmUgYXQgbGVhc3Qgb25lIG1vZHVsZSIsCiAgICAgICAgfSwKICAgICAgImFkZGl0aW9uYWxQcm9wZXJ0aWVzIjogewogICAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgICAicG9ydHMiOiB7CiAgICAgICAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICAgICAgICJhZGRpdGlvbmFsUHJvcGVydGllcyI6IHsKICAgICAgICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgICAgIC8vIGFsbCBwb3J0cyBtdXN0IGhhdmUgYml0cyBhbmQgYSBkaXJlY3Rpb24KICAgICAgICAgICAgICAicmVxdWlyZWQiOiBbImRpcmVjdGlvbiIsICJiaXRzIl0sCiAgICAgICAgICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgICAgICAgICAiZGlyZWN0aW9uIjogewogICAgICAgICAgICAgICAgICAiZW51bSI6IFsiaW5wdXQiLCAib3V0cHV0Il0KICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgICAiYml0cyI6IHsKICAgICAgICAgICAgICAgICAgInR5cGUiOiAiYXJyYXkiLAogICAgICAgICAgICAgICAgICAvLyBiaXRzIGNhbiBiZSB0aGUgc3RyaW5nICIwIiwgIjEiLCAieCIsIG9yIGEgbnVtYmVyLgogICAgICAgICAgICAgICAgICAiaXRlbXMiOiB7CiAgICAgICAgICAgICAgICAgICAgIm9uZU9mIjpbeyJ0eXBlIjoibnVtYmVyIn0sIHsiZW51bSI6WyIwIiwiMSIsIngiXX1dCiAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICB9CiAgICAgICAgICAgIH0KICAgICAgICAgIH0sCiAgICAgICAgICAiY2VsbHMiOiB7CiAgICAgICAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICAgICAgICJhZGRpdGlvbmFsUHJvcGVydGllcyI6IHsKICAgICAgICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgICAgIC8vIGFsbCBjZWxscyBtdXN0IGhhdmUgYSB0eXBlIGFuZCBjb25uZWN0aW9ucwogICAgICAgICAgICAgICJyZXF1aXJlZCI6IFsKICAgICAgICAgICAgICAgICJ0eXBlIiwKICAgICAgICAgICAgICAgICJjb25uZWN0aW9ucyIKICAgICAgICAgICAgICBdLAogICAgICAgICAgICAgICJwcm9wZXJ0aWVzIjogewogICAgICAgICAgICAgICAgInR5cGUiOnsidHlwZSI6InN0cmluZyJ9LAogICAgICAgICAgICAgICAgImNvbm5lY3Rpb25zIjogewogICAgICAgICAgICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgICAgICAgICAiYWRkaXRpb25hbFByb3BlcnRpZXMiOiB7CiAgICAgICAgICAgICAgICAgICAgInR5cGUiOiJhcnJheSIsCiAgICAgICAgICAgICAgICAgICAgIml0ZW1zIjogewogICAgICAgICAgICAgICAgICAgICAgIm9uZU9mIjpbeyJ0eXBlIjoibnVtYmVyIn0sIHsiZW51bSI6WyIwIiwiMSIsIngiXX1dCiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB9LAogICAgICAgICAgICAgICAgLy8gcG9ydCBkaXJlY3Rpb25zIGFyZSBvcHRpb25hbAogICAgICAgICAgICAgICAgInBvcnRfZGlyZWN0aW9ucyI6ewogICAgICAgICAgICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgICAgICAgICAiYWRkaXRpb25hbFByb3BlcnRpZXMiOiB7CiAgICAgICAgICAgICAgICAgICAgImVudW0iOiBbImlucHV0IiwgIm91dHB1dCJdCiAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgICAvLyBuZXRsaXN0c3ZnIGRvZXNuJ3QgdXNlIHRoZXNlIHlldAogICAgICAgICAgICAgICAgImhpZGVfbmFtZSI6IHsiZW51bSI6WzAsIDFdfSwKICAgICAgICAgICAgICAgICJwYXJhbWV0ZXJzIjogeyJ0eXBlIjogIm9iamVjdCJ9LAogICAgICAgICAgICAgICAgImF0dHJpYnV0ZXMiOiB7InR5cGUiOiAib2JqZWN0In0KICAgICAgICAgICAgICB9CiAgICAgICAgICAgIH0KICAgICAgICAgIH0sCiAgICAgICAgICAvLyBub3QgeWV0IHVzZWQgYnkgbmV0bGlzdHN2ZwogICAgICAgICAgIm5ldG5hbWVzIjogewogICAgICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgICAiYWRkaXRpb25hbFByb3BlcnRpZXMiOiB7CiAgICAgICAgICAgICAgInR5cGUiOiAib2JqZWN0IiwKICAgICAgICAgICAgICAicHJvcGVydGllcyI6IHsKICAgICAgICAgICAgICAgICJiaXRzIjogewogICAgICAgICAgICAgICAgICAidHlwZSI6ICJhcnJheSIsCiAgICAgICAgICAgICAgICAgIC8vIGJpdHMgY2FuIGJlIHRoZSBzdHJpbmcgIjAiLCAiMSIsICJ4Iiwgb3IgYSBudW1iZXIuCiAgICAgICAgICAgICAgICAgICJpdGVtcyI6IHsKICAgICAgICAgICAgICAgICAgICAib25lT2YiOiBbeyJ0eXBlIjogIm51bWJlciJ9LCB7ImVudW0iOiBbIjAiLCAiMSIsICJ4Il19XQogICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB9LAogICAgICAgICAgICAgICAgImhpZGVfbmFtZSI6IHsiZW51bSI6IFswLCAxXX0sCiAgICAgICAgICAgICAgICAiYXR0cmlidXRlcyI6IHsidHlwZSI6ICJvYmplY3QifQogICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgICAgfSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgICAicHJvcGVydGllcyI6IHsKICAgICAgICAgICAgICAidG9wIjogeyJlbnVtIjogWzAsIDFdfQogICAgICAgICAgICB9CiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAvLyB0aGVyZSBtdXN0IGVpdGhlciBiZSBwb3J0cyBvciBjZWxscyBhdHRyaWJ1dGUKICAgICAgICAiYW55T2YiOiBbeyJyZXF1aXJlZCI6IFsicG9ydHMiXX0seyJyZXF1aXJlZCI6IFsiY2VsbHMiXX1dCiAgICAgIH0KICAgIH0KICB9Cn0K","base64");
+const schema = Buffer("ewogICJkZXNjcmlwdGlvbiI6ICJKU09OIFNjaGVtYSBZb3N5cyBuZXRsaXN0cyBKU09OIGZvcm1hdCIsCiAgInR5cGUiOiAib2JqZWN0IiwKICAvLyBhbiBlbXB0eSBvYmplY3QgaXMgaW52YWxpZAogICJyZXF1aXJlZCI6IFsibW9kdWxlcyJdLAogICJlcnJvck1lc3NhZ2UiOiB7CiAgICAidHlwZSI6ICJuZXRsaXN0IG11c3QgYmUgYSBKU09OIG9iamVjdCIsCiAgICAicmVxdWlyZWQiOiAibmV0bGlzdCBtdXN0IGhhdmUgYSBtb2R1bGVzIHByb3BlcnR5IiwKICB9LAogICJwcm9wZXJ0aWVzIjogewogICAgIm1vZHVsZXMiOiB7CiAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgIC8vIHRoZXJlIG11c3QgYmUgYXQgbGVhc3Qgb25lIG1vZHVsZQogICAgICAibWluUHJvcGVydGllcyI6IDEsCiAgICAgICAgImVycm9yTWVzc2FnZSI6IHsKICAgICAgICAgICJ0eXBlIjogIm5ldGxpc3QgbW9kdWxlcyBtdXN0IGJlIG9iamVjdHMiLAogICAgICAgICAgIm1pblByb3BlcnRpZXMiOiAibmV0bGlzdCBtdXN0IGhhdmUgYXQgbGVhc3Qgb25lIG1vZHVsZSIsCiAgICAgICAgfSwKICAgICAgImFkZGl0aW9uYWxQcm9wZXJ0aWVzIjogewogICAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgICAicG9ydHMiOiB7CiAgICAgICAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICAgICAgICJhZGRpdGlvbmFsUHJvcGVydGllcyI6IHsKICAgICAgICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgICAgIC8vIGFsbCBwb3J0cyBtdXN0IGhhdmUgYml0cyBhbmQgYSBkaXJlY3Rpb24KICAgICAgICAgICAgICAicmVxdWlyZWQiOiBbImRpcmVjdGlvbiIsICJiaXRzIl0sCiAgICAgICAgICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgICAgICAgICAiZGlyZWN0aW9uIjogewogICAgICAgICAgICAgICAgICAiZW51bSI6IFsiaW5wdXQiLCAib3V0cHV0Il0KICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgICAiYml0cyI6IHsKICAgICAgICAgICAgICAgICAgInR5cGUiOiAiYXJyYXkiLAogICAgICAgICAgICAgICAgICAvLyBiaXRzIGNhbiBiZSB0aGUgc3RyaW5nICIwIiwgIjEiLCAieCIsIG9yIGEgbnVtYmVyLgogICAgICAgICAgICAgICAgICAiaXRlbXMiOiB7CiAgICAgICAgICAgICAgICAgICAgIm9uZU9mIjpbeyJ0eXBlIjoibnVtYmVyIn0sIHsiZW51bSI6WyIwIiwiMSIsIngiXX1dCiAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICB9CiAgICAgICAgICAgIH0KICAgICAgICAgIH0sCiAgICAgICAgICAiY2VsbHMiOiB7CiAgICAgICAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICAgICAgICJhZGRpdGlvbmFsUHJvcGVydGllcyI6IHsKICAgICAgICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgICAgIC8vIGFsbCBjZWxscyBtdXN0IGhhdmUgYSB0eXBlIGFuZCBjb25uZWN0aW9ucwogICAgICAgICAgICAgICJyZXF1aXJlZCI6IFsKICAgICAgICAgICAgICAgICJ0eXBlIiwKICAgICAgICAgICAgICAgICJjb25uZWN0aW9ucyIKICAgICAgICAgICAgICBdLAogICAgICAgICAgICAgICJwcm9wZXJ0aWVzIjogewogICAgICAgICAgICAgICAgInR5cGUiOnsidHlwZSI6InN0cmluZyJ9LAogICAgICAgICAgICAgICAgImNvbm5lY3Rpb25zIjogewogICAgICAgICAgICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgICAgICAgICAiYWRkaXRpb25hbFByb3BlcnRpZXMiOiB7CiAgICAgICAgICAgICAgICAgICAgInR5cGUiOiJhcnJheSIsCiAgICAgICAgICAgICAgICAgICAgIml0ZW1zIjogewogICAgICAgICAgICAgICAgICAgICAgIm9uZU9mIjpbeyJ0eXBlIjoibnVtYmVyIn0sIHsiZW51bSI6WyIwIiwiMSIsIngiXX1dCiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB9LAogICAgICAgICAgICAgICAgLy8gcG9ydCBkaXJlY3Rpb25zIGFyZSBvcHRpb25hbAogICAgICAgICAgICAgICAgInBvcnRfZGlyZWN0aW9ucyI6ewogICAgICAgICAgICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgICAgICAgICAiYWRkaXRpb25hbFByb3BlcnRpZXMiOiB7CiAgICAgICAgICAgICAgICAgICAgImVudW0iOiBbImlucHV0IiwgIm91dHB1dCJdCiAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgICAvLyBuZXRsaXN0c3ZnIGRvZXNuJ3QgdXNlIHRoZXNlIHlldAogICAgICAgICAgICAgICAgImhpZGVfbmFtZSI6IHsiZW51bSI6WzAsIDFdfSwKICAgICAgICAgICAgICAgICJwYXJhbWV0ZXJzIjogeyJ0eXBlIjogIm9iamVjdCJ9LAogICAgICAgICAgICAgICAgImF0dHJpYnV0ZXMiOiB7InR5cGUiOiAib2JqZWN0In0KICAgICAgICAgICAgICB9CiAgICAgICAgICAgIH0KICAgICAgICAgIH0sCiAgICAgICAgICAvLyBub3QgeWV0IHVzZWQgYnkgbmV0bGlzdHN2ZwogICAgICAgICAgIm5ldG5hbWVzIjogewogICAgICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgICAiYWRkaXRpb25hbFByb3BlcnRpZXMiOiB7CiAgICAgICAgICAgICAgInR5cGUiOiAib2JqZWN0IiwKICAgICAgICAgICAgICAicHJvcGVydGllcyI6IHsKICAgICAgICAgICAgICAgICJiaXRzIjogewogICAgICAgICAgICAgICAgICAidHlwZSI6ICJhcnJheSIsCiAgICAgICAgICAgICAgICAgIC8vIGJpdHMgY2FuIGJlIHRoZSBzdHJpbmcgIjAiLCAiMSIsICJ4Iiwgb3IgYSBudW1iZXIuCiAgICAgICAgICAgICAgICAgICJpdGVtcyI6IHsKICAgICAgICAgICAgICAgICAgICAib25lT2YiOiBbeyJ0eXBlIjogIm51bWJlciJ9LCB7ImVudW0iOiBbIjAiLCAiMSIsICJ4Il19XQogICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB9LAogICAgICAgICAgICAgICAgImhpZGVfbmFtZSI6IHsiZW51bSI6IFswLCAxXX0sCiAgICAgICAgICAgICAgICAiYXR0cmlidXRlcyI6IHsidHlwZSI6ICJvYmplY3QifQogICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgICAgfSwKICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgICAicHJvcGVydGllcyI6IHsKICAgICAgICAgICAgICAidG9wIjogeyJlbnVtIjogWzAsIDEsICIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsICIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMSJdfQogICAgICAgICAgICB9CiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAvLyB0aGVyZSBtdXN0IGVpdGhlciBiZSBwb3J0cyBvciBjZWxscyBhdHRyaWJ1dGUKICAgICAgICAiYW55T2YiOiBbeyJyZXF1aXJlZCI6IFsicG9ydHMiXX0seyJyZXF1aXJlZCI6IFsiY2VsbHMiXX1dCiAgICAgIH0KICAgIH0KICB9Cn0K","base64");
 const exampleDigitalJson = json5.parse(exampleDigital);
 const exampleAnalogJson = json5.parse(exampleAnalog);
 
@@ -1278,8 +1435,8 @@ module.exports = {
     exampleAnalog: exampleAnalogJson
 };
 
-}).call(this,require("buffer").Buffer)
-},{"../built":8,"ajv":12,"ajv-errors":10,"buffer":55,"json5":66}],10:[function(require,module,exports){
+}).call(this)}).call(this,require("buffer").Buffer)
+},{"../built":8,"ajv":12,"ajv-errors":10,"buffer":56,"json5":67}],10:[function(require,module,exports){
 'use strict';
 
 module.exports = function (ajv, options) {
@@ -1718,6 +1875,7 @@ function Ajv(opts) {
   this._metaOpts = getMetaSchemaOptions(this);
 
   if (opts.formats) addInitialFormats(this);
+  if (opts.keywords) addInitialKeywords(this);
   addDefaultMetaSchema(this);
   if (typeof opts.meta == 'object') this.addMetaSchema(opts.meta);
   if (opts.nullable) this.addKeyword('nullable', {metaSchema: {type: 'boolean'}});
@@ -2116,6 +2274,14 @@ function addInitialFormats(self) {
 }
 
 
+function addInitialKeywords(self) {
+  for (var name in self._opts.keywords) {
+    var keyword = self._opts.keywords[name];
+    self.addKeyword(name, keyword);
+  }
+}
+
+
 function checkUnique(self, id) {
   if (self._schemas[id] || self._refs[id])
     throw new Error('schema with key or id "' + id + '" already exists');
@@ -2145,7 +2311,7 @@ function setLogger(self) {
 
 function noop() {}
 
-},{"./cache":13,"./compile":17,"./compile/async":14,"./compile/error_classes":15,"./compile/formats":16,"./compile/resolve":18,"./compile/rules":19,"./compile/schema_obj":20,"./compile/util":22,"./data":23,"./keyword":50,"./refs/data.json":51,"./refs/json-schema-draft-07.json":52,"fast-json-stable-stringify":60}],13:[function(require,module,exports){
+},{"./cache":13,"./compile":17,"./compile/async":14,"./compile/error_classes":15,"./compile/formats":16,"./compile/resolve":18,"./compile/rules":19,"./compile/schema_obj":20,"./compile/util":22,"./data":23,"./keyword":51,"./refs/data.json":52,"./refs/json-schema-draft-07.json":53,"fast-json-stable-stringify":61}],13:[function(require,module,exports){
 'use strict';
 
 
@@ -2308,8 +2474,8 @@ var util = require('./util');
 
 var DATE = /^(\d\d\d\d)-(\d\d)-(\d\d)$/;
 var DAYS = [0,31,28,31,30,31,30,31,31,30,31,30,31];
-var TIME = /^(\d\d):(\d\d):(\d\d)(\.\d+)?(z|[+-]\d\d:\d\d)?$/i;
-var HOSTNAME = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[-0-9a-z]{0,61}[0-9a-z])?)*$/i;
+var TIME = /^(\d\d):(\d\d):(\d\d)(\.\d+)?(z|[+-]\d\d(?::?\d\d)?)?$/i;
+var HOSTNAME = /^(?=.{1,253}\.?$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[-0-9a-z]{0,61}[0-9a-z])?)*\.?$/i;
 var URI = /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)(?:\?(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i;
 var URIREF = /^(?:[a-z][a-z0-9+\-.]*:)?(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'"()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?(?:\?(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i;
 // uri-template: https://tools.ietf.org/html/rfc6570
@@ -2317,8 +2483,8 @@ var URITEMPLATE = /^(?:(?:[^\x00-\x20"'<>%\\^`{|}]|%[0-9a-f]{2})|\{[+#./;?&=,!@|
 // For the source: https://gist.github.com/dperini/729294
 // For test cases: https://mathiasbynens.be/demo/url-regex
 // @todo Delete current URL in favour of the commented out URL rule when this issue is fixed https://github.com/eslint/eslint/issues/7983.
-// var URL = /^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u{00a1}-\u{ffff}0-9]+-?)*[a-z\u{00a1}-\u{ffff}0-9]+)(?:\.(?:[a-z\u{00a1}-\u{ffff}0-9]+-?)*[a-z\u{00a1}-\u{ffff}0-9]+)*(?:\.(?:[a-z\u{00a1}-\u{ffff}]{2,})))(?::\d{2,5})?(?:\/[^\s]*)?$/iu;
-var URL = /^(?:(?:http[s\u017F]?|ftp):\/\/)(?:(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+(?::(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*)?@)?(?:(?!10(?:\.[0-9]{1,3}){3})(?!127(?:\.[0-9]{1,3}){3})(?!169\.254(?:\.[0-9]{1,3}){2})(?!192\.168(?:\.[0-9]{1,3}){2})(?!172\.(?:1[6-9]|2[0-9]|3[01])(?:\.[0-9]{1,3}){2})(?:[1-9][0-9]?|1[0-9][0-9]|2[01][0-9]|22[0-3])(?:\.(?:1?[0-9]{1,2}|2[0-4][0-9]|25[0-5])){2}(?:\.(?:[1-9][0-9]?|1[0-9][0-9]|2[0-4][0-9]|25[0-4]))|(?:(?:(?:[0-9KSa-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+-?)*(?:[0-9KSa-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)(?:\.(?:(?:[0-9KSa-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+-?)*(?:[0-9KSa-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)*(?:\.(?:(?:[KSa-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]){2,})))(?::[0-9]{2,5})?(?:\/(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*)?$/i;
+// var URL = /^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u{00a1}-\u{ffff}0-9]+-)*[a-z\u{00a1}-\u{ffff}0-9]+)(?:\.(?:[a-z\u{00a1}-\u{ffff}0-9]+-)*[a-z\u{00a1}-\u{ffff}0-9]+)*(?:\.(?:[a-z\u{00a1}-\u{ffff}]{2,})))(?::\d{2,5})?(?:\/[^\s]*)?$/iu;
+var URL = /^(?:(?:http[s\u017F]?|ftp):\/\/)(?:(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+(?::(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*)?@)?(?:(?!10(?:\.[0-9]{1,3}){3})(?!127(?:\.[0-9]{1,3}){3})(?!169\.254(?:\.[0-9]{1,3}){2})(?!192\.168(?:\.[0-9]{1,3}){2})(?!172\.(?:1[6-9]|2[0-9]|3[01])(?:\.[0-9]{1,3}){2})(?:[1-9][0-9]?|1[0-9][0-9]|2[01][0-9]|22[0-3])(?:\.(?:1?[0-9]{1,2}|2[0-4][0-9]|25[0-5])){2}(?:\.(?:[1-9][0-9]?|1[0-9][0-9]|2[0-4][0-9]|25[0-4]))|(?:(?:(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+-)*(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)(?:\.(?:(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+-)*(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)*(?:\.(?:(?:[a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]){2,})))(?::[0-9]{2,5})?(?:\/(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*)?$/i;
 var UUID = /^(?:urn:uuid:)?[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 var JSON_POINTER = /^(?:\/(?:[^~/]|~0|~1)*)*$/;
 var JSON_POINTER_URI_FRAGMENT = /^#(?:\/(?:[a-z0-9_\-.!$&'()*+,;:=@]|%[0-9a-f]{2}|~0|~1)*)*$/i;
@@ -2337,11 +2503,11 @@ formats.fast = {
   // date: http://tools.ietf.org/html/rfc3339#section-5.6
   date: /^\d\d\d\d-[0-1]\d-[0-3]\d$/,
   // date-time: http://tools.ietf.org/html/rfc3339#section-5.6
-  time: /^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d:\d\d)?$/i,
-  'date-time': /^\d\d\d\d-[0-1]\d-[0-3]\d[t\s](?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d:\d\d)$/i,
+  time: /^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)?$/i,
+  'date-time': /^\d\d\d\d-[0-1]\d-[0-3]\d[t\s](?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i,
   // uri: https://github.com/mafintosh/is-my-json-valid/blob/master/formats.js
-  uri: /^(?:[a-z][a-z0-9+-.]*:)(?:\/?\/)?[^\s]*$/i,
-  'uri-reference': /^(?:(?:[a-z][a-z0-9+-.]*:)?\/?\/)?(?:[^\\\s#][^\s#]*)?(?:#[^\\\s]*)?$/i,
+  uri: /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/)?[^\s]*$/i,
+  'uri-reference': /^(?:(?:[a-z][a-z0-9+\-.]*:)?\/?\/)?(?:[^\\\s#][^\s#]*)?(?:#[^\\\s]*)?$/i,
   'uri-template': URITEMPLATE,
   url: URL,
   // email (sources from jsen validator):
@@ -2374,7 +2540,7 @@ formats.full = {
   'uri-template': URITEMPLATE,
   url: URL,
   email: /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i,
-  hostname: hostname,
+  hostname: HOSTNAME,
   ipv4: /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/,
   ipv6: /^\s*(?:(?:(?:[0-9a-f]{1,4}:){7}(?:[0-9a-f]{1,4}|:))|(?:(?:[0-9a-f]{1,4}:){6}(?::[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){5}(?:(?:(?::[0-9a-f]{1,4}){1,2})|:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){4}(?:(?:(?::[0-9a-f]{1,4}){1,3})|(?:(?::[0-9a-f]{1,4})?:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){3}(?:(?:(?::[0-9a-f]{1,4}){1,4})|(?:(?::[0-9a-f]{1,4}){0,2}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){2}(?:(?:(?::[0-9a-f]{1,4}){1,5})|(?:(?::[0-9a-f]{1,4}){0,3}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){1}(?:(?:(?::[0-9a-f]{1,4}){1,6})|(?:(?::[0-9a-f]{1,4}){0,4}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?::(?:(?:(?::[0-9a-f]{1,4}){1,7})|(?:(?::[0-9a-f]{1,4}){0,5}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(?:%.+)?\s*$/i,
   regex: regex,
@@ -2424,13 +2590,6 @@ function date_time(str) {
   // http://tools.ietf.org/html/rfc3339#section-5.6
   var dateTime = str.split(DATE_TIME_SEPARATOR);
   return dateTime.length == 2 && date(dateTime[0]) && time(dateTime[1], true);
-}
-
-
-function hostname(str) {
-  // https://tools.ietf.org/html/rfc1034#section-3.5
-  // https://tools.ietf.org/html/rfc1123#section-2
-  return str.length <= 255 && HOSTNAME.test(str);
 }
 
 
@@ -2568,7 +2727,7 @@ function compile(schema, root, localRefs, baseId) {
                    + vars(defaults, defaultCode) + vars(customRules, customRuleCode)
                    + sourceCode;
 
-    if (opts.processCode) sourceCode = opts.processCode(sourceCode);
+    if (opts.processCode) sourceCode = opts.processCode(sourceCode, _schema);
     // console.log('\n\n\n *** \n', JSON.stringify(sourceCode));
     var validate;
     try {
@@ -2841,7 +3000,7 @@ function vars(arr, statement) {
   return code;
 }
 
-},{"../dotjs/validate":49,"./error_classes":15,"./resolve":18,"./util":22,"fast-deep-equal":59,"fast-json-stable-stringify":60}],18:[function(require,module,exports){
+},{"../dotjs/validate":50,"./error_classes":15,"./resolve":18,"./util":22,"fast-deep-equal":60,"fast-json-stable-stringify":61}],18:[function(require,module,exports){
 'use strict';
 
 var URI = require('uri-js')
@@ -3113,7 +3272,7 @@ function resolveIds(schema) {
   return localRefs;
 }
 
-},{"./schema_obj":20,"./util":22,"fast-deep-equal":59,"json-schema-traverse":65,"uri-js":93}],19:[function(require,module,exports){
+},{"./schema_obj":20,"./util":22,"fast-deep-equal":60,"json-schema-traverse":66,"uri-js":95}],19:[function(require,module,exports){
 'use strict';
 
 var ruleModules = require('../dotjs')
@@ -3181,7 +3340,7 @@ module.exports = function rules() {
   return RULES;
 };
 
-},{"../dotjs":38,"./util":22}],20:[function(require,module,exports){
+},{"../dotjs":39,"./util":22}],20:[function(require,module,exports){
 'use strict';
 
 var util = require('./util');
@@ -3230,8 +3389,6 @@ module.exports = {
   ucs2length: require('./ucs2length'),
   varOccurences: varOccurences,
   varReplace: varReplace,
-  cleanUpCode: cleanUpCode,
-  finalCleanUpCode: finalCleanUpCode,
   schemaHasRules: schemaHasRules,
   schemaHasRulesExcept: schemaHasRulesExcept,
   schemaUnknownRules: schemaUnknownRules,
@@ -3253,7 +3410,7 @@ function copy(o, to) {
 }
 
 
-function checkDataType(dataType, data, negate) {
+function checkDataType(dataType, data, strictNumbers, negate) {
   var EQUAL = negate ? ' !== ' : ' === '
     , AND = negate ? ' || ' : ' && '
     , OK = negate ? '!' : ''
@@ -3266,15 +3423,18 @@ function checkDataType(dataType, data, negate) {
                           NOT + 'Array.isArray(' + data + '))';
     case 'integer': return '(typeof ' + data + EQUAL + '"number"' + AND +
                            NOT + '(' + data + ' % 1)' +
-                           AND + data + EQUAL + data + ')';
+                           AND + data + EQUAL + data +
+                           (strictNumbers ? (AND + OK + 'isFinite(' + data + ')') : '') + ')';
+    case 'number': return '(typeof ' + data + EQUAL + '"' + dataType + '"' +
+                          (strictNumbers ? (AND + OK + 'isFinite(' + data + ')') : '') + ')';
     default: return 'typeof ' + data + EQUAL + '"' + dataType + '"';
   }
 }
 
 
-function checkDataTypes(dataTypes, data) {
+function checkDataTypes(dataTypes, data, strictNumbers) {
   switch (dataTypes.length) {
-    case 1: return checkDataType(dataTypes[0], data, true);
+    case 1: return checkDataType(dataTypes[0], data, strictNumbers, true);
     default:
       var code = '';
       var types = toHash(dataTypes);
@@ -3287,7 +3447,7 @@ function checkDataTypes(dataTypes, data) {
       }
       if (types.number) delete types.integer;
       for (var t in types)
-        code += (code ? ' && ' : '' ) + checkDataType(t, data, true);
+        code += (code ? ' && ' : '' ) + checkDataType(t, data, strictNumbers, true);
 
       return code;
   }
@@ -3350,42 +3510,6 @@ function varReplace(str, dataVar, expr) {
   dataVar += '([^0-9])';
   expr = expr.replace(/\$/g, '$$$$');
   return str.replace(new RegExp(dataVar, 'g'), expr + '$1');
-}
-
-
-var EMPTY_ELSE = /else\s*{\s*}/g
-  , EMPTY_IF_NO_ELSE = /if\s*\([^)]+\)\s*\{\s*\}(?!\s*else)/g
-  , EMPTY_IF_WITH_ELSE = /if\s*\(([^)]+)\)\s*\{\s*\}\s*else(?!\s*if)/g;
-function cleanUpCode(out) {
-  return out.replace(EMPTY_ELSE, '')
-            .replace(EMPTY_IF_NO_ELSE, '')
-            .replace(EMPTY_IF_WITH_ELSE, 'if (!($1))');
-}
-
-
-var ERRORS_REGEXP = /[^v.]errors/g
-  , REMOVE_ERRORS = /var errors = 0;|var vErrors = null;|validate.errors = vErrors;/g
-  , REMOVE_ERRORS_ASYNC = /var errors = 0;|var vErrors = null;/g
-  , RETURN_VALID = 'return errors === 0;'
-  , RETURN_TRUE = 'validate.errors = null; return true;'
-  , RETURN_ASYNC = /if \(errors === 0\) return data;\s*else throw new ValidationError\(vErrors\);/
-  , RETURN_DATA_ASYNC = 'return data;'
-  , ROOTDATA_REGEXP = /[^A-Za-z_$]rootData[^A-Za-z0-9_$]/g
-  , REMOVE_ROOTDATA = /if \(rootData === undefined\) rootData = data;/;
-
-function finalCleanUpCode(out, async) {
-  var matches = out.match(ERRORS_REGEXP);
-  if (matches && matches.length == 2) {
-    out = async
-          ? out.replace(REMOVE_ERRORS_ASYNC, '')
-               .replace(RETURN_ASYNC, RETURN_DATA_ASYNC)
-          : out.replace(REMOVE_ERRORS, '')
-               .replace(RETURN_VALID, RETURN_TRUE);
-  }
-
-  matches = out.match(ROOTDATA_REGEXP);
-  if (!matches || matches.length !== 3) return out;
-  return out.replace(REMOVE_ROOTDATA, '');
 }
 
 
@@ -3467,7 +3591,7 @@ function getData($data, lvl, paths) {
 
 function joinPaths (a, b) {
   if (a == '""') return b;
-  return (a + ' + ' + b).replace(/' \+ '/g, '');
+  return (a + ' + ' + b).replace(/([^\\])' \+ '/g, '$1');
 }
 
 
@@ -3490,7 +3614,7 @@ function unescapeJsonPointer(str) {
   return str.replace(/~1/g, '/').replace(/~0/g, '~');
 }
 
-},{"./ucs2length":21,"fast-deep-equal":59}],23:[function(require,module,exports){
+},{"./ucs2length":21,"fast-deep-equal":60}],23:[function(require,module,exports){
 'use strict';
 
 var KEYWORDS = [
@@ -3531,7 +3655,7 @@ module.exports = function (metaSchema, keywordsJsonPointers) {
         keywords[key] = {
           anyOf: [
             schema,
-            { $ref: 'https://raw.githubusercontent.com/epoberezkin/ajv/master/lib/refs/data.json#' }
+            { $ref: 'https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#' }
           ]
         };
       }
@@ -3542,6 +3666,45 @@ module.exports = function (metaSchema, keywordsJsonPointers) {
 };
 
 },{}],24:[function(require,module,exports){
+'use strict';
+
+var metaSchema = require('./refs/json-schema-draft-07.json');
+
+module.exports = {
+  $id: 'https://github.com/ajv-validator/ajv/blob/master/lib/definition_schema.js',
+  definitions: {
+    simpleTypes: metaSchema.definitions.simpleTypes
+  },
+  type: 'object',
+  dependencies: {
+    schema: ['validate'],
+    $data: ['validate'],
+    statements: ['inline'],
+    valid: {not: {required: ['macro']}}
+  },
+  properties: {
+    type: metaSchema.properties.type,
+    schema: {type: 'boolean'},
+    statements: {type: 'boolean'},
+    dependencies: {
+      type: 'array',
+      items: {type: 'string'}
+    },
+    metaSchema: {type: 'object'},
+    modifying: {type: 'boolean'},
+    valid: {type: 'boolean'},
+    $data: {type: 'boolean'},
+    async: {type: 'boolean'},
+    errors: {
+      anyOf: [
+        {type: 'boolean'},
+        {const: 'full'}
+      ]
+    }
+  }
+};
+
+},{"./refs/json-schema-draft-07.json":53}],25:[function(require,module,exports){
 'use strict';
 module.exports = function generate__limit(it, $keyword, $ruleType) {
   var out = ' ';
@@ -3568,6 +3731,12 @@ module.exports = function generate__limit(it, $keyword, $ruleType) {
     $op = $isMax ? '<' : '>',
     $notOp = $isMax ? '>' : '<',
     $errorKeyword = undefined;
+  if (!($isData || typeof $schema == 'number' || $schema === undefined)) {
+    throw new Error($keyword + ' must be number');
+  }
+  if (!($isDataExcl || $schemaExcl === undefined || typeof $schemaExcl == 'number' || typeof $schemaExcl == 'boolean')) {
+    throw new Error($exclusiveKeyword + ' must be number or boolean');
+  }
   if ($isDataExcl) {
     var $schemaValueExcl = it.util.getData($schemaExcl.$data, $dataLvl, it.dataPathArr),
       $exclusive = 'exclusive' + $lvl,
@@ -3700,7 +3869,7 @@ module.exports = function generate__limit(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 'use strict';
 module.exports = function generate__limitItems(it, $keyword, $ruleType) {
   var out = ' ';
@@ -3719,6 +3888,9 @@ module.exports = function generate__limitItems(it, $keyword, $ruleType) {
     $schemaValue = 'schema' + $lvl;
   } else {
     $schemaValue = $schema;
+  }
+  if (!($isData || typeof $schema == 'number')) {
+    throw new Error($keyword + ' must be number');
   }
   var $op = $keyword == 'maxItems' ? '>' : '<';
   out += 'if ( ';
@@ -3779,7 +3951,7 @@ module.exports = function generate__limitItems(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 'use strict';
 module.exports = function generate__limitLength(it, $keyword, $ruleType) {
   var out = ' ';
@@ -3798,6 +3970,9 @@ module.exports = function generate__limitLength(it, $keyword, $ruleType) {
     $schemaValue = 'schema' + $lvl;
   } else {
     $schemaValue = $schema;
+  }
+  if (!($isData || typeof $schema == 'number')) {
+    throw new Error($keyword + ' must be number');
   }
   var $op = $keyword == 'maxLength' ? '>' : '<';
   out += 'if ( ';
@@ -3863,7 +4038,7 @@ module.exports = function generate__limitLength(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 'use strict';
 module.exports = function generate__limitProperties(it, $keyword, $ruleType) {
   var out = ' ';
@@ -3882,6 +4057,9 @@ module.exports = function generate__limitProperties(it, $keyword, $ruleType) {
     $schemaValue = 'schema' + $lvl;
   } else {
     $schemaValue = $schema;
+  }
+  if (!($isData || typeof $schema == 'number')) {
+    throw new Error($keyword + ' must be number');
   }
   var $op = $keyword == 'maxProperties' ? '>' : '<';
   out += 'if ( ';
@@ -3942,7 +4120,7 @@ module.exports = function generate__limitProperties(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 'use strict';
 module.exports = function generate_allOf(it, $keyword, $ruleType) {
   var out = ' ';
@@ -3962,7 +4140,7 @@ module.exports = function generate_allOf(it, $keyword, $ruleType) {
       l1 = arr1.length - 1;
     while ($i < l1) {
       $sch = arr1[$i += 1];
-      if (it.util.schemaHasRules($sch, it.RULES.all)) {
+      if ((it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all))) {
         $allSchemasEmpty = false;
         $it.schema = $sch;
         $it.schemaPath = $schemaPath + '[' + $i + ']';
@@ -3983,11 +4161,10 @@ module.exports = function generate_allOf(it, $keyword, $ruleType) {
       out += ' ' + ($closingBraces.slice(0, -1)) + ' ';
     }
   }
-  out = it.util.cleanUpCode(out);
   return out;
 }
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 'use strict';
 module.exports = function generate_anyOf(it, $keyword, $ruleType) {
   var out = ' ';
@@ -4005,7 +4182,7 @@ module.exports = function generate_anyOf(it, $keyword, $ruleType) {
   $it.level++;
   var $nextValid = 'valid' + $it.level;
   var $noEmptySchema = $schema.every(function($sch) {
-    return it.util.schemaHasRules($sch, it.RULES.all);
+    return (it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all));
   });
   if ($noEmptySchema) {
     var $currentBaseId = $it.baseId;
@@ -4054,7 +4231,6 @@ module.exports = function generate_anyOf(it, $keyword, $ruleType) {
     if (it.opts.allErrors) {
       out += ' } ';
     }
-    out = it.util.cleanUpCode(out);
   } else {
     if ($breakOnError) {
       out += ' if (true) { ';
@@ -4063,7 +4239,7 @@ module.exports = function generate_anyOf(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 'use strict';
 module.exports = function generate_comment(it, $keyword, $ruleType) {
   var out = ' ';
@@ -4079,7 +4255,7 @@ module.exports = function generate_comment(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 'use strict';
 module.exports = function generate_const(it, $keyword, $ruleType) {
   var out = ' ';
@@ -4137,7 +4313,7 @@ module.exports = function generate_const(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 'use strict';
 module.exports = function generate_contains(it, $keyword, $ruleType) {
   var out = ' ';
@@ -4158,7 +4334,7 @@ module.exports = function generate_contains(it, $keyword, $ruleType) {
     $dataNxt = $it.dataLevel = it.dataLevel + 1,
     $nextData = 'data' + $dataNxt,
     $currentBaseId = it.baseId,
-    $nonEmptySchema = it.util.schemaHasRules($schema, it.RULES.all);
+    $nonEmptySchema = (it.opts.strictKeywords ? (typeof $schema == 'object' && Object.keys($schema).length > 0) || $schema === false : it.util.schemaHasRules($schema, it.RULES.all));
   out += 'var ' + ($errs) + ' = errors;var ' + ($valid) + ';';
   if ($nonEmptySchema) {
     var $wasComposite = it.compositeRule;
@@ -4217,11 +4393,10 @@ module.exports = function generate_contains(it, $keyword, $ruleType) {
   if (it.opts.allErrors) {
     out += ' } ';
   }
-  out = it.util.cleanUpCode(out);
   return out;
 }
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 'use strict';
 module.exports = function generate_custom(it, $keyword, $ruleType) {
   var out = ' ';
@@ -4451,7 +4626,7 @@ module.exports = function generate_custom(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 'use strict';
 module.exports = function generate_dependencies(it, $keyword, $ruleType) {
   var out = ' ';
@@ -4471,6 +4646,7 @@ module.exports = function generate_dependencies(it, $keyword, $ruleType) {
     $propertyDeps = {},
     $ownProperties = it.opts.ownProperties;
   for ($property in $schema) {
+    if ($property == '__proto__') continue;
     var $sch = $schema[$property];
     var $deps = Array.isArray($sch) ? $propertyDeps : $schemaDeps;
     $deps[$property] = $sch;
@@ -4596,7 +4772,7 @@ module.exports = function generate_dependencies(it, $keyword, $ruleType) {
   var $currentBaseId = $it.baseId;
   for (var $property in $schemaDeps) {
     var $sch = $schemaDeps[$property];
-    if (it.util.schemaHasRules($sch, it.RULES.all)) {
+    if ((it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all))) {
       out += ' ' + ($nextValid) + ' = true; if ( ' + ($data) + (it.util.getProperty($property)) + ' !== undefined ';
       if ($ownProperties) {
         out += ' && Object.prototype.hasOwnProperty.call(' + ($data) + ', \'' + (it.util.escapeQuotes($property)) + '\') ';
@@ -4617,11 +4793,10 @@ module.exports = function generate_dependencies(it, $keyword, $ruleType) {
   if ($breakOnError) {
     out += '   ' + ($closingBraces) + ' if (' + ($errs) + ' == errors) {';
   }
-  out = it.util.cleanUpCode(out);
   return out;
 }
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 'use strict';
 module.exports = function generate_enum(it, $keyword, $ruleType) {
   var out = ' ';
@@ -4689,7 +4864,7 @@ module.exports = function generate_enum(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 'use strict';
 module.exports = function generate_format(it, $keyword, $ruleType) {
   var out = ' ';
@@ -4841,7 +5016,7 @@ module.exports = function generate_format(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 'use strict';
 module.exports = function generate_if(it, $keyword, $ruleType) {
   var out = ' ';
@@ -4859,8 +5034,8 @@ module.exports = function generate_if(it, $keyword, $ruleType) {
   var $nextValid = 'valid' + $it.level;
   var $thenSch = it.schema['then'],
     $elseSch = it.schema['else'],
-    $thenPresent = $thenSch !== undefined && it.util.schemaHasRules($thenSch, it.RULES.all),
-    $elsePresent = $elseSch !== undefined && it.util.schemaHasRules($elseSch, it.RULES.all),
+    $thenPresent = $thenSch !== undefined && (it.opts.strictKeywords ? (typeof $thenSch == 'object' && Object.keys($thenSch).length > 0) || $thenSch === false : it.util.schemaHasRules($thenSch, it.RULES.all)),
+    $elsePresent = $elseSch !== undefined && (it.opts.strictKeywords ? (typeof $elseSch == 'object' && Object.keys($elseSch).length > 0) || $elseSch === false : it.util.schemaHasRules($elseSch, it.RULES.all)),
     $currentBaseId = $it.baseId;
   if ($thenPresent || $elsePresent) {
     var $ifClause;
@@ -4938,7 +5113,6 @@ module.exports = function generate_if(it, $keyword, $ruleType) {
     if ($breakOnError) {
       out += ' else { ';
     }
-    out = it.util.cleanUpCode(out);
   } else {
     if ($breakOnError) {
       out += ' if (true) { ';
@@ -4947,7 +5121,7 @@ module.exports = function generate_if(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 'use strict';
 
 //all requires must be explicit because browserify won't work with dynamic requires
@@ -4982,7 +5156,7 @@ module.exports = {
   validate: require('./validate')
 };
 
-},{"./_limit":24,"./_limitItems":25,"./_limitLength":26,"./_limitProperties":27,"./allOf":28,"./anyOf":29,"./comment":30,"./const":31,"./contains":32,"./dependencies":34,"./enum":35,"./format":36,"./if":37,"./items":39,"./multipleOf":40,"./not":41,"./oneOf":42,"./pattern":43,"./properties":44,"./propertyNames":45,"./ref":46,"./required":47,"./uniqueItems":48,"./validate":49}],39:[function(require,module,exports){
+},{"./_limit":25,"./_limitItems":26,"./_limitLength":27,"./_limitProperties":28,"./allOf":29,"./anyOf":30,"./comment":31,"./const":32,"./contains":33,"./dependencies":35,"./enum":36,"./format":37,"./if":38,"./items":40,"./multipleOf":41,"./not":42,"./oneOf":43,"./pattern":44,"./properties":45,"./propertyNames":46,"./ref":47,"./required":48,"./uniqueItems":49,"./validate":50}],40:[function(require,module,exports){
 'use strict';
 module.exports = function generate_items(it, $keyword, $ruleType) {
   var out = ' ';
@@ -5051,7 +5225,7 @@ module.exports = function generate_items(it, $keyword, $ruleType) {
         l1 = arr1.length - 1;
       while ($i < l1) {
         $sch = arr1[$i += 1];
-        if (it.util.schemaHasRules($sch, it.RULES.all)) {
+        if ((it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all))) {
           out += ' ' + ($nextValid) + ' = true; if (' + ($data) + '.length > ' + ($i) + ') { ';
           var $passData = $data + '[' + $i + ']';
           $it.schema = $sch;
@@ -5074,7 +5248,7 @@ module.exports = function generate_items(it, $keyword, $ruleType) {
         }
       }
     }
-    if (typeof $additionalItems == 'object' && it.util.schemaHasRules($additionalItems, it.RULES.all)) {
+    if (typeof $additionalItems == 'object' && (it.opts.strictKeywords ? (typeof $additionalItems == 'object' && Object.keys($additionalItems).length > 0) || $additionalItems === false : it.util.schemaHasRules($additionalItems, it.RULES.all))) {
       $it.schema = $additionalItems;
       $it.schemaPath = it.schemaPath + '.additionalItems';
       $it.errSchemaPath = it.errSchemaPath + '/additionalItems';
@@ -5098,7 +5272,7 @@ module.exports = function generate_items(it, $keyword, $ruleType) {
         $closingBraces += '}';
       }
     }
-  } else if (it.util.schemaHasRules($schema, it.RULES.all)) {
+  } else if ((it.opts.strictKeywords ? (typeof $schema == 'object' && Object.keys($schema).length > 0) || $schema === false : it.util.schemaHasRules($schema, it.RULES.all))) {
     $it.schema = $schema;
     $it.schemaPath = $schemaPath;
     $it.errSchemaPath = $errSchemaPath;
@@ -5121,11 +5295,10 @@ module.exports = function generate_items(it, $keyword, $ruleType) {
   if ($breakOnError) {
     out += ' ' + ($closingBraces) + ' if (' + ($errs) + ' == errors) {';
   }
-  out = it.util.cleanUpCode(out);
   return out;
 }
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 'use strict';
 module.exports = function generate_multipleOf(it, $keyword, $ruleType) {
   var out = ' ';
@@ -5143,6 +5316,9 @@ module.exports = function generate_multipleOf(it, $keyword, $ruleType) {
     $schemaValue = 'schema' + $lvl;
   } else {
     $schemaValue = $schema;
+  }
+  if (!($isData || typeof $schema == 'number')) {
+    throw new Error($keyword + ' must be number');
   }
   out += 'var division' + ($lvl) + ';if (';
   if ($isData) {
@@ -5204,7 +5380,7 @@ module.exports = function generate_multipleOf(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 'use strict';
 module.exports = function generate_not(it, $keyword, $ruleType) {
   var out = ' ';
@@ -5219,7 +5395,7 @@ module.exports = function generate_not(it, $keyword, $ruleType) {
   var $it = it.util.copy(it);
   $it.level++;
   var $nextValid = 'valid' + $it.level;
-  if (it.util.schemaHasRules($schema, it.RULES.all)) {
+  if ((it.opts.strictKeywords ? (typeof $schema == 'object' && Object.keys($schema).length > 0) || $schema === false : it.util.schemaHasRules($schema, it.RULES.all))) {
     $it.schema = $schema;
     $it.schemaPath = $schemaPath;
     $it.errSchemaPath = $errSchemaPath;
@@ -5290,7 +5466,7 @@ module.exports = function generate_not(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 'use strict';
 module.exports = function generate_oneOf(it, $keyword, $ruleType) {
   var out = ' ';
@@ -5319,7 +5495,7 @@ module.exports = function generate_oneOf(it, $keyword, $ruleType) {
       l1 = arr1.length - 1;
     while ($i < l1) {
       $sch = arr1[$i += 1];
-      if (it.util.schemaHasRules($sch, it.RULES.all)) {
+      if ((it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all))) {
         $it.schema = $sch;
         $it.schemaPath = $schemaPath + '[' + $i + ']';
         $it.errSchemaPath = $errSchemaPath + '/' + $i;
@@ -5365,7 +5541,7 @@ module.exports = function generate_oneOf(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 'use strict';
 module.exports = function generate_pattern(it, $keyword, $ruleType) {
   var out = ' ';
@@ -5442,7 +5618,7 @@ module.exports = function generate_pattern(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 'use strict';
 module.exports = function generate_properties(it, $keyword, $ruleType) {
   var out = ' ';
@@ -5463,9 +5639,9 @@ module.exports = function generate_properties(it, $keyword, $ruleType) {
     $dataNxt = $it.dataLevel = it.dataLevel + 1,
     $nextData = 'data' + $dataNxt,
     $dataProperties = 'dataProperties' + $lvl;
-  var $schemaKeys = Object.keys($schema || {}),
+  var $schemaKeys = Object.keys($schema || {}).filter(notProto),
     $pProperties = it.schema.patternProperties || {},
-    $pPropertyKeys = Object.keys($pProperties),
+    $pPropertyKeys = Object.keys($pProperties).filter(notProto),
     $aProperties = it.schema.additionalProperties,
     $someProperties = $schemaKeys.length || $pPropertyKeys.length,
     $noAdditional = $aProperties === false,
@@ -5475,7 +5651,13 @@ module.exports = function generate_properties(it, $keyword, $ruleType) {
     $ownProperties = it.opts.ownProperties,
     $currentBaseId = it.baseId;
   var $required = it.schema.required;
-  if ($required && !(it.opts.$data && $required.$data) && $required.length < it.opts.loopRequired) var $requiredHash = it.util.toHash($required);
+  if ($required && !(it.opts.$data && $required.$data) && $required.length < it.opts.loopRequired) {
+    var $requiredHash = it.util.toHash($required);
+  }
+
+  function notProto(p) {
+    return p !== '__proto__';
+  }
   out += 'var ' + ($errs) + ' = errors;var ' + ($nextValid) + ' = true;';
   if ($ownProperties) {
     out += ' var ' + ($dataProperties) + ' = undefined;';
@@ -5628,7 +5810,7 @@ module.exports = function generate_properties(it, $keyword, $ruleType) {
       while (i3 < l3) {
         $propertyKey = arr3[i3 += 1];
         var $sch = $schema[$propertyKey];
-        if (it.util.schemaHasRules($sch, it.RULES.all)) {
+        if ((it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all))) {
           var $prop = it.util.getProperty($propertyKey),
             $passData = $data + $prop,
             $hasDefault = $useDefaults && $sch.default !== undefined;
@@ -5731,7 +5913,7 @@ module.exports = function generate_properties(it, $keyword, $ruleType) {
       while (i4 < l4) {
         $pProperty = arr4[i4 += 1];
         var $sch = $pProperties[$pProperty];
-        if (it.util.schemaHasRules($sch, it.RULES.all)) {
+        if ((it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all))) {
           $it.schema = $sch;
           $it.schemaPath = it.schemaPath + '.patternProperties' + it.util.getProperty($pProperty);
           $it.errSchemaPath = it.errSchemaPath + '/patternProperties/' + it.util.escapeFragment($pProperty);
@@ -5770,11 +5952,10 @@ module.exports = function generate_properties(it, $keyword, $ruleType) {
   if ($breakOnError) {
     out += ' ' + ($closingBraces) + ' if (' + ($errs) + ' == errors) {';
   }
-  out = it.util.cleanUpCode(out);
   return out;
 }
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 'use strict';
 module.exports = function generate_propertyNames(it, $keyword, $ruleType) {
   var out = ' ';
@@ -5791,7 +5972,7 @@ module.exports = function generate_propertyNames(it, $keyword, $ruleType) {
   $it.level++;
   var $nextValid = 'valid' + $it.level;
   out += 'var ' + ($errs) + ' = errors;';
-  if (it.util.schemaHasRules($schema, it.RULES.all)) {
+  if ((it.opts.strictKeywords ? (typeof $schema == 'object' && Object.keys($schema).length > 0) || $schema === false : it.util.schemaHasRules($schema, it.RULES.all))) {
     $it.schema = $schema;
     $it.schemaPath = $schemaPath;
     $it.errSchemaPath = $errSchemaPath;
@@ -5854,11 +6035,10 @@ module.exports = function generate_propertyNames(it, $keyword, $ruleType) {
   if ($breakOnError) {
     out += ' ' + ($closingBraces) + ' if (' + ($errs) + ' == errors) {';
   }
-  out = it.util.cleanUpCode(out);
   return out;
 }
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 'use strict';
 module.exports = function generate_ref(it, $keyword, $ruleType) {
   var out = ' ';
@@ -5984,7 +6164,7 @@ module.exports = function generate_ref(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 'use strict';
 module.exports = function generate_required(it, $keyword, $ruleType) {
   var out = ' ';
@@ -6015,7 +6195,7 @@ module.exports = function generate_required(it, $keyword, $ruleType) {
         while (i1 < l1) {
           $property = arr1[i1 += 1];
           var $propertySch = it.schema.properties[$property];
-          if (!($propertySch && it.util.schemaHasRules($propertySch, it.RULES.all))) {
+          if (!($propertySch && (it.opts.strictKeywords ? (typeof $propertySch == 'object' && Object.keys($propertySch).length > 0) || $propertySch === false : it.util.schemaHasRules($propertySch, it.RULES.all)))) {
             $required[$required.length] = $property;
           }
         }
@@ -6256,7 +6436,7 @@ module.exports = function generate_required(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 'use strict';
 module.exports = function generate_uniqueItems(it, $keyword, $ruleType) {
   var out = ' ';
@@ -6288,7 +6468,7 @@ module.exports = function generate_uniqueItems(it, $keyword, $ruleType) {
     } else {
       out += ' var itemIndices = {}, item; for (;i--;) { var item = ' + ($data) + '[i]; ';
       var $method = 'checkDataType' + ($typeIsArray ? 's' : '');
-      out += ' if (' + (it.util[$method]($itemType, 'item', true)) + ') continue; ';
+      out += ' if (' + (it.util[$method]($itemType, 'item', it.opts.strictNumbers, true)) + ') continue; ';
       if ($typeIsArray) {
         out += ' if (typeof item == \'string\') item = \'"\' + item; ';
       }
@@ -6344,7 +6524,7 @@ module.exports = function generate_uniqueItems(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 'use strict';
 module.exports = function generate_validate(it, $keyword, $ruleType) {
   var out = '';
@@ -6438,7 +6618,7 @@ module.exports = function generate_validate(it, $keyword, $ruleType) {
     it.rootId = it.resolve.fullPath(it.self._getId(it.root.schema));
     it.baseId = it.baseId || it.rootId;
     delete it.isTop;
-    it.dataPathArr = [undefined];
+    it.dataPathArr = [""];
     if (it.schema.default !== undefined && it.opts.useDefaults && it.opts.strictDefaults) {
       var $defaultMsg = 'default is ignored in the schema root';
       if (it.opts.strictDefaults === 'log') it.logger.warn($defaultMsg);
@@ -6496,47 +6676,39 @@ module.exports = function generate_validate(it, $keyword, $ruleType) {
       var $schemaPath = it.schemaPath + '.type',
         $errSchemaPath = it.errSchemaPath + '/type',
         $method = $typeIsArray ? 'checkDataTypes' : 'checkDataType';
-      out += ' if (' + (it.util[$method]($typeSchema, $data, true)) + ') { ';
+      out += ' if (' + (it.util[$method]($typeSchema, $data, it.opts.strictNumbers, true)) + ') { ';
       if ($coerceToTypes) {
         var $dataType = 'dataType' + $lvl,
           $coerced = 'coerced' + $lvl;
-        out += ' var ' + ($dataType) + ' = typeof ' + ($data) + '; ';
+        out += ' var ' + ($dataType) + ' = typeof ' + ($data) + '; var ' + ($coerced) + ' = undefined; ';
         if (it.opts.coerceTypes == 'array') {
-          out += ' if (' + ($dataType) + ' == \'object\' && Array.isArray(' + ($data) + ')) ' + ($dataType) + ' = \'array\'; ';
+          out += ' if (' + ($dataType) + ' == \'object\' && Array.isArray(' + ($data) + ') && ' + ($data) + '.length == 1) { ' + ($data) + ' = ' + ($data) + '[0]; ' + ($dataType) + ' = typeof ' + ($data) + '; if (' + (it.util.checkDataType(it.schema.type, $data, it.opts.strictNumbers)) + ') ' + ($coerced) + ' = ' + ($data) + '; } ';
         }
-        out += ' var ' + ($coerced) + ' = undefined; ';
-        var $bracesCoercion = '';
+        out += ' if (' + ($coerced) + ' !== undefined) ; ';
         var arr1 = $coerceToTypes;
         if (arr1) {
           var $type, $i = -1,
             l1 = arr1.length - 1;
           while ($i < l1) {
             $type = arr1[$i += 1];
-            if ($i) {
-              out += ' if (' + ($coerced) + ' === undefined) { ';
-              $bracesCoercion += '}';
-            }
-            if (it.opts.coerceTypes == 'array' && $type != 'array') {
-              out += ' if (' + ($dataType) + ' == \'array\' && ' + ($data) + '.length == 1) { ' + ($coerced) + ' = ' + ($data) + ' = ' + ($data) + '[0]; ' + ($dataType) + ' = typeof ' + ($data) + ';  } ';
-            }
             if ($type == 'string') {
-              out += ' if (' + ($dataType) + ' == \'number\' || ' + ($dataType) + ' == \'boolean\') ' + ($coerced) + ' = \'\' + ' + ($data) + '; else if (' + ($data) + ' === null) ' + ($coerced) + ' = \'\'; ';
+              out += ' else if (' + ($dataType) + ' == \'number\' || ' + ($dataType) + ' == \'boolean\') ' + ($coerced) + ' = \'\' + ' + ($data) + '; else if (' + ($data) + ' === null) ' + ($coerced) + ' = \'\'; ';
             } else if ($type == 'number' || $type == 'integer') {
-              out += ' if (' + ($dataType) + ' == \'boolean\' || ' + ($data) + ' === null || (' + ($dataType) + ' == \'string\' && ' + ($data) + ' && ' + ($data) + ' == +' + ($data) + ' ';
+              out += ' else if (' + ($dataType) + ' == \'boolean\' || ' + ($data) + ' === null || (' + ($dataType) + ' == \'string\' && ' + ($data) + ' && ' + ($data) + ' == +' + ($data) + ' ';
               if ($type == 'integer') {
                 out += ' && !(' + ($data) + ' % 1)';
               }
               out += ')) ' + ($coerced) + ' = +' + ($data) + '; ';
             } else if ($type == 'boolean') {
-              out += ' if (' + ($data) + ' === \'false\' || ' + ($data) + ' === 0 || ' + ($data) + ' === null) ' + ($coerced) + ' = false; else if (' + ($data) + ' === \'true\' || ' + ($data) + ' === 1) ' + ($coerced) + ' = true; ';
+              out += ' else if (' + ($data) + ' === \'false\' || ' + ($data) + ' === 0 || ' + ($data) + ' === null) ' + ($coerced) + ' = false; else if (' + ($data) + ' === \'true\' || ' + ($data) + ' === 1) ' + ($coerced) + ' = true; ';
             } else if ($type == 'null') {
-              out += ' if (' + ($data) + ' === \'\' || ' + ($data) + ' === 0 || ' + ($data) + ' === false) ' + ($coerced) + ' = null; ';
+              out += ' else if (' + ($data) + ' === \'\' || ' + ($data) + ' === 0 || ' + ($data) + ' === false) ' + ($coerced) + ' = null; ';
             } else if (it.opts.coerceTypes == 'array' && $type == 'array') {
-              out += ' if (' + ($dataType) + ' == \'string\' || ' + ($dataType) + ' == \'number\' || ' + ($dataType) + ' == \'boolean\' || ' + ($data) + ' == null) ' + ($coerced) + ' = [' + ($data) + ']; ';
+              out += ' else if (' + ($dataType) + ' == \'string\' || ' + ($dataType) + ' == \'number\' || ' + ($dataType) + ' == \'boolean\' || ' + ($data) + ' == null) ' + ($coerced) + ' = [' + ($data) + ']; ';
             }
           }
         }
-        out += ' ' + ($bracesCoercion) + ' if (' + ($coerced) + ' === undefined) {   ';
+        out += ' else {   ';
         var $$outStack = $$outStack || [];
         $$outStack.push(out);
         out = ''; /* istanbul ignore else */
@@ -6576,7 +6748,7 @@ module.exports = function generate_validate(it, $keyword, $ruleType) {
         } else {
           out += ' var err = ' + (__err) + ';  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; ';
         }
-        out += ' } else {  ';
+        out += ' } if (' + ($coerced) + ' !== undefined) {  ';
         var $parentData = $dataLvl ? 'data' + (($dataLvl - 1) || '') : 'parentData',
           $parentDataProperty = $dataLvl ? it.dataPathArr[$dataLvl] : 'parentDataProperty';
         out += ' ' + ($data) + ' = ' + ($coerced) + '; ';
@@ -6649,7 +6821,7 @@ module.exports = function generate_validate(it, $keyword, $ruleType) {
         $rulesGroup = arr2[i2 += 1];
         if ($shouldUseGroup($rulesGroup)) {
           if ($rulesGroup.type) {
-            out += ' if (' + (it.util.checkDataType($rulesGroup.type, $data)) + ') { ';
+            out += ' if (' + (it.util.checkDataType($rulesGroup.type, $data, it.opts.strictNumbers)) + ') { ';
           }
           if (it.opts.useDefaults) {
             if ($rulesGroup.type == 'object' && it.schema.properties) {
@@ -6817,10 +6989,6 @@ module.exports = function generate_validate(it, $keyword, $ruleType) {
   } else {
     out += ' var ' + ($valid) + ' = errors === errs_' + ($lvl) + ';';
   }
-  out = it.util.cleanUpCode(out);
-  if ($top) {
-    out = it.util.finalCleanUpCode(out, $async);
-  }
 
   function $shouldUseGroup($rulesGroup) {
     var rules = $rulesGroup.rules;
@@ -6840,12 +7008,12 @@ module.exports = function generate_validate(it, $keyword, $ruleType) {
   return out;
 }
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 'use strict';
 
 var IDENTIFIER = /^[a-z_$][a-z0-9_$-]*$/i;
 var customRuleCode = require('./dotjs/custom');
-var metaSchema = require('./refs/json-schema-draft-07.json');
+var definitionSchema = require('./definition_schema');
 
 module.exports = {
   add: addKeyword,
@@ -6854,38 +7022,6 @@ module.exports = {
   validate: validateKeyword
 };
 
-var definitionSchema = {
-  definitions: {
-    simpleTypes: metaSchema.definitions.simpleTypes
-  },
-  type: 'object',
-  dependencies: {
-    schema: ['validate'],
-    $data: ['validate'],
-    statements: ['inline'],
-    valid: {not: {required: ['macro']}}
-  },
-  properties: {
-    type: metaSchema.properties.type,
-    schema: {type: 'boolean'},
-    statements: {type: 'boolean'},
-    dependencies: {
-      type: 'array',
-      items: {type: 'string'}
-    },
-    metaSchema: {type: 'object'},
-    modifying: {type: 'boolean'},
-    valid: {type: 'boolean'},
-    $data: {type: 'boolean'},
-    async: {type: 'boolean'},
-    errors: {
-      anyOf: [
-        {type: 'boolean'},
-        {const: 'full'}
-      ]
-    }
-  }
-};
 
 /**
  * Define custom keyword
@@ -6921,7 +7057,7 @@ function addKeyword(keyword, definition) {
         metaSchema = {
           anyOf: [
             metaSchema,
-            { '$ref': 'https://raw.githubusercontent.com/epoberezkin/ajv/master/lib/refs/data.json#' }
+            { '$ref': 'https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#' }
           ]
         };
       }
@@ -7020,10 +7156,10 @@ function validateKeyword(definition, throwError) {
     return false;
 }
 
-},{"./dotjs/custom":33,"./refs/json-schema-draft-07.json":52}],51:[function(require,module,exports){
+},{"./definition_schema":24,"./dotjs/custom":34}],52:[function(require,module,exports){
 module.exports={
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://raw.githubusercontent.com/epoberezkin/ajv/master/lib/refs/data.json#",
+    "$id": "https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#",
     "description": "Meta-schema for $data reference (JSON Schema extension proposal)",
     "type": "object",
     "required": [ "$data" ],
@@ -7039,7 +7175,7 @@ module.exports={
     "additionalProperties": false
 }
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 module.exports={
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "http://json-schema.org/draft-07/schema#",
@@ -7209,7 +7345,7 @@ module.exports={
     "default": true
 }
 
-},{}],53:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -7277,7 +7413,8 @@ function toByteArray (b64) {
     ? validLen - 4
     : validLen
 
-  for (var i = 0; i < len; i += 4) {
+  var i
+  for (i = 0; i < len; i += 4) {
     tmp =
       (revLookup[b64.charCodeAt(i)] << 18) |
       (revLookup[b64.charCodeAt(i + 1)] << 12) |
@@ -7336,9 +7473,7 @@ function fromByteArray (uint8) {
 
   // go through the array every three bytes, we'll deal with trailing stuff later
   for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-    parts.push(encodeChunk(
-      uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)
-    ))
+    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)))
   }
 
   // pad the end with zeros, but make sure to not forget the extra bytes
@@ -7362,10 +7497,10 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],54:[function(require,module,exports){
-
 },{}],55:[function(require,module,exports){
-(function (Buffer){
+
+},{}],56:[function(require,module,exports){
+(function (Buffer){(function (){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -9144,9 +9279,9 @@ function numberIsNaN (obj) {
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-}).call(this,require("buffer").Buffer)
-},{"base64-js":53,"buffer":55,"ieee754":61}],56:[function(require,module,exports){
-(function (Buffer){
+}).call(this)}).call(this,require("buffer").Buffer)
+},{"base64-js":54,"buffer":56,"ieee754":62}],57:[function(require,module,exports){
+(function (Buffer){(function (){
 var clone = (function() {
 'use strict';
 
@@ -9405,9 +9540,9 @@ if (typeof module === 'object' && module.exports) {
   module.exports = clone;
 }
 
-}).call(this,require("buffer").Buffer)
-},{"buffer":55}],57:[function(require,module,exports){
-(function (Buffer){
+}).call(this)}).call(this,require("buffer").Buffer)
+},{"buffer":56}],58:[function(require,module,exports){
+(function (Buffer){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -9516,8 +9651,8 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 
-}).call(this,{"isBuffer":require("../../is-buffer/index.js")})
-},{"../../is-buffer/index.js":63}],58:[function(require,module,exports){
+}).call(this)}).call(this,{"isBuffer":require("../../is-buffer/index.js")})
+},{"../../is-buffer/index.js":64}],59:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -10042,24 +10177,21 @@ function functionBindPolyfill(context) {
   };
 }
 
-},{}],59:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 'use strict';
 
-var isArray = Array.isArray;
-var keyList = Object.keys;
-var hasProp = Object.prototype.hasOwnProperty;
+// do not edit .js files directly - edit src/index.jst
+
+
 
 module.exports = function equal(a, b) {
   if (a === b) return true;
 
   if (a && b && typeof a == 'object' && typeof b == 'object') {
-    var arrA = isArray(a)
-      , arrB = isArray(b)
-      , i
-      , length
-      , key;
+    if (a.constructor !== b.constructor) return false;
 
-    if (arrA && arrB) {
+    var length, i, keys;
+    if (Array.isArray(a)) {
       length = a.length;
       if (length != b.length) return false;
       for (i = length; i-- !== 0;)
@@ -10067,39 +10199,33 @@ module.exports = function equal(a, b) {
       return true;
     }
 
-    if (arrA != arrB) return false;
 
-    var dateA = a instanceof Date
-      , dateB = b instanceof Date;
-    if (dateA != dateB) return false;
-    if (dateA && dateB) return a.getTime() == b.getTime();
 
-    var regexpA = a instanceof RegExp
-      , regexpB = b instanceof RegExp;
-    if (regexpA != regexpB) return false;
-    if (regexpA && regexpB) return a.toString() == b.toString();
+    if (a.constructor === RegExp) return a.source === b.source && a.flags === b.flags;
+    if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
+    if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
 
-    var keys = keyList(a);
+    keys = Object.keys(a);
     length = keys.length;
-
-    if (length !== keyList(b).length)
-      return false;
+    if (length !== Object.keys(b).length) return false;
 
     for (i = length; i-- !== 0;)
-      if (!hasProp.call(b, keys[i])) return false;
+      if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
 
     for (i = length; i-- !== 0;) {
-      key = keys[i];
+      var key = keys[i];
+
       if (!equal(a[key], b[key])) return false;
     }
 
     return true;
   }
 
+  // true if both NaN, false otherwise
   return a!==a && b!==b;
 };
 
-},{}],60:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 'use strict';
 
 module.exports = function (data, opts) {
@@ -10160,7 +10286,8 @@ module.exports = function (data, opts) {
     })(data);
 };
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
+/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
@@ -10246,32 +10373,36 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],62:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
+    if (superCtor) {
+      ctor.super_ = superCtor
+      ctor.prototype = Object.create(superCtor.prototype, {
+        constructor: {
+          value: ctor,
+          enumerable: false,
+          writable: true,
+          configurable: true
+        }
+      })
+    }
   };
 } else {
   // old school shim for old browsers
   module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
+    if (superCtor) {
+      ctor.super_ = superCtor
+      var TempCtor = function () {}
+      TempCtor.prototype = superCtor.prototype
+      ctor.prototype = new TempCtor()
+      ctor.prototype.constructor = ctor
+    }
   }
 }
 
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -10294,14 +10425,14 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 'use strict';
 
 var traverse = module.exports = function (schema, opts, cb) {
@@ -10392,7 +10523,7 @@ function escapeJsonPtr(str) {
   return str.replace(/~/g, '~0').replace(/\//g, '~1');
 }
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 // json5.js
 // Modern JSON. See README.md for details.
 //
@@ -11164,12 +11295,12 @@ JSON5.stringify = function (obj, replacer, space) {
     return internalStringify(topLevelHolder, '', true);
 };
 
-},{}],67:[function(require,module,exports){
-(function (global){
+},{}],68:[function(require,module,exports){
+(function (global){(function (){
 /**
  * @license
  * Lodash <https://lodash.com/>
- * Copyright JS Foundation and other contributors <https://js.foundation/>
+ * Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
  * Released under MIT license <https://lodash.com/license>
  * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
  * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -11180,14 +11311,15 @@ JSON5.stringify = function (obj, replacer, space) {
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.17.11';
+  var VERSION = '4.17.21';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
 
   /** Error message constants. */
   var CORE_ERROR_TEXT = 'Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',
-      FUNC_ERROR_TEXT = 'Expected a function';
+      FUNC_ERROR_TEXT = 'Expected a function',
+      INVALID_TEMPL_VAR_ERROR_TEXT = 'Invalid `variable` option passed into `_.template`';
 
   /** Used to stand-in for `undefined` hash values. */
   var HASH_UNDEFINED = '__lodash_hash_undefined__';
@@ -11320,10 +11452,11 @@ JSON5.stringify = function (obj, replacer, space) {
   var reRegExpChar = /[\\^$.*+?()[\]{}|]/g,
       reHasRegExpChar = RegExp(reRegExpChar.source);
 
-  /** Used to match leading and trailing whitespace. */
-  var reTrim = /^\s+|\s+$/g,
-      reTrimStart = /^\s+/,
-      reTrimEnd = /\s+$/;
+  /** Used to match leading whitespace. */
+  var reTrimStart = /^\s+/;
+
+  /** Used to match a single whitespace character. */
+  var reWhitespace = /\s/;
 
   /** Used to match wrap detail comments. */
   var reWrapComment = /\{(?:\n\/\* \[wrapped with .+\] \*\/)?\n?/,
@@ -11332,6 +11465,18 @@ JSON5.stringify = function (obj, replacer, space) {
 
   /** Used to match words composed of alphanumeric characters. */
   var reAsciiWord = /[^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]+/g;
+
+  /**
+   * Used to validate the `validate` option in `_.template` variable.
+   *
+   * Forbids characters which could potentially change the meaning of the function argument definition:
+   * - "()," (modification of function parameters)
+   * - "=" (default value)
+   * - "[]{}" (destructuring of function parameters)
+   * - "/" (beginning of a comment)
+   * - whitespace
+   */
+  var reForbiddenIdentifierChars = /[()=,{}\[\]\/\s]/;
 
   /** Used to match backslashes in property paths. */
   var reEscapeChar = /\\(\\)?/g;
@@ -12162,6 +12307,19 @@ JSON5.stringify = function (obj, replacer, space) {
   }
 
   /**
+   * The base implementation of `_.trim`.
+   *
+   * @private
+   * @param {string} string The string to trim.
+   * @returns {string} Returns the trimmed string.
+   */
+  function baseTrim(string) {
+    return string
+      ? string.slice(0, trimmedEndIndex(string) + 1).replace(reTrimStart, '')
+      : string;
+  }
+
+  /**
    * The base implementation of `_.unary` without support for storing metadata.
    *
    * @private
@@ -12492,6 +12650,21 @@ JSON5.stringify = function (obj, replacer, space) {
     return hasUnicode(string)
       ? unicodeToArray(string)
       : asciiToArray(string);
+  }
+
+  /**
+   * Used by `_.trim` and `_.trimEnd` to get the index of the last non-whitespace
+   * character of `string`.
+   *
+   * @private
+   * @param {string} string The string to inspect.
+   * @returns {number} Returns the index of the last non-whitespace character.
+   */
+  function trimmedEndIndex(string) {
+    var index = string.length;
+
+    while (index-- && reWhitespace.test(string.charAt(index))) {}
+    return index;
   }
 
   /**
@@ -13839,16 +14012,10 @@ JSON5.stringify = function (obj, replacer, space) {
         value.forEach(function(subValue) {
           result.add(baseClone(subValue, bitmask, customizer, subValue, value, stack));
         });
-
-        return result;
-      }
-
-      if (isMap(value)) {
+      } else if (isMap(value)) {
         value.forEach(function(subValue, key) {
           result.set(key, baseClone(subValue, bitmask, customizer, key, value, stack));
         });
-
-        return result;
       }
 
       var keysFunc = isFull
@@ -14772,8 +14939,8 @@ JSON5.stringify = function (obj, replacer, space) {
         return;
       }
       baseFor(source, function(srcValue, key) {
+        stack || (stack = new Stack);
         if (isObject(srcValue)) {
-          stack || (stack = new Stack);
           baseMergeDeep(object, source, key, srcIndex, baseMerge, customizer, stack);
         }
         else {
@@ -14893,8 +15060,21 @@ JSON5.stringify = function (obj, replacer, space) {
      * @returns {Array} Returns the new sorted array.
      */
     function baseOrderBy(collection, iteratees, orders) {
+      if (iteratees.length) {
+        iteratees = arrayMap(iteratees, function(iteratee) {
+          if (isArray(iteratee)) {
+            return function(value) {
+              return baseGet(value, iteratee.length === 1 ? iteratee[0] : iteratee);
+            }
+          }
+          return iteratee;
+        });
+      } else {
+        iteratees = [identity];
+      }
+
       var index = -1;
-      iteratees = arrayMap(iteratees.length ? iteratees : [identity], baseUnary(getIteratee()));
+      iteratees = arrayMap(iteratees, baseUnary(getIteratee()));
 
       var result = baseMap(collection, function(value, key, collection) {
         var criteria = arrayMap(iteratees, function(iteratee) {
@@ -15151,6 +15331,10 @@ JSON5.stringify = function (obj, replacer, space) {
         var key = toKey(path[index]),
             newValue = value;
 
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+          return object;
+        }
+
         if (index != lastIndex) {
           var objValue = nested[key];
           newValue = customizer ? customizer(objValue, key, nested) : undefined;
@@ -15303,11 +15487,14 @@ JSON5.stringify = function (obj, replacer, space) {
      *  into `array`.
      */
     function baseSortedIndexBy(array, value, iteratee, retHighest) {
-      value = iteratee(value);
-
       var low = 0,
-          high = array == null ? 0 : array.length,
-          valIsNaN = value !== value,
+          high = array == null ? 0 : array.length;
+      if (high === 0) {
+        return 0;
+      }
+
+      value = iteratee(value);
+      var valIsNaN = value !== value,
           valIsNull = value === null,
           valIsSymbol = isSymbol(value),
           valIsUndefined = value === undefined;
@@ -16590,7 +16777,7 @@ JSON5.stringify = function (obj, replacer, space) {
       return function(number, precision) {
         number = toNumber(number);
         precision = precision == null ? 0 : nativeMin(toInteger(precision), 292);
-        if (precision) {
+        if (precision && nativeIsFinite(number)) {
           // Shift with exponential notation to avoid floating-point issues.
           // See [MDN](https://mdn.io/round#Examples) for more details.
           var pair = (toString(number) + 'e').split('e'),
@@ -16792,10 +16979,11 @@ JSON5.stringify = function (obj, replacer, space) {
       if (arrLength != othLength && !(isPartial && othLength > arrLength)) {
         return false;
       }
-      // Assume cyclic values are equal.
-      var stacked = stack.get(array);
-      if (stacked && stack.get(other)) {
-        return stacked == other;
+      // Check that cyclic values are equal.
+      var arrStacked = stack.get(array);
+      var othStacked = stack.get(other);
+      if (arrStacked && othStacked) {
+        return arrStacked == other && othStacked == array;
       }
       var index = -1,
           result = true,
@@ -16957,10 +17145,11 @@ JSON5.stringify = function (obj, replacer, space) {
           return false;
         }
       }
-      // Assume cyclic values are equal.
-      var stacked = stack.get(object);
-      if (stacked && stack.get(other)) {
-        return stacked == other;
+      // Check that cyclic values are equal.
+      var objStacked = stack.get(object);
+      var othStacked = stack.get(other);
+      if (objStacked && othStacked) {
+        return objStacked == other && othStacked == object;
       }
       var result = true;
       stack.set(object, other);
@@ -17773,7 +17962,7 @@ JSON5.stringify = function (obj, replacer, space) {
     }
 
     /**
-     * Gets the value at `key`, unless `key` is "__proto__".
+     * Gets the value at `key`, unless `key` is "__proto__" or "constructor".
      *
      * @private
      * @param {Object} object The object to query.
@@ -17781,6 +17970,10 @@ JSON5.stringify = function (obj, replacer, space) {
      * @returns {*} Returns the property value.
      */
     function safeGet(object, key) {
+      if (key === 'constructor' && typeof object[key] === 'function') {
+        return;
+      }
+
       if (key == '__proto__') {
         return;
       }
@@ -20337,6 +20530,10 @@ JSON5.stringify = function (obj, replacer, space) {
      * // The `_.property` iteratee shorthand.
      * _.filter(users, 'active');
      * // => objects for ['barney']
+     *
+     * // Combining several predicates using `_.overEvery` or `_.overSome`.
+     * _.filter(users, _.overSome([{ 'age': 36 }, ['age', 40]]));
+     * // => objects for ['fred', 'barney']
      */
     function filter(collection, predicate) {
       var func = isArray(collection) ? arrayFilter : baseFilter;
@@ -21086,15 +21283,15 @@ JSON5.stringify = function (obj, replacer, space) {
      * var users = [
      *   { 'user': 'fred',   'age': 48 },
      *   { 'user': 'barney', 'age': 36 },
-     *   { 'user': 'fred',   'age': 40 },
+     *   { 'user': 'fred',   'age': 30 },
      *   { 'user': 'barney', 'age': 34 }
      * ];
      *
      * _.sortBy(users, [function(o) { return o.user; }]);
-     * // => objects for [['barney', 36], ['barney', 34], ['fred', 48], ['fred', 40]]
+     * // => objects for [['barney', 36], ['barney', 34], ['fred', 48], ['fred', 30]]
      *
      * _.sortBy(users, ['user', 'age']);
-     * // => objects for [['barney', 34], ['barney', 36], ['fred', 40], ['fred', 48]]
+     * // => objects for [['barney', 34], ['barney', 36], ['fred', 30], ['fred', 48]]
      */
     var sortBy = baseRest(function(collection, iteratees) {
       if (collection == null) {
@@ -21581,6 +21778,7 @@ JSON5.stringify = function (obj, replacer, space) {
           }
           if (maxing) {
             // Handle invocations in a tight loop.
+            clearTimeout(timerId);
             timerId = setTimeout(timerExpired, wait);
             return invokeFunc(lastCallTime);
           }
@@ -23637,7 +23835,7 @@ JSON5.stringify = function (obj, replacer, space) {
       if (typeof value != 'string') {
         return value === 0 ? value : +value;
       }
-      value = value.replace(reTrim, '');
+      value = baseTrim(value);
       var isBinary = reIsBinary.test(value);
       return (isBinary || reIsOctal.test(value))
         ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
@@ -25967,9 +26165,12 @@ JSON5.stringify = function (obj, replacer, space) {
       , 'g');
 
       // Use a sourceURL for easier debugging.
+      // The sourceURL gets injected into the source that's eval-ed, so be careful
+      // to normalize all kinds of whitespace, so e.g. newlines (and unicode versions of it) can't sneak in
+      // and escape the comment, thus injecting code that gets evaled.
       var sourceURL = '//# sourceURL=' +
-        ('sourceURL' in options
-          ? options.sourceURL
+        (hasOwnProperty.call(options, 'sourceURL')
+          ? (options.sourceURL + '').replace(/\s/g, ' ')
           : ('lodash.templateSources[' + (++templateCounter) + ']')
         ) + '\n';
 
@@ -26002,10 +26203,16 @@ JSON5.stringify = function (obj, replacer, space) {
 
       // If `variable` is not specified wrap a with-statement around the generated
       // code to add the data object to the top of the scope chain.
-      var variable = options.variable;
+      var variable = hasOwnProperty.call(options, 'variable') && options.variable;
       if (!variable) {
         source = 'with (obj) {\n' + source + '\n}\n';
       }
+      // Throw an error if a forbidden character was found in `variable`, to prevent
+      // potential command injection attacks.
+      else if (reForbiddenIdentifierChars.test(variable)) {
+        throw new Error(INVALID_TEMPL_VAR_ERROR_TEXT);
+      }
+
       // Cleanup code by stripping empty strings.
       source = (isEvaluating ? source.replace(reEmptyStringLeading, '') : source)
         .replace(reEmptyStringMiddle, '$1')
@@ -26119,7 +26326,7 @@ JSON5.stringify = function (obj, replacer, space) {
     function trim(string, chars, guard) {
       string = toString(string);
       if (string && (guard || chars === undefined)) {
-        return string.replace(reTrim, '');
+        return baseTrim(string);
       }
       if (!string || !(chars = baseToString(chars))) {
         return string;
@@ -26154,7 +26361,7 @@ JSON5.stringify = function (obj, replacer, space) {
     function trimEnd(string, chars, guard) {
       string = toString(string);
       if (string && (guard || chars === undefined)) {
-        return string.replace(reTrimEnd, '');
+        return string.slice(0, trimmedEndIndex(string) + 1);
       }
       if (!string || !(chars = baseToString(chars))) {
         return string;
@@ -26708,6 +26915,9 @@ JSON5.stringify = function (obj, replacer, space) {
      * values against any array or object value, respectively. See `_.isEqual`
      * for a list of supported value comparisons.
      *
+     * **Note:** Multiple values can be checked by combining several matchers
+     * using `_.overSome`
+     *
      * @static
      * @memberOf _
      * @since 3.0.0
@@ -26723,6 +26933,10 @@ JSON5.stringify = function (obj, replacer, space) {
      *
      * _.filter(objects, _.matches({ 'a': 4, 'c': 6 }));
      * // => [{ 'a': 4, 'b': 5, 'c': 6 }]
+     *
+     * // Checking for several possible values
+     * _.filter(objects, _.overSome([_.matches({ 'a': 1 }), _.matches({ 'a': 4 })]));
+     * // => [{ 'a': 1, 'b': 2, 'c': 3 }, { 'a': 4, 'b': 5, 'c': 6 }]
      */
     function matches(source) {
       return baseMatches(baseClone(source, CLONE_DEEP_FLAG));
@@ -26736,6 +26950,9 @@ JSON5.stringify = function (obj, replacer, space) {
      * **Note:** Partial comparisons will match empty array and empty object
      * `srcValue` values against any array or object value, respectively. See
      * `_.isEqual` for a list of supported value comparisons.
+     *
+     * **Note:** Multiple values can be checked by combining several matchers
+     * using `_.overSome`
      *
      * @static
      * @memberOf _
@@ -26753,6 +26970,10 @@ JSON5.stringify = function (obj, replacer, space) {
      *
      * _.find(objects, _.matchesProperty('a', 4));
      * // => { 'a': 4, 'b': 5, 'c': 6 }
+     *
+     * // Checking for several possible values
+     * _.filter(objects, _.overSome([_.matchesProperty('a', 1), _.matchesProperty('a', 4)]));
+     * // => [{ 'a': 1, 'b': 2, 'c': 3 }, { 'a': 4, 'b': 5, 'c': 6 }]
      */
     function matchesProperty(path, srcValue) {
       return baseMatchesProperty(path, baseClone(srcValue, CLONE_DEEP_FLAG));
@@ -26976,6 +27197,10 @@ JSON5.stringify = function (obj, replacer, space) {
      * Creates a function that checks if **all** of the `predicates` return
      * truthy when invoked with the arguments it receives.
      *
+     * Following shorthands are possible for providing predicates.
+     * Pass an `Object` and it will be used as an parameter for `_.matches` to create the predicate.
+     * Pass an `Array` of parameters for `_.matchesProperty` and the predicate will be created using them.
+     *
      * @static
      * @memberOf _
      * @since 4.0.0
@@ -27002,6 +27227,10 @@ JSON5.stringify = function (obj, replacer, space) {
      * Creates a function that checks if **any** of the `predicates` return
      * truthy when invoked with the arguments it receives.
      *
+     * Following shorthands are possible for providing predicates.
+     * Pass an `Object` and it will be used as an parameter for `_.matches` to create the predicate.
+     * Pass an `Array` of parameters for `_.matchesProperty` and the predicate will be created using them.
+     *
      * @static
      * @memberOf _
      * @since 4.0.0
@@ -27021,6 +27250,9 @@ JSON5.stringify = function (obj, replacer, space) {
      *
      * func(NaN);
      * // => false
+     *
+     * var matchesFunc = _.overSome([{ 'a': 1 }, { 'a': 2 }])
+     * var matchesPropertyFunc = _.overSome([['a', 1], ['a', 2]])
      */
     var overSome = createOver(arraySome);
 
@@ -28207,10 +28439,11 @@ JSON5.stringify = function (obj, replacer, space) {
     baseForOwn(LazyWrapper.prototype, function(func, methodName) {
       var lodashFunc = lodash[methodName];
       if (lodashFunc) {
-        var key = (lodashFunc.name + ''),
-            names = realNames[key] || (realNames[key] = []);
-
-        names.push({ 'name': methodName, 'func': lodashFunc });
+        var key = lodashFunc.name + '';
+        if (!hasOwnProperty.call(realNames, key)) {
+          realNames[key] = [];
+        }
+        realNames[key].push({ 'name': methodName, 'func': lodashFunc });
       }
     });
 
@@ -28274,8 +28507,8 @@ JSON5.stringify = function (obj, replacer, space) {
   }
 }.call(this));
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],68:[function(require,module,exports){
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],69:[function(require,module,exports){
 'use strict';
 
 var parse = require('./parse'),
@@ -28291,7 +28524,7 @@ module.exports = {
     t: traverse
 };
 
-},{"./parse":69,"./stringify":70,"./traverse":71}],69:[function(require,module,exports){
+},{"./parse":70,"./stringify":71,"./traverse":72}],70:[function(require,module,exports){
 'use strict';
 
 var parser = require('sax').parser;
@@ -28328,7 +28561,7 @@ function parse(data) {
 
 module.exports = parse;
 
-},{"sax":89}],70:[function(require,module,exports){
+},{"sax":91}],71:[function(require,module,exports){
 'use strict';
 
 function isObject (o) {
@@ -28425,7 +28658,7 @@ function stringify (a) {
 
 module.exports = stringify;
 
-},{}],71:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 'use strict';
 
 function traverse(origin, callbacks) {
@@ -28557,11 +28790,12 @@ function traverse(origin, callbacks) {
 
 module.exports = traverse;
 
-},{}],72:[function(require,module,exports){
-(function (process){
+},{}],73:[function(require,module,exports){
+(function (process){(function (){
 'use strict';
 
-if (!process.version ||
+if (typeof process === 'undefined' ||
+    !process.version ||
     process.version.indexOf('v0.') === 0 ||
     process.version.indexOf('v1.') === 0 && process.version.indexOf('v1.8.') !== 0) {
   module.exports = { nextTick: nextTick };
@@ -28604,8 +28838,8 @@ function nextTick(fn, arg1, arg2, arg3) {
 }
 
 
-}).call(this,require('_process'))
-},{"_process":73}],73:[function(require,module,exports){
+}).call(this)}).call(this,require('_process'))
+},{"_process":74}],74:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -28791,10 +29025,10 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],74:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 module.exports = require('./lib/_stream_duplex.js');
 
-},{"./lib/_stream_duplex.js":75}],75:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":76}],76:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -28840,7 +29074,7 @@ var objectKeys = Object.keys || function (obj) {
 module.exports = Duplex;
 
 /*<replacement>*/
-var util = require('core-util-is');
+var util = Object.create(require('core-util-is'));
 util.inherits = require('inherits');
 /*</replacement>*/
 
@@ -28926,7 +29160,7 @@ Duplex.prototype._destroy = function (err, cb) {
 
   pna.nextTick(cb, err);
 };
-},{"./_stream_readable":77,"./_stream_writable":79,"core-util-is":57,"inherits":62,"process-nextick-args":72}],76:[function(require,module,exports){
+},{"./_stream_readable":78,"./_stream_writable":80,"core-util-is":58,"inherits":63,"process-nextick-args":73}],77:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -28959,7 +29193,7 @@ module.exports = PassThrough;
 var Transform = require('./_stream_transform');
 
 /*<replacement>*/
-var util = require('core-util-is');
+var util = Object.create(require('core-util-is'));
 util.inherits = require('inherits');
 /*</replacement>*/
 
@@ -28974,8 +29208,8 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":78,"core-util-is":57,"inherits":62}],77:[function(require,module,exports){
-(function (process,global){
+},{"./_stream_transform":79,"core-util-is":58,"inherits":63}],78:[function(require,module,exports){
+(function (process,global){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -29042,7 +29276,7 @@ function _isUint8Array(obj) {
 /*</replacement>*/
 
 /*<replacement>*/
-var util = require('core-util-is');
+var util = Object.create(require('core-util-is'));
 util.inherits = require('inherits');
 /*</replacement>*/
 
@@ -29995,8 +30229,8 @@ function indexOf(xs, x) {
   }
   return -1;
 }
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_stream_duplex":75,"./internal/streams/BufferList":80,"./internal/streams/destroy":81,"./internal/streams/stream":82,"_process":73,"core-util-is":57,"events":58,"inherits":62,"isarray":64,"process-nextick-args":72,"safe-buffer":88,"string_decoder/":83,"util":54}],78:[function(require,module,exports){
+}).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./_stream_duplex":76,"./internal/streams/BufferList":81,"./internal/streams/destroy":82,"./internal/streams/stream":83,"_process":74,"core-util-is":58,"events":59,"inherits":63,"isarray":65,"process-nextick-args":73,"safe-buffer":84,"string_decoder/":85,"util":55}],79:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -30067,7 +30301,7 @@ module.exports = Transform;
 var Duplex = require('./_stream_duplex');
 
 /*<replacement>*/
-var util = require('core-util-is');
+var util = Object.create(require('core-util-is'));
 util.inherits = require('inherits');
 /*</replacement>*/
 
@@ -30211,8 +30445,8 @@ function done(stream, er, data) {
 
   return stream.push(null);
 }
-},{"./_stream_duplex":75,"core-util-is":57,"inherits":62}],79:[function(require,module,exports){
-(function (process,global,setImmediate){
+},{"./_stream_duplex":76,"core-util-is":58,"inherits":63}],80:[function(require,module,exports){
+(function (process,global,setImmediate){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -30279,7 +30513,7 @@ var Duplex;
 Writable.WritableState = WritableState;
 
 /*<replacement>*/
-var util = require('core-util-is');
+var util = Object.create(require('core-util-is'));
 util.inherits = require('inherits');
 /*</replacement>*/
 
@@ -30900,8 +31134,8 @@ Writable.prototype._destroy = function (err, cb) {
   this.end();
   cb(err);
 };
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("timers").setImmediate)
-},{"./_stream_duplex":75,"./internal/streams/destroy":81,"./internal/streams/stream":82,"_process":73,"core-util-is":57,"inherits":62,"process-nextick-args":72,"safe-buffer":88,"timers":92,"util-deprecate":94}],80:[function(require,module,exports){
+}).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("timers").setImmediate)
+},{"./_stream_duplex":76,"./internal/streams/destroy":82,"./internal/streams/stream":83,"_process":74,"core-util-is":58,"inherits":63,"process-nextick-args":73,"safe-buffer":84,"timers":94,"util-deprecate":96}],81:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -30981,7 +31215,7 @@ if (util && util.inspect && util.inspect.custom) {
     return this.constructor.name + ' ' + obj;
   };
 }
-},{"safe-buffer":88,"util":54}],81:[function(require,module,exports){
+},{"safe-buffer":84,"util":55}],82:[function(require,module,exports){
 'use strict';
 
 /*<replacement>*/
@@ -31056,10 +31290,74 @@ module.exports = {
   destroy: destroy,
   undestroy: undestroy
 };
-},{"process-nextick-args":72}],82:[function(require,module,exports){
+},{"process-nextick-args":73}],83:[function(require,module,exports){
 module.exports = require('events').EventEmitter;
 
-},{"events":58}],83:[function(require,module,exports){
+},{"events":59}],84:[function(require,module,exports){
+/* eslint-disable node/no-deprecated-api */
+var buffer = require('buffer')
+var Buffer = buffer.Buffer
+
+// alternative to using Object.keys for old browsers
+function copyProps (src, dst) {
+  for (var key in src) {
+    dst[key] = src[key]
+  }
+}
+if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow) {
+  module.exports = buffer
+} else {
+  // Copy properties from require('buffer')
+  copyProps(buffer, exports)
+  exports.Buffer = SafeBuffer
+}
+
+function SafeBuffer (arg, encodingOrOffset, length) {
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+// Copy static methods from Buffer
+copyProps(Buffer, SafeBuffer)
+
+SafeBuffer.from = function (arg, encodingOrOffset, length) {
+  if (typeof arg === 'number') {
+    throw new TypeError('Argument must not be a number')
+  }
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+SafeBuffer.alloc = function (size, fill, encoding) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  var buf = Buffer(size)
+  if (fill !== undefined) {
+    if (typeof encoding === 'string') {
+      buf.fill(fill, encoding)
+    } else {
+      buf.fill(fill)
+    }
+  } else {
+    buf.fill(0)
+  }
+  return buf
+}
+
+SafeBuffer.allocUnsafe = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return Buffer(size)
+}
+
+SafeBuffer.allocUnsafeSlow = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return buffer.SlowBuffer(size)
+}
+
+},{"buffer":56}],85:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -31356,10 +31654,10 @@ function simpleWrite(buf) {
 function simpleEnd(buf) {
   return buf && buf.length ? this.write(buf) : '';
 }
-},{"safe-buffer":88}],84:[function(require,module,exports){
+},{"safe-buffer":84}],86:[function(require,module,exports){
 module.exports = require('./readable').PassThrough
 
-},{"./readable":85}],85:[function(require,module,exports){
+},{"./readable":87}],87:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = exports;
 exports.Readable = exports;
@@ -31368,13 +31666,14 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":75,"./lib/_stream_passthrough.js":76,"./lib/_stream_readable.js":77,"./lib/_stream_transform.js":78,"./lib/_stream_writable.js":79}],86:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":76,"./lib/_stream_passthrough.js":77,"./lib/_stream_readable.js":78,"./lib/_stream_transform.js":79,"./lib/_stream_writable.js":80}],88:[function(require,module,exports){
 module.exports = require('./readable').Transform
 
-},{"./readable":85}],87:[function(require,module,exports){
+},{"./readable":87}],89:[function(require,module,exports){
 module.exports = require('./lib/_stream_writable.js');
 
-},{"./lib/_stream_writable.js":79}],88:[function(require,module,exports){
+},{"./lib/_stream_writable.js":80}],90:[function(require,module,exports){
+/*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
 var Buffer = buffer.Buffer
@@ -31396,6 +31695,8 @@ if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow)
 function SafeBuffer (arg, encodingOrOffset, length) {
   return Buffer(arg, encodingOrOffset, length)
 }
+
+SafeBuffer.prototype = Object.create(Buffer.prototype)
 
 // Copy static methods from Buffer
 copyProps(Buffer, SafeBuffer)
@@ -31438,8 +31739,8 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":55}],89:[function(require,module,exports){
-(function (Buffer){
+},{"buffer":56}],91:[function(require,module,exports){
+(function (Buffer){(function (){
 ;(function (sax) { // wrapper for non-node envs
   sax.parser = function (strict, opt) { return new SAXParser(strict, opt) }
   sax.SAXParser = SAXParser
@@ -33006,8 +33307,8 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   }
 })(typeof exports === 'undefined' ? this.sax = {} : exports)
 
-}).call(this,require("buffer").Buffer)
-},{"buffer":55,"stream":90,"string_decoder":91}],90:[function(require,module,exports){
+}).call(this)}).call(this,require("buffer").Buffer)
+},{"buffer":56,"stream":92,"string_decoder":93}],92:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -33136,10 +33437,10 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":58,"inherits":62,"readable-stream/duplex.js":74,"readable-stream/passthrough.js":84,"readable-stream/readable.js":85,"readable-stream/transform.js":86,"readable-stream/writable.js":87}],91:[function(require,module,exports){
-arguments[4][83][0].apply(exports,arguments)
-},{"dup":83,"safe-buffer":88}],92:[function(require,module,exports){
-(function (setImmediate,clearImmediate){
+},{"events":59,"inherits":63,"readable-stream/duplex.js":75,"readable-stream/passthrough.js":86,"readable-stream/readable.js":87,"readable-stream/transform.js":88,"readable-stream/writable.js":89}],93:[function(require,module,exports){
+arguments[4][85][0].apply(exports,arguments)
+},{"dup":85,"safe-buffer":90}],94:[function(require,module,exports){
+(function (setImmediate,clearImmediate){(function (){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
 var slice = Array.prototype.slice;
@@ -33216,9 +33517,9 @@ exports.setImmediate = typeof setImmediate === "function" ? setImmediate : funct
 exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
   delete immediateIds[id];
 };
-}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":73,"timers":92}],93:[function(require,module,exports){
-/** @license URI.js v4.2.1 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
+}).call(this)}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
+},{"process/browser.js":74,"timers":94}],95:[function(require,module,exports){
+/** @license URI.js v4.4.1 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -34181,9 +34482,9 @@ function _recomposeAuthority(components, options) {
             return "[" + $1 + ($2 ? "%25" + $2 : "") + "]";
         }));
     }
-    if (typeof components.port === "number") {
+    if (typeof components.port === "number" || typeof components.port === "string") {
         uriTokens.push(":");
-        uriTokens.push(components.port.toString(10));
+        uriTokens.push(String(components.port));
     }
     return uriTokens.length ? uriTokens.join("") : undefined;
 }
@@ -34386,8 +34687,9 @@ var handler = {
         return components;
     },
     serialize: function serialize(components, options) {
+        var secure = String(components.scheme).toLowerCase() === "https";
         //normalize the default port
-        if (components.port === (String(components.scheme).toLowerCase() !== "https" ? 80 : 443) || components.port === "") {
+        if (components.port === (secure ? 443 : 80) || components.port === "") {
             components.port = undefined;
         }
         //normalize the empty path
@@ -34406,6 +34708,57 @@ var handler$1 = {
     domainHost: handler.domainHost,
     parse: handler.parse,
     serialize: handler.serialize
+};
+
+function isSecure(wsComponents) {
+    return typeof wsComponents.secure === 'boolean' ? wsComponents.secure : String(wsComponents.scheme).toLowerCase() === "wss";
+}
+//RFC 6455
+var handler$2 = {
+    scheme: "ws",
+    domainHost: true,
+    parse: function parse(components, options) {
+        var wsComponents = components;
+        //indicate if the secure flag is set
+        wsComponents.secure = isSecure(wsComponents);
+        //construct resouce name
+        wsComponents.resourceName = (wsComponents.path || '/') + (wsComponents.query ? '?' + wsComponents.query : '');
+        wsComponents.path = undefined;
+        wsComponents.query = undefined;
+        return wsComponents;
+    },
+    serialize: function serialize(wsComponents, options) {
+        //normalize the default port
+        if (wsComponents.port === (isSecure(wsComponents) ? 443 : 80) || wsComponents.port === "") {
+            wsComponents.port = undefined;
+        }
+        //ensure scheme matches secure flag
+        if (typeof wsComponents.secure === 'boolean') {
+            wsComponents.scheme = wsComponents.secure ? 'wss' : 'ws';
+            wsComponents.secure = undefined;
+        }
+        //reconstruct path from resource name
+        if (wsComponents.resourceName) {
+            var _wsComponents$resourc = wsComponents.resourceName.split('?'),
+                _wsComponents$resourc2 = slicedToArray(_wsComponents$resourc, 2),
+                path = _wsComponents$resourc2[0],
+                query = _wsComponents$resourc2[1];
+
+            wsComponents.path = path && path !== '/' ? path : undefined;
+            wsComponents.query = query;
+            wsComponents.resourceName = undefined;
+        }
+        //forbid fragment component
+        wsComponents.fragment = undefined;
+        return wsComponents;
+    }
+};
+
+var handler$3 = {
+    scheme: "wss",
+    domainHost: handler$2.domainHost,
+    parse: handler$2.parse,
+    serialize: handler$2.serialize
 };
 
 var O = {};
@@ -34438,7 +34791,7 @@ function decodeUnreserved(str) {
     var decStr = pctDecChars(str);
     return !decStr.match(UNRESERVED) ? str : decStr;
 }
-var handler$2 = {
+var handler$4 = {
     scheme: "mailto",
     parse: function parse$$1(components, options) {
         var mailtoComponents = components;
@@ -34526,7 +34879,7 @@ var handler$2 = {
 
 var URN_PARSE = /^([^\:]+)\:(.*)/;
 //RFC 2141
-var handler$3 = {
+var handler$5 = {
     scheme: "urn",
     parse: function parse$$1(components, options) {
         var matches = components.path && components.path.match(URN_PARSE);
@@ -34565,7 +34918,7 @@ var handler$3 = {
 
 var UUID = /^[0-9A-Fa-f]{8}(?:\-[0-9A-Fa-f]{4}){3}\-[0-9A-Fa-f]{12}$/;
 //RFC 4122
-var handler$4 = {
+var handler$6 = {
     scheme: "urn:uuid",
     parse: function parse(urnComponents, options) {
         var uuidComponents = urnComponents;
@@ -34589,6 +34942,8 @@ SCHEMES[handler$1.scheme] = handler$1;
 SCHEMES[handler$2.scheme] = handler$2;
 SCHEMES[handler$3.scheme] = handler$3;
 SCHEMES[handler$4.scheme] = handler$4;
+SCHEMES[handler$5.scheme] = handler$5;
+SCHEMES[handler$6.scheme] = handler$6;
 
 exports.SCHEMES = SCHEMES;
 exports.pctEncChar = pctEncChar;
@@ -34608,8 +34963,8 @@ Object.defineProperty(exports, '__esModule', { value: true });
 })));
 
 
-},{}],94:[function(require,module,exports){
-(function (global){
+},{}],96:[function(require,module,exports){
+(function (global){(function (){
 
 /**
  * Module exports.
@@ -34678,6 +35033,6 @@ function config (name) {
   return String(val).toLowerCase() === 'true';
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}]},{},[9])(9)
 });
