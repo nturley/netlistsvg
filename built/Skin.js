@@ -8,8 +8,13 @@ var Skin;
     Skin.skin = null;
     function getPortsWithPrefix(template, prefix) {
         var ports = _.filter(template, function (e) {
-            if (e instanceof Array && e[0] === 'g') {
-                return e[1]['s:pid'].startsWith(prefix);
+            try {
+                if (e instanceof Array && e[0] === 'g') {
+                    return e[1]['s:pid'].startsWith(prefix);
+                }
+            }
+            catch (exception) {
+                // Do nothing if the SVG group doesn't have a pin id.
             }
         });
         return ports;

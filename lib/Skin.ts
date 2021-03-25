@@ -1,3 +1,4 @@
+
 import onml = require('onml');
 import _ = require('lodash');
 import { ElkModel } from './elkGraph';
@@ -8,8 +9,12 @@ export namespace Skin {
 
     export function getPortsWithPrefix(template: any[], prefix: string) {
         const ports = _.filter(template, (e) => {
-            if (e instanceof Array && e[0] === 'g') {
-                return e[1]['s:pid'].startsWith(prefix);
+            try {
+                if (e instanceof Array && e[0] === 'g') {
+                    return e[1]['s:pid'].startsWith(prefix);
+                }
+            } catch (exception) {
+                // Do nothing if the SVG group doesn't have a pin id.
             }
         });
         return ports;
