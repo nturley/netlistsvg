@@ -80,11 +80,14 @@ export default class Cell {
 
     // Set cells to alternate types/tags based on their parameters
     private static setAlternateCellType(yCell: Yosys.Cell) {
-        // if its a mux that has a bus width greater than 1
-        // turn into a multimux
-        if (['$pmux', '$mux', '$_MUX_', 'mux'].includes(yCell.type)) {
-            if ('WIDTH' in yCell.parameters && yCell.parameters.WIDTH > 1) {
-                yCell.type = '$multimux';
+        if ('parameters' in yCell) {
+            // if it has a WIDTH parameter greater than one
+            // and doesn't have an address parameter (not a memory cell)
+            if ('WIDTH' in yCell.parameters &&
+                yCell.parameters.WIDTH > 1 &&
+                !('ADDR' in yCell.parameters)) {
+                // turn into a bus version
+                yCell.type = yCell.type + "-bus";
             }
         }
     }
