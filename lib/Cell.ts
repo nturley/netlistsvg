@@ -87,7 +87,7 @@ export default class Cell {
                 yCell.parameters.WIDTH > 1 &&
                 !('ADDR' in yCell.parameters)) {
                 // turn into a bus version
-                yCell.type = yCell.type + "-bus";
+                yCell.type = yCell.type + '-bus';
             }
         }
     }
