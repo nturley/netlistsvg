@@ -1,0 +1,66 @@
+{
+  "name": "netlistsvg",
+  "version": "1.0.2",
+  "description": "rendering a schematic from a netlist",
+  "main": "built/index.js",
+  "author": "Neil Turley",
+  "license": "MIT",
+  "dependencies": {
+    "@types/clone": "^0.1.30",
+    "@types/json5": "0.0.30",
+    "@types/lodash": "^4.14.116",
+    "ajv": "^6.10.0",
+    "ajv-errors": "^1.0.1",
+    "clone": "^2.1.0",
+    "elkjs": "^0.3.0",
+    "fs-extra": "^1.0.0",
+    "json5": "^0.5.1",
+    "lodash": "^4.17.11",
+    "onml": "^0.3.1",
+    "yargs": "^6.5.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nturley/netlistsvg.git"
+  },
+  "bin": {
+    "netlistsvg": "./bin/netlistsvg.js",
+    "netlistsvg-dumplayout": "./bin/exportLayout.js"
+  },
+  "scripts": {
+    "test-examples": "tsc && node --trace-warnings test/test-all.js",
+    "lint": "tslint --project . && eslint bin/**/*.js && eslint --global=document demo/**/*.js",
+    "test": "npm run -s test-examples && npm run -s lint && jest",
+    "build-demo": "cp demo/index.html . && cp node_modules/elkjs/lib/elk.bundled.js . && browserify demo/demo.js > bundle.js",
+    "build-module": "browserify -t brfs -s netlistsvg jsmodule/index.js > built/netlistsvg.bundle.js"
+  },
+  "keywords": [
+    "svg",
+    "netlist"
+  ],
+  "bugs": {
+    "url": "https://github.com/nturley/netlistsvg/issues"
+  },
+  "homepage": "https://github.com/nturley/netlistsvg#readme",
+  "devDependencies": {
+    "@types/jest": "^24.0.11",
+    "@types/node": "^11.13.0",
+    "browserify": "^16.2.3",
+    "browserify-shim": "^3.8.14",
+    "eslint": "^5.15.3",
+    "jest": "^24.5.0",
+    "superagent": "^3.8.2",
+    "ts-jest": "^24.0.0",
+    "tslint": "^5.14.0",
+    "typescript": "^3.3.4000",
+    "brfs": "^2.0.2"
+  },
+  "browserify-shim": {
+    "elkjs": "global:ELK"
+  },
+  "browserify": {
+    "transform": [
+      "browserify-shim"
+    ]
+  }
+}

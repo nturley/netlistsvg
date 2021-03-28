@@ -1,0 +1,40 @@
+language: node_js
+node_js:
+  - "10"
+  - "8"
+  - "6"
+
+# Install yosys and inkscape
+sudo: true
+dist: trusty
+before_install:
+  - sudo add-apt-repository -y ppa:saltmakrell/ppa
+  - sudo apt-get update
+  - sudo apt-get install -y yosys
+  - sudo apt-get install -y inkscape
+
+# Once https://github.com/travis-ci/apt-source-whitelist/pull/376 is merged,
+# the above lines can be replaced with the following;
+#
+# addons:
+#  apt:
+#    sources:
+#      - yosys
+#    packages:
+#      - yosys
+#      - inkscape
+
+
+script:
+  - npm test
+  - npm run build-demo
+  - cd examples; make build.all; cd ..
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token:
+    secure: "qhyBDZ7DIA1ai2VPCGUjPHbeYx6FZNNC68n/u/i2qJR0/Bo3UMTYqEYOL622KANPnPwWAxSNsrrkB4J8C/BQuaN8/yUKZU6ReD5L5hMzQsEUtLfy+V3TsogT4TwZQLVOBExemA/hQOadC1qTeoeHqhp5wQ1PZfR9Vm6BI8KdJfK83j5mMHCbJyPPz7a1TFeNOnylLh+i/NbTl9HXMAkAj2VdsQRM5qKoqa+qpImnh9gPKSSvhSw4VSh8uw19Nxi3Y63tt/z1ZxznZd9OX9hmJmCkkQPuBoCMwf6Ql+NafmB/mHmquW/3eURC2lmaBcLHG2iTLIbQrOEyD0nnsfOL2IMiKRYUFq0mdTG43+98QEfLf50uaZNIjjzDT0qJPBDZfSXeEtIxZB4uUHZ79EIQlup/Q8LmHpNtYPsM19KG8gSHHiG7MwKahn1GUfiE2/BEdVOeJQEmcCYDKUHdWRicN9RDH1qHlFPG5Spc7rIjEgmZNq5ELQ8VJCG3eXkNVRgrK8lQJ6A2bUvR6n+On1kgV3bUcWiFzA+gVcDovDVhjC2KBty05XwnOgE+CmmQvQ4F8eSsssekd9gFCql6w9H/ZvaTxenrjRMMJ/4ymT/l+En8bFBXzPsTSd/QnE1BS8wVNkGsC9LppUkJWsOrfD6dkj86hbuEEOMWutLj03E7mBQ="
+  on:
+    branch: master
+    node: "6"

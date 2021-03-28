@@ -1,0 +1,332 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xmlns:s="https://github.com/nturley/netlistsvg">
+  <s:properties
+    constants="false"
+    splitsAndJoins="false"
+    genericsLaterals="true">
+    <s:layoutEngine
+        org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers="5"
+        org.eclipse.elk.layered.compaction.postCompaction.strategy="4"
+        org.eclipse.elk.spacing.nodeNode= "35"
+        org.eclipse.elk.direction="DOWN"/>
+  </s:properties>
+<style>
+svg {
+  stroke: #000;
+  fill: none;
+}
+text {
+  fill: #000;
+  stroke: none;
+  font-size: 10px;
+  font-weight: bold;
+  font-family: "Courier New", monospace;
+}
+.nodelabel {
+  text-anchor: middle;
+}
+.inputPortLabel {
+  text-anchor: end;
+}
+.splitjoinBody {
+  fill: #000;
+}
+.symbol {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+.detail {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: #000;
+}
+</style>
+
+<!-- power -->
+<g s:type="vcc" s:width="20" s:height="30" transform="translate(5,20)">
+  <s:alias val="vcc" />
+  <text x="10" y="-4" class="nodelabel $cell_id" s:attribute="name">name</text>
+  <path d="M0,0 H20 L10,15 Z M10,15 V30" class="$cell_id"/>
+  <g s:x="10" s:y="30" s:pid="A" s:position="bottom"/>
+</g>
+
+<g s:type="vee" s:width="20" s:height="30" transform="translate(40,35)">
+	  <s:alias val="vee" />
+	  <text x="10" y="10" class="nodelabel $cell_id" s:attribute="name">name</text>
+	  <path d="M0,0 H20 L10,-15 Z M10,-15 V-30" class="$cell_id"/>
+	  <g s:x="10" s:y="-30" s:pid="A" s:position="top"/>
+	</g>
+
+<g s:type="gnd" s:width="20" s:height="30" transform="translate(80,35)">
+  <s:alias val="gnd"/>
+  <text x="30" y="20" class="nodelabel $cell_id" s:attribute="name">name</text>
+  <path d="M0,0 H20 M3,5 H17 M7,10 H13 M10,0 V-15" class="$cell_id"/>
+  <g s:x="10" s:y="-15" s:pid="A" s:position="top"/>
+</g>
+<!-- power -->
+
+<!-- signal -->
+<g s:type="inputExt" s:width="30" s:height="20" transform="translate(5,70)">
+  <text x="15" y="-4" class="$cell_id" s:attribute="ref">input</text>
+  <s:alias val="$_inputExt_"/>
+  <path d="M0,0 V20 H15 L30,10 15,0 Z" class="$cell_id"/>
+  <g s:x="30" s:y="10" s:pid="Y" s:position="right"/>
+</g>
+
+<g s:type="outputExt" s:width="30" s:height="20" transform="translate(60,70)">
+  <text x="15" y="-4" class="$cell_id" s:attribute="ref">output</text>
+  <s:alias val="$_outputExt_"/>
+  <path d="M30,0 V20 H15 L0,10 15,0 Z" class="$cell_id"/>
+  <g s:x="0" s:y="10" s:pid="A" s:position="left"/>
+</g>
+<!-- signal -->
+
+<!-- passives -->
+<g s:type="resistor_h" s:width="50" s:height="10" transform="translate(5,110)">
+  <s:alias val="r_h"/>
+  <text class="nodelabel $cell_id" x="25" y="-5" s:attribute="ref">X1</text>
+  <text class="nodelabel $cell_id" x="25" y="20" s:attribute="value">Xk</text>
+  <path d="M10,0 H40 V10 H10 Z" class="symbol $cell_id"/>
+  <path d="M0,5 H10 M40,5 H50" class="connect $cell_id"/>
+  <g s:x="0" s:y="5" s:pid="A" s:position="left"/>
+  <g s:x="50" s:y="5" s:pid="B" s:position="right"/>
+</g>
+
+<g s:type="resistor_v" s:width="10" s:height="50" transform="translate(25,130)">
+  <s:alias val="r_v"/>
+  <text x="15"  y="15" s:attribute="ref" class="$cell_id">X1</text>
+  <text x="15" y="30" s:attribute="value" class="$cell_id" >Xk</text>
+  <path d="M0,10 V40 H10 V10 Z" class="symbol $cell_id"/>
+  <path d="M5,0 V10 M5,40 V50" class="connect $cell_id"/>
+  <g s:x="5" s:y="0" s:pid="A" s:position="top"/>
+  <g s:x="5" s:y="50" s:pid="B" s:position="bottom"/>
+</g>
+
+<g s:type="capacitor_h" s:width="50" s:height="30" transform="translate(60,100)">
+  <s:alias val="c_h"/>
+  <text x="35" y="5" s:attribute="ref" class="$cell_id">X1</text>
+  <text x="35" y="30" s:attribute="value" class="$cell_id">Xu</text>
+  <path d="M20,0 V30 M30,0 V30" class="symbol $cell_id"/>
+  <path d="M0,15 H20 M30,15 H50" class="connect $cell_id"/>
+  <g s:x="0" s:y="15" s:pid="A" s:position="left"/>
+  <g s:x="50" s:y="15" s:pid="B" s:position="right"/>
+</g>
+
+<g s:type="capacitor_v" s:width="30" s:height="50" transform="translate(70,130)">
+  <s:alias val="c_v"/>
+  <text x="25" y="10" s:attribute="ref" class="$cell_id">X1</text>
+  <text x="25" y="45" s:attribute="value" class="$cell_id">Xu</text>
+  <path d="M0,20 H30 M0,30 H30" class="symbol $cell_id"/>
+  <path d="M15,0 V20 M15,30 V50" class="connect $cell_id"/>
+  <g s:x="15" s:y="0" s:pid="A" s:position="top"/>
+  <g s:x="15" s:y="50" s:pid="B" s:position="bottom"/>
+</g>
+
+<g s:type="inductor_h" s:width="50" s:height="10" transform="translate(115,110)">
+  <s:alias val="l_h"/>
+  <text class="nodelabel $cell_id" x="25" y="-5" s:attribute="ref">X1</text>
+  <text class="nodelabel $cell_id" x="25" y="20" s:attribute="value">XpF</text>
+  <path d="M5,5 A5,5 0 0 1 15,5 A5,5 0 0 1 25,5 A5,5 0 0 1 35,5 A5,5 0 0 1 45,5" class="$cell_id"/>
+  <path d="M0,5 H5 M45,5 H50" class="connect $cell_id"/>
+  <g s:x="0" s:y="5" s:pid="A" s:position="left"/>
+  <g s:x="50" s:y="5" s:pid="B" s:position="right"/>
+</g>
+
+<g s:type="inductor_v" s:width="10" s:height="50" transform="translate(135,130)">
+  <s:alias val="l_v"/>
+  <text x="15" y="15" s:attribute="ref" class="$cell_id">X1</text>
+  <text x="15" y="35" s:attribute="value" class="$cell_id">XpF</text>
+  <path d="M5,5 A5,5 0 0 1 5,15 A5,5 0 0 1 5,25 A5,5 0 0 1 5,35 A5,5 0 0 1 5,45" class="$cell_id"/>
+  <path d="M5,0 V5 M5,45 V50" class="connect $cell_id"/>
+  <g s:x="5" s:y="0" s:pid="A" s:position="top"/>
+  <g s:x="5" s:y="50" s:pid="B" s:position="bottom"/>
+</g>
+<!-- passives -->
+
+<!-- sources -->
+<g s:type="voltage_source" s:width="32" s:height="52" transform="translate(20,180)">
+  <s:alias val="v"/>
+  <text x="35" y="20" s:attribute="ref" class="$cell_id">X1</text>
+  <text x="35" y="35" s:attribute="value" class="$cell_id">XV</text>
+  <circle cx="16" cy="26" r="16" class="symbol $cell_id"/>
+  <path d="M16,10 V42" class="detail $cell_id"/>
+  <path d="M16,0 V10 M16,42 V52" class="connect $cell_id"/>
+  <g s:x="16" s:y="0" s:pid="+" s:position="top"/>
+  <g s:x="16" s:y="52" s:pid="-" s:position="bottom"/>
+</g>
+
+<g s:type="current_source" s:width="32" s:height="52" transform="translate(75,180)">
+  <s:alias val="i"/>
+  <text x="35" y="20" s:attribute="ref" class="$cell_id">X1</text>
+  <text x="35" y="35" s:attribute="value" class="$cell_id">XA</text>
+  <circle cx="16" cy="26" r="16" class="symbol $cell_id"/>
+  <path d="M0,26 H32" class="detail $cell_id"/>
+  <path d="M16,0 V10 M16,42 V52" class="connect $cell_id"/>
+  <g s:x="16" s:y="0" s:pid="+" s:position="top"/>
+  <g s:x="16" s:y="52" s:pid="-" s:position="bottom"/>
+</g>
+<!-- sources -->
+
+<!-- diodes -->
+<g s:type="diode_h" s:width="50" s:height="20" transform="translate(5,250)">
+  <s:alias val="d_h"/>
+  <text class="nodelabel $cell_id" x="25" y="-5" s:attribute="ref">X1</text>
+  <path d="M15,0 V20 L35,10 Z M35,0 V20" class="symbol $cell_id"/>
+  <path d="M0,10 H15 M35,10 H50" class="connect $cell_id"/>
+  <g s:x="0" s:y="10" s:pid="+" s:position="left"/>
+  <g s:x="50" s:y="10" s:pid="-" s:position="right"/>
+</g>
+
+<g s:type="diode_v" s:width="20" s:height="50" transform="translate(20,280)">
+  <s:alias val="d_v"/>
+  <text x="25" y="25" s:attribute="ref" class="$cell_id">X1</text>
+  <path d="M0,15 H20 L10,35 Z M0,35 H20" class="symbol $cell_id"/>
+  <path d="M10,0 V15 M10,35 V50" class="connect $cell_id"/>
+  <g s:x="10" s:y="0" s:pid="+" s:position="top"/>
+  <g s:x="10" s:y="50" s:pid="-" s:position="bottom"/>
+</g>
+
+<g s:type="diode_schottky_h" s:width="50" s:height="20" transform="translate(60,250)">
+  <s:alias val="d_sk_h"/>
+  <text class="nodelabel $cell_id" x="25" y="-5" s:attribute="ref">X1</text>
+  <path d="M15,0 V20 L35,10 Z M35,0 V20" class="symbol $cell_id"/>
+  <path d="M0,10 H15 M35,10 H50" class="connect $cell_id"/>
+  <!-- schottky -->
+  <path d="M35,0 H40 M35,20 H30" class="symbol $cell_id"/>
+  <g s:x="0" s:y="10" s:pid="+" s:position="left"/>
+  <g s:x="50" s:y="10" s:pid="-" s:position="right"/>
+</g>
+
+<g s:type="diode_schottky_v" s:width="20" s:height="50" transform="translate(75,280)">
+  <s:alias val="d_sk_v"/>
+  <text x="25" y="25" s:attribute="ref" class="$cell_id">X1</text>
+  <path d="M0,15 H20 L10,35 Z M0,35 H20" class="symbol $cell_id"/>
+  <path d="M10,0 V15 M10,35 V50" class="connect $cell_id"/>
+  <!-- schottky -->
+  <path d="M0,35 V40 M20,35 V30" class="symbol $cell_id"/>
+  <g s:x="10" s:y="0" s:pid="+" s:position="top"/>
+  <g s:x="10" s:y="50" s:pid="-" s:position="bottom"/>
+</g>
+
+<g s:type="diode_led_h" s:width="50" s:height="20" transform="translate(115,250)">
+  <s:alias val="d_led_h"/>
+  <text class="nodelabel $cell_id" x="10" y="-5" s:attribute="ref">X1</text>
+  <path d="M15,0 V20 L35,10 Z M35,0 V20" class="symbol $cell_id"/>
+  <path d="M0,10 H15 M35,10 H50" class="connect $cell_id"/>
+  <!-- led -->
+  <path d="m20,-5 7,-7" class="detail $cell_id"/>
+  <path d="m24,-12 6,-3 -3,6 z" class="detail $cell_id"/>
+  <path d="m25,0 7,-7" class="detail $cell_id"/>
+  <path d="m29,-7 6,-3 -3,6 z" class="detail $cell_id"/>
+  <g s:x="0" s:y="10" s:pid="+" s:position="top"/>
+  <g s:x="50" s:y="10" s:pid="-" s:position="bottom"/>
+</g>
+
+<g s:type="diode_led_v" s:width="20" s:height="50" transform="translate(130,280)">
+  <s:alias val="d_led_v"/>
+  <text x="25" y="25" s:attribute="ref" class="$cell_id">X1</text>
+  <path d="M0,15 H20 L10,35 Z M0,35 H20" class="symbol $cell_id"/>
+  <path d="M10,0 V15 M10,35 V50" class="connect $cell_id"/>
+  <!-- led -->
+  <path d="m-5,20 -7,7" class="detail $cell_id"/>
+  <path d="m-12,24 -3,6 6,-3 z" class="detail $cell_id"/>
+  <path d="m0,25 -7,7" class="detail $cell_id"/>
+  <path d="m-7,29 -3,6 6,-3 z" class="detail $cell_id"/>
+  <g s:x="10" s:y="0" s:pid="+" s:position="top"/>
+  <g s:x="10" s:y="50" s:pid="-" s:position="bottom"/>
+</g>
+<!-- diodes -->
+
+<!-- transistors -->
+<g s:type="transistor_npn" s:width="32" s:height="32" transform="translate(15,350)">
+  <s:alias val="q_npn"/>
+  <text x="35" y="20" s:attribute="ref" class="$cell_id">X1</text>
+  <circle r="16" cx="16" cy="16" class="symbol $cell_id"/>
+  <path d="M0,16 H12 M12,6 V26" class="detail $cell_id"/>
+  <path d="m12,10 11,-8" class="detail $cell_id"/>
+  <path d="m12,21 11,8" class="detail $cell_id"/>
+  <!-- npn -->
+  <path d="m23,29 -6,-1 3,-5 z" style="fill:#000000" class="$cell_id"/>
+  <g s:x="22" s:y="2" s:pid="C" s:position="top"/>
+  <g s:x="0" s:y="16" s:pid="B" s:position="left"/>
+  <g s:x="23" s:y="29" s:pid="E" s:position="bottom"/>
+</g>
+
+<g s:type="transistor_pnp" s:width="32" s:height="32" transform="translate(85,350)">
+  <s:alias val="q_pnp"/>
+  <text x="35" y="20" s:attribute="ref" class="$cell_id">X1</text>
+  <circle r="16" cx="16" cy="16" class="symbol $cell_id"/>
+  <path d="M0,16 H12 M12,6 V26" class="detail $cell_id"/>
+  <path d="m12,10 11,-8" class="detail $cell_id"/>
+  <path d="m12,21 11,8" class="detail $cell_id"/>
+  <!-- pnp -->
+  <path d="m14,9 6,-1 -3,-5 z" style="fill:#000000" class="$cell_id"/>
+  <g s:x="22" s:y="2" s:pid="C" s:position="top"/>
+  <g s:x="0" s:y="16" s:pid="B" s:position="left"/>
+  <g s:x="23" s:y="29" s:pid="E" s:position="bottom"/>
+</g>
+<!-- transistors -->
+
+<!-- builtin -->
+<g s:type="generic" s:width="30" s:height="40" transform="translate(150, 400)">
+  <text x="15" y="-4" class="nodelabel $cell_id" s:attribute="ref">generic</text>
+  <rect width="30" height="40" x="0" y="0" s:generic="body" class="$cell_id"/>
+  <g transform="translate(30,10)"
+     s:x="30" s:y="10" s:pid="out0" s:position="right">
+    <text x="5" y="-4" class="$cell_id">out0</text>
+  </g>
+  <g transform="translate(30,30)"
+     s:x="30" s:y="30" s:pid="out1" s:position="right">
+    <text x="5" y="-4" class="$cell_id">out1</text>
+  </g>
+  <g transform="translate(0,10)"
+     s:x="0" s:y="10" s:pid="in0" s:position="left">
+      <text x="-3" y="-4" class="inputPortLabel $cell_id">in0</text>
+  </g>
+  <g transform="translate(0,30)"
+     s:x="0" s:y="30" s:pid="in1" s:position="left">
+    <text x="-3" y="-4" class="inputPortLabel $cell_id">in1</text>
+  </g>
+</g>
+<!-- builtin -->
+
+<!-- misc -->
+<g s:type="opamp" s:width="60" s:height="40" transform="translate(20,450)">
+  <s:alias val="op"/>
+  <text x="40" y="35" s:attribute="ref" class="$cell_id">X1</text>
+  <path d="M10,0 V40 L50,20 Z" class="symbol $cell_id"/>
+  <path d="M0,10 H10 M0,30 H10 M50,20 H60 M30,0 V10 M30,40 V30" class="connect $cell_id"/>
+  <path d="m15,10 5,0 m-2.5,-2.5 0,5" class="detail $cell_id"/>
+  <path d="m15,30 5,0" class="detail $cell_id"/>
+  <g s:x="0" s:y="10" s:pid="+" s:position="left"/>
+  <g s:x="0" s:y="30" s:pid="-" s:position="left"/>
+  <g s:x="60" s:y="20" s:pid="OUT" s:position="right"/>
+  <g s:x="30" s:y="0" s:pid="VCC" s:position="top"/>
+  <g s:x="30" s:y="40" s:pid="VEE" s:position="bottom"/>
+</g>
+
+<g s:type="xtal" s:width="40" s:height="30" transform="translate(90,450)">
+  <s:alias val="xtal"/>
+  <text class="nodelabel $cell_id" x="20" y="45" s:attribute="ref">X1</text>
+  <rect x="15" y="0" width="10" height="30" class="symbol $cell_id" />
+  <path d="M0,15 H10 M10,5 V25 M30,5 V25 M30,15 H40" class="$cell_id"/>
+  <g s:x="0" s:y="15" s:pid="A" s:position="left"/>
+  <g s:x="40" s:y="15" s:pid="B" s:position="right"/>
+</g>
+
+<g s:type="transformer_1p_1s" s:width="35" s:height="45" transform="translate(140,450)">
+  <s:alias val="transformer_1p_1s"/>
+  <text class="nodelabel $cell_id" x="25" y="55" s:attribute="ref">X1</text>
+  <path d="M10,0 A5,5 0 0 1 10,10 A5,5 0 0 1 10,20 A5,5 0 0 1 10,30 A5,5 0 0 1 10,40" class="$cell_id"/>
+  <path d="M35,0 A5,5 0 0 0 35,10 A5,5 0 0 0 35,20 A5,5 0 0 0 35,30 A5,5 0 0 0 35,40" class="$cell_id"/>
+  <path d="M20,0 V40 M25,0 V40" class="symbol $cell_id"/>
+  <path d="M0,0 H10 M0,40 H10 M35,0 H45 M35,40 H45" class="connect $cell_id"/>
+  <g s:x="0" s:y="0" s:pid="L1.1" s:position="left"/>
+  <g s:x="0" s:y="40" s:pid="L1.2" s:position="left"/>
+  <g s:x="40" s:y="0" s:pid="L2.1" s:position="right"/>
+  <g s:x="40" s:y="40" s:pid="L2.2" s:position="right"/>
+</g>
+<!-- misc -->
+</svg>

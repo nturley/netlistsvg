@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>netlistsvg demo</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                padding-left: 20px;
+            }
+            textarea {
+                font-family: monospace;
+            }
+        </style>
+    </head>
+    <body>
+        <p>
+            This is a demo of <a href=https://github.com/nturley/netlistsvg>netlistsvg</a>.
+        </p>
+        <div style=display:flex>
+            <div>
+                <div style=display:flex;justify-content:space-between>
+                    <button id=formatButton>Format JSON</button>
+                    <div>
+                        <label for=skinSelect>Select skin:</label>
+                        <select id=skinSelect></select>
+                        <button id=renderButton>Render</button>
+                    </div>
+                </div>
+                <textarea style=width:500px;height:500px></textarea>
+            </div>
+            <div>
+                <img id=svgArea></img>
+            </div>
+        </div>
+        <script type="text/javascript" src="elk.bundled.js"></script>
+        <script type="text/javascript" src="bundle.js"></script>
+    </body>
+</html>

@@ -1,0 +1,106 @@
+{
+  "description": "JSON Schema Yosys netlists JSON format",
+  "type": "object",
+  // an empty object is invalid
+  "required": ["modules"],
+  "errorMessage": {
+    "type": "netlist must be a JSON object",
+    "required": "netlist must have a modules property",
+  },
+  "properties": {
+    "modules": {
+      "type": "object",
+      // there must be at least one module
+      "minProperties": 1,
+        "errorMessage": {
+          "type": "netlist modules must be objects",
+          "minProperties": "netlist must have at least one module",
+        },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "ports": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              // all ports must have bits and a direction
+              "required": ["direction", "bits"],
+              "properties": {
+                "direction": {
+                  "enum": ["input", "output", "inout"]
+                },
+                "bits": {
+                  "type": "array",
+                  // bits can be the string "0", "1", "x", "z", or a number.
+                  "items": {
+                    "oneOf":[{"type":"number"}, {"enum":["0","1","x","z"]}]
+                  }
+                }
+              }
+            }
+          },
+          "cells": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              // all cells must have a type and connections
+              "required": [
+                "type",
+                "connections"
+              ],
+              "properties": {
+                "type":{"type":"string"},
+                "connections": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type":"array",
+                    "items": {
+                      "oneOf":[{"type":"number"}, {"enum":["0","1","x","z"]}]
+                    }
+                  }
+                },
+                // port directions are optional
+                "port_directions":{
+                  "type": "object",
+                  "additionalProperties": {
+                    "enum": ["input", "output", "inout"]
+                  }
+                },
+                // netlistsvg doesn't use these yet
+                "hide_name": {"enum":[0, 1]},
+                "parameters": {"type": "object"},
+                "attributes": {"type": "object"}
+              }
+            }
+          },
+          // not yet used by netlistsvg
+          "netnames": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "bits": {
+                  "type": "array",
+                  // bits can be the string "0", "1", "x", "z", or a number.
+                  "items": {
+                    "oneOf": [{"type": "number"}, {"enum": ["0", "1", "x", "z"]}]
+                  }
+                },
+                "hide_name": {"enum": [0, 1]},
+                "attributes": {"type": "object"}
+              }
+            }
+          },
+          "attributes": {
+            "type": "object",
+            "properties": {
+              "top": {"enum": [0, 1, "00000000000000000000000000000000", "00000000000000000000000000000001"]}
+            }
+          }
+        },
+        // there must either be ports or cells attribute
+        "anyOf": [{"required": ["ports"]},{"required": ["cells"]}]
+      }
+    }
+  }
+}

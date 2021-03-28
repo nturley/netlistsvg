@@ -1,0 +1,140 @@
+{
+  "modules": {
+    "resistor_divider": {
+      "ports": {
+        "A": {
+          "direction": "input",
+          "bits": [2]
+        },
+        "B": {
+          "direction": "input",
+          "bits": [3]
+        },
+        "A AND B": {
+          "direction": "output",
+          "bits": [4]
+        }
+      },
+      "cells": {
+        "R1": {
+          "type": "r_v",
+          "connections": {
+            "A": [2],
+            "B": [5]
+          },
+          "attributes": {
+            "value":"10k"
+          }
+        },
+        "R2": {
+          "type": "r_v",
+          "connections": {
+            "A": [3],
+            "B": [5]
+          },
+          "attributes": {
+            "value":"10k"
+          }
+        },
+        "Q1": {
+          "type": "q_pnp",
+          "port_directions": {
+            "C": "input",
+            "B": "input",
+            "E": "output"
+          },
+          "connections": {
+            "C": [6],
+            "B": [5],
+            "E": [7]
+          }
+        },
+        "R3": {
+          "type": "r_v",
+          "connections": {
+            "A": [7],
+            "B": [8]
+          },
+          "attributes": {
+            "value":"10k"
+          }
+        },
+        "R4": {
+          "type": "r_v",
+          "connections": {
+            "A": [7],
+            "B": [9]
+          },
+          "attributes": {
+            "value":"10k"
+          }
+        },
+        "R5": {
+          "type": "r_v",
+          "connections": {
+            "A": [4],
+            "B": [12]
+          },
+          "attributes": {
+            "value":"10k"
+          }
+        },
+        "Q2": {
+          "type": "q_pnp",
+          "port_directions": {
+            "C": "input",
+            "B": "input",
+            "E": "output"
+          },
+          "connections": {
+            "C": [10],
+            "B": [9],
+            "E": [4]
+          }
+        },
+        "vcc": {
+          "type": "vcc",
+          "connections": {
+            "A": [6]
+          },
+          "attributes": {
+            "name":"VCC"
+          }
+        },
+        "vcc2": {
+          "type": "vcc",
+          "connections": {
+            "A": [10]
+          },
+          "attributes": {
+            "name":"VCC"
+          }
+        },
+        "gnd": {
+          "type": "gnd",
+          "port_directions": {
+            "A": "input"
+          },
+          "connections": {
+            "A": [8]
+          },
+          "attributes": {
+            "name":"DGND"
+          }
+        },
+        "gnd2": {
+          "type": "gnd",
+          "port_directions": {
+            "A": "input"
+          },
+          "connections": {
+            "A": [12]
+          },
+          "attributes": {
+            "name":"DGND"
+          }
+        }
+      }
+    }
+  }
+}

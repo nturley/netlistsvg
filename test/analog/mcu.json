@@ -1,0 +1,100 @@
+{
+  "modules": {
+    "resistor_divider": {
+      "ports": {},
+      "cells": {
+        "r1": {
+          "type": "r_v",
+          "port_directions": {
+            "A": "output",
+            "B": "input"
+          },
+          "connections": {
+            "A": [ 2 ],
+            "B": [ 3 ]
+          }
+        },
+        "c1": {
+          "type": "c_v",
+          "port_directions": {
+            "A": "input",
+            "B": "output"
+          },
+          "connections": {
+            "A": [ 6 ],
+            "B": [ 5 ]
+          }
+        },
+        "r3": {
+          "type": "r_v",
+          "port_directions": {
+            "A": "input",
+            "B": "output"
+          },
+          "connections": {
+            "A": [ 3 ],
+            "B": [ 4 ]
+          }
+        },
+        "u1" : {
+          "type":"MCU",
+          "port_directions": {
+            "VCC":"input",
+            "GPIO1":"output",
+            "GND":"input"
+          },
+          "connections":{
+            "VCC":[6],
+            "GPIO1":[3],
+            "GND":[7]
+          }
+        },
+        "vcc": {
+          "type": "vcc",
+          "port_directions": {
+            "A": "output"
+          },
+          "connections": {
+            "A": [ 2 ]
+          }
+        },
+        "vcc_2": {
+          "type": "vcc",
+          "port_directions": {
+            "A": "output"
+          },
+          "connections": {
+            "A": [ 6 ]
+          }
+        },
+        "gnd": {
+          "type": "gnd",
+          "port_directions": {
+            "A": "input"
+          },
+          "connections": {
+            "A": [ 4 ]
+          }
+        },
+        "gnd3": {
+          "type": "gnd",
+          "port_directions": {
+            "A": "output"
+          },
+          "connections": {
+            "A": [ 7 ]
+          }
+        },
+        "gnd2": {
+          "type": "gnd",
+          "port_directions": {
+            "A": "input"
+          },
+          "connections": {
+            "A": [ 5 ]
+          }
+        }
+      }
+    }
+  }
+}

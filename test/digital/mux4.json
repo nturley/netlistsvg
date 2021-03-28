@@ -1,0 +1,255 @@
+{
+  "creator": "Yosys 0.7+381 (git sha1 8f2638ae, gcc 6.3.0-18 -fPIC -Os)",
+  "modules": {
+    "MUX2": {
+      "attributes": {
+        "src": "../mux2/sim.v:1"
+      },
+      "ports": {
+        "I0": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "I1": {
+          "direction": "input",
+          "bits": [ 3 ]
+        },
+        "S0": {
+          "direction": "input",
+          "bits": [ 4 ]
+        },
+        "O": {
+          "direction": "output",
+          "bits": [ 5 ]
+        }
+      },
+      "cells": {
+        "$ternary$../mux2/sim.v:7$1": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "../mux2/sim.v:7"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 3 ],
+            "B": [ 2 ],
+            "S": [ 4 ],
+            "Y": [ 5 ]
+          }
+        }
+      },
+      "netnames": {
+        "$ternary$../mux2/sim.v:7$1_Y": {
+          "hide_name": 1,
+          "bits": [ 5 ],
+          "attributes": {
+            "src": "../mux2/sim.v:7"
+          }
+        },
+        "I0": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "src": "../mux2/sim.v:2"
+          }
+        },
+        "I1": {
+          "hide_name": 0,
+          "bits": [ 3 ],
+          "attributes": {
+            "src": "../mux2/sim.v:3"
+          }
+        },
+        "O": {
+          "hide_name": 0,
+          "bits": [ 5 ],
+          "attributes": {
+            "src": "../mux2/sim.v:5"
+          }
+        },
+        "S0": {
+          "hide_name": 0,
+          "bits": [ 4 ],
+          "attributes": {
+            "src": "../mux2/sim.v:4"
+          }
+        }
+      }
+    },
+    "MUX4": {
+      "attributes": {
+        "top": 1,
+        "src": "sim.v:3"
+      },
+      "ports": {
+        "I0": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "I1": {
+          "direction": "input",
+          "bits": [ 3 ]
+        },
+        "I2": {
+          "direction": "input",
+          "bits": [ 4 ]
+        },
+        "I3": {
+          "direction": "input",
+          "bits": [ 5 ]
+        },
+        "S0": {
+          "direction": "input",
+          "bits": [ 6 ]
+        },
+        "S1": {
+          "direction": "input",
+          "bits": [ 7 ]
+        },
+        "O": {
+          "direction": "output",
+          "bits": [ 8 ]
+        }
+      },
+      "cells": {
+        "mux0": {
+          "hide_name": 0,
+          "type": "MUX2",
+          "parameters": {
+          },
+          "attributes": {
+            "src": "sim.v:15"
+          },
+          "port_directions": {
+            "I0": "input",
+            "I1": "input",
+            "O": "output",
+            "S0": "input"
+          },
+          "connections": {
+            "I0": [ 2 ],
+            "I1": [ 3 ],
+            "O": [ 9 ],
+            "S0": [ 6 ]
+          }
+        },
+        "mux1": {
+          "hide_name": 0,
+          "type": "MUX2",
+          "parameters": {
+          },
+          "attributes": {
+            "src": "sim.v:16"
+          },
+          "port_directions": {
+            "I0": "input",
+            "I1": "input",
+            "O": "output",
+            "S0": "input"
+          },
+          "connections": {
+            "I0": [ 4 ],
+            "I1": [ 5 ],
+            "O": [ 10 ],
+            "S0": [ 6 ]
+          }
+        },
+        "mux_out": {
+          "hide_name": 0,
+          "type": "MUX2",
+          "parameters": {
+          },
+          "attributes": {
+            "src": "sim.v:17"
+          },
+          "port_directions": {
+            "I0": "input",
+            "I1": "input",
+            "O": "output",
+            "S0": "input"
+          },
+          "connections": {
+            "I0": [ 9 ],
+            "I1": [ 10 ],
+            "O": [ 8 ],
+            "S0": [ 7 ]
+          }
+        }
+      },
+      "netnames": {
+        "I0": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "src": "sim.v:4"
+          }
+        },
+        "I1": {
+          "hide_name": 0,
+          "bits": [ 3 ],
+          "attributes": {
+            "src": "sim.v:5"
+          }
+        },
+        "I2": {
+          "hide_name": 0,
+          "bits": [ 4 ],
+          "attributes": {
+            "src": "sim.v:6"
+          }
+        },
+        "I3": {
+          "hide_name": 0,
+          "bits": [ 5 ],
+          "attributes": {
+            "src": "sim.v:7"
+          }
+        },
+        "O": {
+          "hide_name": 0,
+          "bits": [ 8 ],
+          "attributes": {
+            "src": "sim.v:10"
+          }
+        },
+        "S0": {
+          "hide_name": 0,
+          "bits": [ 6 ],
+          "attributes": {
+            "src": "sim.v:8"
+          }
+        },
+        "S1": {
+          "hide_name": 0,
+          "bits": [ 7 ],
+          "attributes": {
+            "src": "sim.v:9"
+          }
+        },
+        "m0": {
+          "hide_name": 0,
+          "bits": [ 9 ],
+          "attributes": {
+            "src": "sim.v:12"
+          }
+        },
+        "m1": {
+          "hide_name": 0,
+          "bits": [ 10 ],
+          "attributes": {
+            "src": "sim.v:13"
+          }
+        }
+      }
+    }
+  }
+}

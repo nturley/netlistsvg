@@ -1,0 +1,29 @@
+{
+  "modules": {
+    "ports_splitjoin": {
+      "ports": {
+        "inthing": {
+          "direction": "input",
+          "bits": [ 2, 3, 4, 5 ]
+        },
+        "outthing": {
+          "direction": "output",
+          "bits": [ 2, 3, 2, 3 ]
+        },
+        "outthing2": {
+          "direction": "output",
+          "bits": [ 2, 3, 5 ]
+        },
+        "outthing3": {
+          "direction": "output",
+          "bits": [ 2, 3, 5 ]
+        },
+        "outthing4": {
+          "direction": "output",
+          "bits": [ 2 ]
+        }
+      },
+      "cells": {}
+    }
+  }
+}
