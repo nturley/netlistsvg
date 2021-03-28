@@ -22,6 +22,7 @@ export default class Cell {
     }
 
     public static fromYosysCell(yCell: Yosys.Cell, name: string) {
+        this.setAlternateCellType(yCell);
         const template = Skin.findSkinType(yCell.type);
         const templateInputPids = Skin.getInputPids(template);
         const templateOutputPids = Skin.getOutputPids(template);
@@ -75,6 +76,20 @@ export default class Cell {
             return new Port(name, sigs);
         });
         return new Cell('$split$' + source, '$_split_', inPorts, splitOutPorts, {});
+    }
+
+    // Set cells to alternate types/tags based on their parameters
+    private static setAlternateCellType(yCell: Yosys.Cell) {
+        if ('parameters' in yCell) {
+            // if it has a WIDTH parameter greater than one
+            // and doesn't have an address parameter (not a memory cell)
+            if ('WIDTH' in yCell.parameters &&
+                yCell.parameters.WIDTH > 1 &&
+                !('ADDR' in yCell.parameters)) {
+                // turn into a bus version
+                yCell.type = yCell.type + '-bus';
+            }
+        }
     }
 
     protected key: string;
