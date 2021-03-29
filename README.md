@@ -499,14 +499,18 @@ So it should look something like this.
     "<dont care>": {
       "ports": {
         "<port name>": {
-          "direction": "<input|output",
+          "direction": "<input|output>",
           "bits": [ 2, "1", ... ]
         },
         ...
       },
       "cells": {
         "<cell name>": {
-          "type": "<type name",
+          "type": "<type name>",
+          "parameters": {
+            "WIDTH": 3,
+            ...
+          },
           "port_directions": {
             "<port name>": "<input|output>",
             ...
@@ -521,6 +525,8 @@ So it should look something like this.
   }
 }
 ```
+
+If the cell has a WIDTH parameter greater than 1, `-bus` will be appended to the end of the cell type. This is useful for changing the skin of a cell for single and multibit variants, but is currently only used for `$mux` (and its variants). The appended `-bus` will show up in the generic name above the cell for any cells that have a `WIDTH` parameter that aren't in the skin file provided.
 
 ## ElkJS
 ELK is using a layered approach (Sugiyama, Ganser), similar to dot in the Graphviz package. You can read about their algorithm here: https://rtsys.informatik.uni-kiel.de/%7Ebiblio/downloads/papers/jvlc13.pdf
