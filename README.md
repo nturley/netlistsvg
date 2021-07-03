@@ -12,9 +12,21 @@ You can see an online demo [here](https://nturley.github.io/netlistsvg)
 # Installation/Usage Instructions
 
 ## Command Line Interface
-Install nodejs if isn't already installed
-```
+Install nodejs if isn't already installed.
+
+To install the latest version from npm:
+```sh
 npm install -g netlistsvg
+```
+
+To install the latest version from source:
+```sh
+git clone https://github.com/nturley/netlistsvg
+cd netlistsvg
+npm install # install dependencies
+sudo npm install -g . # install netlistsvg to system
+
+sudo npm uninstall -g netlistsvg # uninstall from system
 ```
 
 You can execute netlistsvg like this.
@@ -58,6 +70,20 @@ netlistsvg.render(netlistsvg.digitalSkin, netlistsvg.exampleDigital, (err, resul
 ```
 
 To turn Verilog into YosysJSON in the browser, you can use [YosysJS](http://www.clifford.at/yosys/yosysjs.html)
+
+## Development
+
+The `lib/` folder contains the main source code for netlistsvg in Typescript. The `built/` folder contains said source code compiled to Javascript. When wanting to make changes to netlistsvg, one should modify the Typescript source, compile to Javascript, then test their modifications.
+
+To compile, lint, and do self-tests, run
+```sh
+npm test
+```
+
+To build the web bundle, run
+```sh
+npm run build-module
+```
 
 # Examples
 
