@@ -28,7 +28,7 @@ export namespace ElkModel {
     export interface Graph {
         id: string;
         children: Cell[];
-        edges: Array<Edge|ExtendedEdge>;
+        edges: (Edge|ExtendedEdge)[];
         width?: number;
         height?: number;
     }

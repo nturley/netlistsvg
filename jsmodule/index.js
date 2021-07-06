@@ -2,7 +2,7 @@ const lib = require('../built');
 const fs = require('fs');
 const json5 = require('json5');
 const Ajv = require('ajv');
-var ajv = new Ajv({allErrors: true, jsonPointers: true});
+var ajv = new Ajv({allErrors: true});
 require('ajv-errors')(ajv);
 
 const digital = fs.readFileSync(__dirname + '/../lib/default.svg', 'utf8');
