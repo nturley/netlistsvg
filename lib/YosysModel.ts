@@ -6,7 +6,7 @@ namespace Yosys {
         X = 'x',
     }
 
-    export type Signals = Array<number | ConstantVal>;
+    export type Signals = (number | ConstantVal)[];
 
     interface ModuleMap {
         [moduleName: string]: Module;
