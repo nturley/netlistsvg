@@ -464,11 +464,11 @@ Here's an analog example.
 ## Skin File
 It pulls the node icons and configuration options from a SVG skin file. This our default digital skin file.
 
-<img src="https://raw.githubusercontent.com/nturley/netlistsvg/master/lib/default.svg?sanitize=true" width="800" height="300">
+<img src="https://raw.githubusercontent.com/nturley/netlistsvg/master/lib/default.svg?sanitize=true">
 
 This is our analog skin file.
 
-<img src="https://raw.githubusercontent.com/nturley/netlistsvg/master/lib/analog.svg?sanitize=true" width="400" height="525">
+<img src="https://raw.githubusercontent.com/nturley/netlistsvg/master/lib/analog.svg?sanitize=true">
 
 A skin file can use style tags or inline CSS to style the elements. That will be copied onto the output file. A skin file also defines a library of components to use. Each component has an alias list. It will use that component as a template for any cell with that type that it encounters. Each component defines the position and id of each of its ports so we know where to attach the wires to.
 
