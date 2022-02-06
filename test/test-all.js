@@ -1,7 +1,7 @@
 var path = require('path'),
     bin = require('../bin/netlistsvg');
 
-var digital_tests = ['generics', 'ports_splitjoin', 'up3down5', 'mux4', 'hyperedges'];
+var digital_tests = ['generics', 'ports_splitjoin', 'up3down5', 'mux4', 'hyperedges', 'pc'];
 var analog_tests = ['and', 'common_emitter_full', 'mcu', 'resistor_divider', 'vcc_and_gnd']
 
 for (var test of digital_tests) {
