@@ -131,53 +131,62 @@ function getIndicesString(bitstring, query, start) {
 function gather(inputs, // all inputs
 outputs, // all outputs
 toSolve, // an input array we are trying to solve
-start, // index of toSolve to start from
-end, // index of toSolve to end at
+initialStart, // index of toSolve to start from
+initialEnd, // index of toSolve to end at
 splits, // container collecting the splits
 joins) {
-    // remove myself from outputs list if present
-    var outputIndex = outputs.indexOf(toSolve);
-    if (outputIndex !== -1) {
-        outputs.splice(outputIndex, 1);
-    }
-    // This toSolve is compconste
-    if (start >= toSolve.length || end - start < 2) {
-        return;
-    }
-    var query = toSolve.slice(start, end);
-    // are there are perfect matches?
-    if (arrayContains(query, inputs)) {
-        if (query !== toSolve) {
-            addToDefaultDict(joins, toSolve, getIndicesString(toSolve, query, start));
+    var start = initialStart;
+    var end = initialEnd;
+    var finished = false;
+    while (!finished) {
+        // remove myself from outputs list if present
+        var outputIndex = outputs.indexOf(toSolve);
+        if (outputIndex !== -1) {
+            outputs.splice(outputIndex, 1);
         }
-        gather(inputs, outputs, toSolve, end - 1, toSolve.length, splits, joins);
-        return;
-    }
-    var index = indexOfContains(query, inputs);
-    // are there any partial matches?
-    if (index !== -1) {
-        if (query !== toSolve) {
-            addToDefaultDict(joins, toSolve, getIndicesString(toSolve, query, start));
+        // This toSolve is compconste
+        if (start >= toSolve.length || end - start < 2) {
+            finished = true;
+            continue;
         }
-        // found a split
-        addToDefaultDict(splits, inputs[index], getIndicesString(inputs[index], query, 0));
-        // we can match to this now
-        inputs.push(query);
-        gather(inputs, outputs, toSolve, end - 1, toSolve.length, splits, joins);
-        return;
-    }
-    // are there any output matches?
-    if (indexOfContains(query, outputs) !== -1) {
-        if (query !== toSolve) {
-            // add to join
-            addToDefaultDict(joins, toSolve, getIndicesString(toSolve, query, start));
+        var query = toSolve.slice(start, end);
+        // are there are perfect matches?
+        if (arrayContains(query, inputs)) {
+            if (query !== toSolve) {
+                addToDefaultDict(joins, toSolve, getIndicesString(toSolve, query, start));
+            }
+            start = end - 1;
+            end = toSolve.length;
+            continue;
         }
-        // gather without outputs
-        gather(inputs, [], query, 0, query.length, splits, joins);
-        inputs.push(query);
-        return;
+        var index = indexOfContains(query, inputs);
+        // are there any partial matches?
+        if (index !== -1) {
+            if (query !== toSolve) {
+                addToDefaultDict(joins, toSolve, getIndicesString(toSolve, query, start));
+            }
+            // found a split
+            addToDefaultDict(splits, inputs[index], getIndicesString(inputs[index], query, 0));
+            // we can match to this now
+            inputs.push(query);
+            start = end - 1;
+            end = toSolve.length;
+            continue;
+        }
+        // are there any output matches?
+        if (indexOfContains(query, outputs) !== -1) {
+            if (query !== toSolve) {
+                // add to join
+                addToDefaultDict(joins, toSolve, getIndicesString(toSolve, query, start));
+            }
+            // gather without outputs
+            gather(inputs, [], query, 0, query.length, splits, joins);
+            inputs.push(query);
+            finished = true;
+            continue;
+        }
+        end = start + query.slice(0, -1).lastIndexOf(',') + 1;
     }
-    gather(inputs, outputs, toSolve, start, start + query.slice(0, -1).lastIndexOf(',') + 1, splits, joins);
 }
 function removeDups(inStrs) {
     var map = {};
