@@ -1,0 +1,29 @@
+module MUL (a,b, clk, start, ready, ready1, count, zcount, result);
+  parameter n=24;
+  input[n-1:0] a,b;
+  input start, clk;
+  output reg [2*n-1:0] result;
+  output reg ready, ready1;
+  output reg [23:0] count, zcount;
+  reg [n-1:0] ra, rb;
+  reg [n:0] acc;
+  reg [3:0]ct;
+  always@ (posedge start)
+  begin
+    ra=a; rb=b; ready=0; acc=0; ct=n;
+    repeat (ct)
+    @(posedge clk)
+    begin 
+      if(rb[0]) 
+        acc=acc+ra;  
+       rb={acc[0], rb[n-1:1]}; acc=acc>>1; end 
+       result={acc[n-1:0], rb[n-1:0]}; ready1=1;ready1=0;count=0;zcount=0; end
+       always @(posedge ready)
+       begin 
+         @ (posedge clk)
+         begin 
+         while (result!=0)begin
+           count=count+result[0]; result = result>>1; zcount=n-count; end
+           ready1=1; end
+         end
+       endmodule
