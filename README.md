@@ -5,7 +5,7 @@
 ![npm](https://img.shields.io/npm/dm/netlistsvg.svg)
 
 # netlistsvg
-draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSON netlist. This can be generated [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html). It uses [elkjs](https://github.com/OpenKieler/elkjs) for layout.
+draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSON netlist. This can be generated [the `write_json` command](https://yosyshq.net/yosys/cmd_write_json.html). It uses [elkjs](https://github.com/OpenKieler/elkjs) for layout.
 
 You can see an online demo [here](https://nturley.github.io/netlistsvg)
 
