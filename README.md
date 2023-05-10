@@ -5,7 +5,7 @@
 ![npm](https://img.shields.io/npm/dm/netlistsvg.svg)
 
 # netlistsvg
-draws an SVG schematic from a [yosys](https://github.com/cliffordwolf/yosys) JSON netlist. This can be generated [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html). It uses [elkjs](https://github.com/OpenKieler/elkjs) for layout.
+draws an SVG schematic from a [yosys](https://github.com/yosyshq/yosys) JSON netlist. This can be generated [the `write_json` command](https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/write_json.html). It uses [elkjs](https://github.com/OpenKieler/elkjs) for layout.
 
 You can see an online demo [here](https://nturley.github.io/netlistsvg)
 
@@ -69,7 +69,7 @@ Or to log the result to console using the callback API:
 netlistsvg.render(netlistsvg.digitalSkin, netlistsvg.exampleDigital, (err, result) => console.log(result));
 ```
 
-To turn Verilog into YosysJSON in the browser, you can use [YosysJS](http://www.clifford.at/yosys/yosysjs.html)
+To turn Verilog into YosysJSON in the browser, you can use [YosysJS](https://yosyshq.net/yosys/yosysjs.html)
 
 ## Development
 
@@ -562,9 +562,9 @@ We are getting close to the 1.0 release. At that point, the skin file format wil
 
 ## Generating `input_json_file` with Yosys
 
-[Yosys from Clifford Wolf](https://github.com/cliffordwolf/yosys) can be used to generate the `input_json_file` using [the `write_json` command](http://www.clifford.at/yosys/cmd_json.html).
+[Yosys from Claire Wolf](https://github.com/yosyshq/yosys) can be used to generate the `input_json_file` using [the `write_json` command](https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/write_json.html).
 
-Unless you are doing something special you will want to use [the `prep` command](http://www.clifford.at/yosys/cmd_prep.html). Some examples are provided below and you can find some runnable examples which go from Verilog to diagrams in the [examples directory](./examples) (with example Makefile).
+Unless you are doing something special you will want to use [the `prep` command](https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/prep.html). Some examples are provided below and you can find some runnable examples which go from Verilog to diagrams in the [examples directory](./examples) (with example Makefile).
 
 #### Generate top level diagram
 
@@ -576,7 +576,7 @@ yosys -p "prep -top my_top_module; write_json output.json" input.v
 
 #### Generate logic diagram
 
-You can give it the `-flatten` argument to  [the `prep` command](http://www.clifford.at/yosys/cmd_prep.html) if you want Yosys to convert everything into low level logic. Only basic logic cells and black boxes will exist after flattening.
+You can give it the `-flatten` argument to  [the `prep` command](https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/prep.html) if you want Yosys to convert everything into low level logic. Only basic logic cells and black boxes will exist after flattening.
 
 ```
 yosys -p "prep -top my_top_module -flatten; write_json output.json" input.v
@@ -584,7 +584,7 @@ yosys -p "prep -top my_top_module -flatten; write_json output.json" input.v
 
 ### Generate AND (or not) and inverter (NOT) diagram
 
-It is also frequently common that you want to create a diagram only using AND and NOT (or NAND and NOT) cells. ([This is called an AIG](https://en.wikipedia.org/wiki/And-inverter_graph).) This can be done with Yosys' [`aigmap` command](http://www.clifford.at/yosys/cmd_proc.html).
+It is also frequently common that you want to create a diagram only using AND and NOT (or NAND and NOT) cells. ([This is called an AIG](https://en.wikipedia.org/wiki/And-inverter_graph).) This can be done with Yosys' [`aigmap` command](https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/aigmap.html).
 
 ```
 yosys -p "prep -top my_top_module; aigmap; write_json output.json" input.v
