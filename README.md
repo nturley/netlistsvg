@@ -37,6 +37,9 @@ The default value for the output file is out.svg.
 
 Should work on Linux, OSX, and Windows. Running the build scripts (makefiles and the web demo) is easiest on Linux and OSX.
 
+## Install via Homebrew
+On macOS and Linux netlistsvg is also available via the [Homebrew package manager](https://brew.sh/). It can be installed with the command <code>brew install netlistsvg</code>.
+
 ## Web bundle
 
 I have a web bundle hosted on github pages here: https://nturley.github.io/netlistsvg/built/netlistsvg.bundle.js
