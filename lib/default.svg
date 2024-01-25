@@ -85,7 +85,6 @@ line {
     <s:alias val="$nand"/>
     <s:alias val="$logic_nand"/>
     <s:alias val="$_NAND_"/>
-    <s:alias val="$_ANDNOT_"/>
 
     <path d="M0,0 L0,25 L15,25 A15 12.5 0 0 0 15,0 Z" class="$cell_id"/>
     <circle cx="34" cy="12.5" r="3" class="$cell_id"/>
